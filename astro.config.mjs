@@ -87,6 +87,7 @@ export default defineConfig({
           label: 'Native mobile',
           items: [
             { label: 'Overview', slug: 'native/overview' },
+            { label: 'iOS renderer', slug: 'native/ios-renderer' },
             { label: 'Components', slug: 'native/components' },
             { label: 'State & lifecycle', slug: 'native/state-and-lifecycle' },
             { label: 'Navigation', slug: 'native/navigation' },

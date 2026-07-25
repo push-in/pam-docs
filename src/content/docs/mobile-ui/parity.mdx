@@ -87,6 +87,6 @@ All coded fields use sequential integer IDs represented by PHP enums. Human name
 
 The presence of a component in the [catalog](../components/) does not mean every gate is verified. Check maturity, implementation kind, and the machine-readable verification array before selecting a component for production.
 
-:::caution[iOS parity does not exist]
-The parity contract covers the Android implementation. There is no iOS renderer or iOS component behavior matrix today.
+:::caution[iOS renderer and Mobile UI parity are separate claims]
+PAM Native now has a Swift/UIKit protocol peer and renderer. The current `resources/parity.json` gates still describe Android behavior, however. An iOS component/state/accessibility matrix and physical-device evidence must be added before a Mobile UI module can claim cross-platform verification.
 :::

@@ -3,13 +3,15 @@ title: Protocol and limits
 description: PAM Native protocol versioning, frame types, compatibility gates, and hard resource bounds.
 ---
 
-PAM Native uses a versioned, bounded, little-endian binary protocol between persistent PHP, the Rust engine, and Android.
+PAM Native uses a versioned, bounded, little-endian binary protocol between persistent PHP, the Rust engine, Android, and iOS.
 
 ## Compatibility
 
 | SDK | Protocol | PHP | Android |
 | --- | ---: | --- | --- |
 | `pushinbr/pam-native 0.1.x` | `1` | `8.4.x` | API 26–36 |
+
+The Swift peer decodes protocol version `1` and rejects unknown node kinds, invalid property values, oversized frames, malformed lengths, and trailing bytes before UIKit mutation.
 
 All three peers must support the exact protocol version. A mismatch is rejected before applying a node or mutation.
 
@@ -25,7 +27,7 @@ Protocol version 1 currently defines properties through ID `262` and events thro
 | --- | --- | --- | --- |
 | Complete tree | `PNT1` | PHP | Rust |
 | Incremental patch | `PNP1` | PHP | Rust |
-| UI mutation batch | `PNB1` | Rust | Android |
+| UI mutation batch | `PNB1` | Rust | Android or iOS |
 
 Each frame starts with a four-byte magic value, a `u16` protocol version, and bounded payload counts. Strings and opaque values use a `u32` byte length. Node IDs are non-zero `u64` values.
 
@@ -63,7 +65,7 @@ These are part of protocol version 1. They protect memory use and decoder comple
 
 ## Golden gates
 
-Rust tests pin byte-for-byte tree, patch, and mutation frames. PHP tests pin sequential enums and deterministic encoding. Android checks the protocol version before decoding.
+Rust tests pin byte-for-byte tree, patch, and mutation frames. PHP tests pin sequential enums and deterministic encoding. Android and iOS check the protocol version before decoding.
 
 Changing a golden frame under protocol version 1 is a release blocker, not a routine snapshot update.
 
@@ -73,9 +75,9 @@ The canonical tables live in:
 
 - PHP: `NodeKind`, `PropKey`, `EventKind`, and `NativeOperation`;
 - Rust: `pam-native-protocol/src/lib.rs`; and
-- Android: `PamProtocol.kt`, `PamRenderer.kt`, and `NativeModuleRegistry.kt`.
+- Android: `PamProtocol.kt`, `PamRenderer.kt`, and `NativeModuleRegistry.kt`; and
+- iOS: `PamProtocol.swift`, `PamRenderer.swift`, and `NativeModuleRegistry.swift`.
 
-:::caution[iOS is not a protocol peer yet]
-The binary format can support another renderer, but no iOS peer currently implements or passes these gates. Protocol design alone is not iOS support.
+:::note[iOS verification boundary]
+The Swift decoder and renderer are protocol peers in source. Cross-platform golden-frame CI, malformed-frame fuzzing on iOS, and an application-host compatibility matrix are still pending release gates.
 :::
-

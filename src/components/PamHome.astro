@@ -9,7 +9,7 @@ const path = (value: string) => `${base}${value}`;
       <p class="pam-home-kicker">PHP, always in memory</p>
       <h2 class="pam-home-title" id="pam-home-title">The persistent stack for PHP applications.</h2>
       <p class="pam-home-lead">
-        Build long-lived servers, Laravel applications, real native Android interfaces,
+        Build long-lived servers, Laravel applications, real native Android and iOS interfaces,
         and desktop software — with PHP at the center and Rust at the boundary.
       </p>
       <div class="pam-home-actions">
@@ -26,7 +26,7 @@ const path = (value: string) => `${base}${value}`;
     <div class="pam-runtime-visual" aria-label="PAM connects Composer PHP to native application targets">
       <svg viewBox="0 0 680 600" role="img" aria-labelledby="runtime-visual-title runtime-visual-description">
         <title id="runtime-visual-title">The PAM application stack</title>
-        <desc id="runtime-visual-description">Composer and PHP run through PAM into server, Android, and desktop targets.</desc>
+        <desc id="runtime-visual-description">Composer and PHP run through PAM into server, native mobile, and desktop targets.</desc>
         <defs>
           <pattern id="pam-grid" width="42" height="24" patternUnits="userSpaceOnUse" patternTransform="skewY(-30)">
             <path d="M42 0H0V24" fill="none" stroke="#dedede" stroke-width="1"/>
@@ -74,7 +74,7 @@ const path = (value: string) => `${base}${value}`;
         </g>
         <g class="pam-target-chip">
           <rect x="52" y="526" width="126" height="40" rx="20" fill="#fff" stroke="#246bfe" stroke-width="2"/>
-          <text x="115" y="552" text-anchor="middle">ANDROID</text>
+          <text x="115" y="552" text-anchor="middle">MOBILE</text>
         </g>
         <g class="pam-target-chip">
           <rect x="514" y="382" width="120" height="40" rx="20" fill="#fff" stroke="#232323" stroke-width="2"/>
@@ -88,7 +88,7 @@ const path = (value: string) => `${base}${value}`;
     <p>ONE RUNTIME.<br/>FOUR TARGETS.</p>
     <a href={path('/runtime/how-pam-works/')}><strong>Server</strong><span>HTTP, WebSockets, async I/O</span></a>
     <a href={path('/laravel/overview/')}><strong>Laravel</strong><span>Boot once, isolate every request</span></a>
-    <a href={path('/native/overview/')}><strong>Android</strong><span>Real native Views from PHP</span></a>
+    <a href={path('/native/overview/')}><strong>Native mobile</strong><span>Android Views and iOS UIKit from PHP</span></a>
     <a href={path('/desktop/overview/')}><strong>Desktop</strong><span>Secure Servo-powered windows</span></a>
   </section>
 
@@ -120,7 +120,7 @@ const path = (value: string) => `${base}${value}`;
     <a href={path('/native/components/')}>
       <span class="pam-feature-number">03</span>
       <h3>Actual native UI</h3>
-      <p>Describe interfaces in PHP and render real Android Views through PAM's typed component protocol.</p>
+      <p>Describe interfaces in PHP and render Android Views or UIKit controls through PAM's typed component protocol.</p>
     </a>
   </section>
 
@@ -131,9 +131,9 @@ const path = (value: string) => `${base}${value}`;
     </div>
     <div>
       <p>
-        PAM is experimental. Android API 26–36 is the current mobile target, and an iOS renderer
-        has not been implemented yet. Every guide tells you what works, what is partial, and where
-        a contribution can move the project forward.
+        PAM is experimental. Android API 26–36 is the verified mobile target. A Swift/UIKit
+        renderer and protocol peer now exist for iOS, while application-host integration,
+        packaging, device testing, and measured parity remain in progress.
       </p>
       <div class="pam-home-actions">
         <a class="pam-button pam-button-primary" href={path('/project/status/')}>View project status</a>

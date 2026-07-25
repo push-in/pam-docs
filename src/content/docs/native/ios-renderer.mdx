@@ -1,0 +1,175 @@
+---
+title: iOS renderer
+description: The implemented Swift/UIKit runtime, component mapping, event lifecycle, performance model, and current release boundary.
+---
+
+PAM Native includes a protocol-v1 Swift peer and UIKit renderer. It consumes the same Rust mutation batches as Android and keeps frame-sensitive interaction in native code.
+
+This page describes source-level implementation. It does not claim that iOS is already a signed, packaged, device-verified production target.
+
+## Runtime path
+
+```text
+Persistent PHP
+  │ PNT1 / PNP1
+  ▼
+Rust reconciliation and layout
+  │ owned PNB1 batches
+  ▼
+PamRuntime
+  │ CADisplayLink frame scheduling
+  ▼
+PamRenderer
+  │ create / remove / update / move / layout
+  ▼
+UIKit controls
+```
+
+`PamRuntime` owns accepted native batch handles until commit or shutdown. It releases queued and accepted handles during close, stops the Rust runtime, closes native modules, and tears down the renderer.
+
+`CADisplayLink` drives commits on the main run loop. On iOS 15 and newer, the runtime requests 120 fps and pauses the link when no frame is pending.
+
+## Protocol and nodes
+
+The Swift decoder implements protocol version `1`, including bounded frame size, mutation count, properties, strings, byte values, packed lists, and packed sections.
+
+All 26 current node kinds are recognized:
+
+| Node family | UIKit implementation |
+| --- | --- |
+| Screen, column, row, view, safe area, keyboard avoiding, input accessory | `UIView` host |
+| Text | `UILabel` |
+| Button and pressable | `UIButton` |
+| Input | `PamInputField` based on `UITextField` |
+| Image and image background | `UIImageView` |
+| Scroll, list, section list, virtual list | `UIScrollView` |
+| Activity indicator | `UIActivityIndicatorView` |
+| Toggle | `UISwitch` |
+| Modal | `PamModalHost` |
+| Drawer | `PamDrawerLayout` |
+| Refresh control | `PamRefreshContainer` |
+| Custom view | Generated factories through `NativeViewRegistry` |
+
+Status-bar and navigation-host nodes are accepted as hosts, but full platform behavior still belongs to the iOS parity backlog. List node recognition also does not yet prove Android-equivalent recycling.
+
+## Press events
+
+The renderer supports:
+
+- `onPress`;
+- `onLongPress`;
+- `onPressIn`;
+- `onPressOut`; and
+- `onPressMove`.
+
+Advanced pointer events share one zero-delay `UILongPressGestureRecognizer`. Move payloads are coalesced by node/event identity before the display-link flush, preventing an unbounded PHP callback stream at 60–120 fps.
+
+The bridge detaches recognizers when event properties change or the node is removed.
+
+## Input events
+
+`PamInputField` owns editable text, cursor, selection, and native keyboard behavior. Detailed callbacks are opt-in:
+
+| Event | Native source |
+| --- | --- |
+| `onInputEndEditing` | End editing or return/submit |
+| `onInputSelectionChange` | `textFieldDidChangeSelection` |
+| `onInputContentSizeChange` | Measured native text/font content size |
+| `onInputKeyPress` | Accepted native replacement/key input |
+
+Selection and content-size changes are coalesced. End-editing and key events remain semantic immediate events. Callback closures are cleared during detach to prevent stale node delivery.
+
+## Image lifecycle
+
+Images use cancelable `URLSessionDownloadTask` requests with generation IDs. Replacing a source or removing a node invalidates the previous generation, so late responses cannot update a recycled or unrelated image view.
+
+The lifecycle is:
+
+1. `onImageLoadStart`;
+2. zero or more coalesced `onImageProgress` events;
+3. `onImageLoad` or `onImageError`; and
+4. `onImageLoadEnd`.
+
+The renderer uses URL cache behavior, bounds payload sizes, decodes off the event path, and assigns the resulting `UIImage` on the main thread.
+
+## Scroll and lists
+
+`onScroll` and `onEndReached` can be enabled independently. The delegate avoids formatting a scroll payload when only end-reached observation is active.
+
+End-reached behavior:
+
+- supports vertical and horizontal scroll views;
+- uses property ID `84` as `endReachedThreshold`;
+- defaults to `0.5` viewport lengths;
+- clamps negative thresholds to zero;
+- calculates distance from the adjusted content inset;
+- emits once for the current content-size/viewport-size pair; and
+- rearms when content or viewport size changes.
+
+The calculation is constant-time and stays entirely on the UIKit scroll path.
+
+Current list nodes use `UIScrollView`. Recycler/virtualization equivalence with Android's list host remains a separate implementation and performance gate.
+
+## Refresh and drawer
+
+`PamRefreshContainer` owns pull-distance tracking, gesture arbitration, indicator progress, colors, background color, offset, size, refreshing state, and `onRefresh`.
+
+`PamDrawerLayout` owns its open state, native animation, and `onDrawerOpen`/`onDrawerClose` callbacks. Event closures are replaced or removed with node lifecycle updates.
+
+## Modal lifecycle
+
+`PamModalHost` supports visibility, presentation style, animation type, backdrop, transparency, swipe dismissal, and orientation observation.
+
+Its event contract includes:
+
+- `onModalRequestClose`;
+- `onModalShow`;
+- `onModalDismiss`; and
+- `onModalOrientationChange`.
+
+Request-close also preserves the generic native callback path when `onNativeEvent` is registered. Presentation and dismissal callbacks are cleared before teardown so UIKit cannot deliver into a removed node.
+
+## Native modules
+
+The iOS registry includes:
+
+- HTTP GET through `URLSession`, with HTTPS required outside debug and bounded response size;
+- string storage through `UserDefaults`, with validated keys and 256 KiB values;
+- alerts and system sharing;
+- safe URL opening and capability checks;
+- haptics;
+- device information and appearance;
+- keyboard dismissal;
+- camera, microphone, and photo permission check/request; and
+- generated custom module registration.
+
+Network and storage work use dedicated queues. UIKit presentation remains on the main thread.
+
+## Performance model
+
+The renderer is designed around bounded native work:
+
+- one display-link commit for queued mutations;
+- no PHP round trip for gesture progress or UIKit animation frames;
+- event coalescing for scroll, dimensions, image progress, input selection, input content size, and press move;
+- O(1) end-reached checks;
+- cancelable image generations;
+- explicit module, event-bridge, image-task, and batch cleanup; and
+- runtime frame metrics for decode time, mount time, node counts, retained bytes, and full/patch commits.
+
+These mechanisms support 60–120 fps operation, but they are not a substitute for measured release-build evidence.
+
+## Remaining release gates
+
+Before iOS becomes a supported production target, PAM still needs:
+
+1. a complete application host and documented Xcode integration;
+2. simulator and physical-device CI;
+3. signed archive and distribution tooling;
+4. golden protocol tests and malformed-frame fuzzing on Swift;
+5. UIKit accessibility, Dynamic Type, safe-area, keyboard, and rotation verification;
+6. list recycling/virtualization parity;
+7. line-by-line component and controlled-state evidence for Mobile UI; and
+8. release-build FPS, startup, memory, thermal, and energy benchmarks.
+
+Until those gates pass, use “iOS renderer implemented” rather than “iOS production support.”

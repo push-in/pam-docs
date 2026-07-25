@@ -1,9 +1,9 @@
 ---
 title: PAM Native
-description: Build Android applications in PHP with real native Views and no JavaScript runtime.
+description: Build Android and iOS applications in PHP with real native controls and no JavaScript runtime.
 ---
 
-PAM Native keeps PHP 8.4 alive inside an Android process and renders real Android Views. Rust owns validation, reconciliation, diffing, and layout; Kotlin applies the resulting mutations on the Android UI thread.
+PAM Native keeps PHP 8.4 alive and renders platform controls directly. Rust owns validation, reconciliation, diffing, and layout. Kotlin applies mutation batches to Android Views; Swift applies the same protocol to UIKit.
 
 It is not a WebView and does not ship React's JavaScript runtime.
 
@@ -31,9 +31,11 @@ Templates are parsed once, validated, and kept in memory. Expressions read compo
 
 ## Native component surface
 
-The Android renderer includes layout, text, images, inputs, pressables, scrolling and virtualized lists, modals, activity indicators, status bar control, keyboard avoidance, refresh control, Android-specific touch behavior, and system APIs.
+The Android renderer includes layout, text, images, inputs, pressables, scrolling and recycled lists, modals, activity indicators, status bar control, keyboard avoidance, refresh control, Android-specific touch behavior, and system APIs.
 
-Performance-sensitive behavior stays native: input cursor and selection, press feedback, scrolling, list recycling, image fetch/decode, insets, IME overlap, animations, and view mutation commits do not require a round trip through PHP.
+The iOS renderer decodes protocol v1 mutation batches and maps the shared node surface to UIKit. It includes input, press, image, scroll/end-reached, refresh, drawer, modal, custom-view, runtime, storage, HTTP, and system bridges. See [iOS renderer](./ios-renderer/) for the exact implementation and current verification boundary.
+
+Performance-sensitive behavior stays native: input cursor and selection, press feedback, scrolling, image loading, modal interaction, refresh gestures, animations, and view mutation commits do not require a round trip through PHP.
 
 ## Platform support
 
@@ -42,9 +44,8 @@ Performance-sensitive behavior stays native: input cursor and selection, press f
 | PHP | 8.4.x |
 | Android | API 26–36 |
 | PAM Native protocol | Version 1 |
-| iOS | Not implemented |
+| iOS | Swift/UIKit renderer implemented; host and device verification in progress |
 
-:::caution[Android-only]
-There is no iOS application host, renderer, packaging toolchain, or verified component mapping. Community help with the iOS architecture and implementation is welcome.
+:::caution[iOS is not a production target yet]
+The protocol peer, runtime bridge, UIKit renderer, native modules, and advanced event lifecycle exist in source. A complete application host, signed packaging pipeline, simulator/device compatibility matrix, accessibility pass, and physical performance evidence are still required before iOS can be described as production-supported.
 :::
-

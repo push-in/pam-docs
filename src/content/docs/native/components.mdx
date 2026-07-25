@@ -167,6 +167,23 @@ Keep business rules in PHP methods rather than embedding them in markup.
 | Android | `DrawerLayoutAndroid`, `TouchableNativeFeedback`, `InputAccessoryView` |
 | Compatibility | `TouchableOpacity`, `TouchableHighlight`, `TouchableWithoutFeedback` |
 
+## Platform renderer mapping
+
+The same numeric `NodeKind` reaches a platform-specific native control.
+
+| Family | Android | iOS |
+| --- | --- | --- |
+| Layout | Android `ViewGroup` hosts | `UIView` |
+| Text and buttons | Android text/control views | `UILabel`, `UIButton` |
+| Input | Native editable text | `PamInputField` over `UITextField` |
+| Images | Native image pipeline | `UIImageView` with cancelable `URLSessionDownloadTask` lifecycle |
+| Scroll and lists | Scroll host and recycled `RecyclerView` lists | `UIScrollView`; list virtualization still requires parity evidence |
+| Toggle and progress | Native switch and indicator | `UISwitch`, `UIActivityIndicatorView` |
+| Presentation | Android modal/drawer/refresh hosts | `PamModalHost`, `PamDrawerLayout`, `PamRefreshContainer` |
+| Custom native view | Generated registry | `NativeViewRegistry` and generated Swift factories |
+
+Declaring a node kind means the iOS protocol can create and update it. It does not imply that Android-only behavior, list recycling, accessibility, or every Mobile UI state has already passed iOS verification.
+
 ## Responsive grid
 
 `Grid` defaults to twelve columns and accepts any PAM element. Spans can change at breakpoints, rows size to their tallest child, and the grid reflows for orientation, split screen, and foldable posture.
@@ -189,4 +206,3 @@ pam mobile make:native-view CameraPreview .
 ```
 
 Generators are non-destructive. The package also ships a JSON schema for `pam-native.json` and custom HTML data for `.pam` tag completion.
-

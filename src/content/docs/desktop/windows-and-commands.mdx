@@ -52,6 +52,12 @@ Every window has an identifier, trusted local entry document, size constraints, 
 
 Window identifiers begin with a letter, contain only ASCII letters, digits, dots, dashes, or underscores, and remain at most 64 bytes.
 
+### Closing a secondary window
+
+Windows declared in the application are reusable. When the user clicks the native close control on a secondary window, PAM blurs and hides its WebView instead of destroying the configured window. A later visible/focus effect can open the same window again without rebuilding the Servo pipeline.
+
+Closing the main window still exits the application. Explicit close effects may destroy a secondary window; native teardown releases the Servo WebView first, then its rendering context, and finally the Winit window so callbacks never target an already-destroyed surface.
+
 ## Register a command
 
 ```php
@@ -172,4 +178,3 @@ $app->run();
 ```
 
 The PHP worker remains alive across commands, so ordinary application state can persist. Commands are deterministic and serialized; PAM does not pretend a single Zend runtime is parallel.
-

@@ -93,3 +93,10 @@ Current results validate bounded host work and absence of per-frame PHP traffic 
 
 They do not yet establish an end-to-end speedup over React Native, Nitro Modules, Flutter, or another framework. A comparative claim needs the same payload, physical device, release build, warm-up, sample count, frame statistics, memory method, and harness.
 
+## iOS implementation status
+
+The iOS runtime uses `CADisplayLink`, requests up to 120 frames per second on iOS 15+, and commits queued native batches on the main thread. High-frequency scroll, dimensions, image-progress, input-selection, input-content-size, and pointer-move events are coalesced by identity before dispatch.
+
+The renderer also keeps `onEndReached` calculation O(1) on the native scroll path and avoids creating `onScroll` payloads when only end-reached observation is enabled.
+
+These are implementation properties, not benchmark results. No iPhone release-build frame-time, memory, startup, thermal, or energy reference has been published yet.

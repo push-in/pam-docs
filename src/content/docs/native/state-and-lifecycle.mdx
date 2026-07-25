@@ -3,7 +3,7 @@ title: State and lifecycle
 description: Understand component identity, local state, rerendering, native ownership, and cleanup.
 ---
 
-PAM keeps the PHP runtime and component instances alive. State mutations schedule a new render, Rust compares the resulting element tree, and Android receives only the necessary mutation batch.
+PAM keeps the PHP runtime and component instances alive. State mutations schedule a new render, Rust compares the resulting element tree, and each platform renderer receives only the necessary mutation batch.
 
 ## Local state
 
@@ -52,10 +52,10 @@ Element tree
 Rust reconciliation and layout
   │ PNB1 mutation batch
   ▼
-Kotlin frame queue
+Kotlin or Swift frame queue
   │ one UI commit per VSYNC
   ▼
-Android Views
+Android Views or UIKit controls
 ```
 
 The first render is a complete tree. Later renders use numeric create, remove, property-update, move, and set-root operations.
@@ -70,22 +70,22 @@ The renderer applies only layout IDs emitted by Rust instead of rescanning every
 
 ## Native-owned interaction
 
-High-frequency interaction remains native:
+High-frequency interaction remains native on both renderers:
 
 - input text, cursor, and selection;
 - press feedback and long-press recognition;
 - scroll and fling progress;
-- list recycling and prefetch;
+- list recycling and prefetch on Android;
 - modal and navigation animations;
 - image fetch, decode, and caching;
 - safe-area and IME calculations; and
 - transform and opacity animations.
 
-PHP receives semantic events according to the chosen synchronization policy.
+PHP receives semantic events according to the chosen synchronization policy. On iOS, scroll, dimensions, image progress, input selection, input content size, and pointer-move events are coalesced before the next `CADisplayLink` commit.
 
 ## Input synchronization
 
-Text remains in the Android input while the user types. Change delivery defaults to a 48 ms debounce and can be configured as:
+Text remains in the native input while the user types. Change delivery defaults to a 48 ms debounce and can be configured as:
 
 | Mode | PHP synchronization |
 | --- | --- |
@@ -97,6 +97,19 @@ Text remains in the Android input while the user types. Change delivery defaults
 
 Selection events are coalesced to VSYNC. Key, content-size, end-editing, and other detailed events are opt-in.
 
+## iOS advanced event lifecycle
+
+The Swift renderer installs and removes event bridges with the node lifecycle:
+
+- `onPressIn`, `onPressOut`, and `onPressMove` use one zero-delay native recognizer;
+- `onInputEndEditing`, `onInputSelectionChange`, `onInputContentSizeChange`, and `onInputKeyPress` stay attached to `PamInputField`;
+- modal `requestClose`, `show`, `dismiss`, and `orientationChange` callbacks are detached when the node is removed;
+- image loading emits start, progress, load or error, and load-end in lifecycle order;
+- refresh and drawer callbacks are owned by their native containers; and
+- scroll listeners support `onScroll` and `onEndReached` independently.
+
+`onEndReached` uses property ID `84` as a non-negative viewport-relative threshold, defaults to `0.5`, supports both axes, emits once for a content/viewport state, and rearms when either size changes.
+
 ## Cleanup and buffer ownership
 
 Rust-owned `PNB1` buffers cross JNI through direct, read-only `ByteBuffer` instances. Kotlin accepts ownership, applies the batch, and releases the buffer. Shutdown drains queued and accepted buffers before destroying the renderer.
@@ -104,6 +117,5 @@ Rust-owned `PNB1` buffers cross JNI through direct, read-only `ByteBuffer` insta
 Debug output exposes the number of retained buffers; it must return to zero after a completed frame.
 
 :::caution[Do not block the UI thread]
-Native view lifecycle functions that create, update, or release Android Views run on the UI thread. Network, disk, large decoding, and other slow work must move to a bounded background executor.
+Native view lifecycle functions that create, update, or release Android Views or UIKit controls run on the UI thread. Network, disk, large decoding, and other slow work must move to a bounded background executor.
 :::
-
