@@ -1,0 +1,100 @@
+---
+title: Security model
+description: PAM Desktop's process, gateway, protocol, capability, and failure boundaries.
+---
+
+PAM Desktop treats the frontend as trusted application code but still exposes no ambient native authority. Dangerous operations remain behind a typed Rust boundary declared by PHP policy.
+
+## Process model
+
+```text
+trusted local UI
+HTML / CSS / JavaScript
+        │ commands, events, named APIs
+        │ exact origin + ephemeral token
+        ▼
+Rust host
+Winit ─ Servo ─ loopback gateway
+  │                  │
+  │ typed effects    │ bounded JSON lines
+  │                  ▼
+  └──────────── PAM worker
+                  PHP 8.4
+```
+
+PAM core owns the PHP Embed runtime. The desktop package owns application policy. The protocol crate owns envelopes and integer contracts. The Rust shell owns Servo, Winit, gateway, native adapters, and operating-system handles.
+
+## Gateway boundary
+
+The local gateway:
+
+- binds to a random port on `127.0.0.1`;
+- generates a cryptographically random 256-bit token;
+- requires the exact origin and token for command and native requests;
+- compares tokens without an early content exit;
+- verifies the source window;
+- restricts navigation to the gateway origin;
+- canonicalizes assets under the public root;
+- sets `no-store`, `nosniff`, and a restrictive Content Security Policy; and
+- freezes the injected API and its nested namespaces.
+
+The gateway is not a public server.
+
+## Filesystem boundary
+
+Filesystem roots are opened once as capability-scoped directories through `cap-std`.
+
+Requests accept only relative paths without `..`. Final symbolic links are rejected, and capability-based traversal prevents intermediate links from escaping a root.
+
+Selected and dropped files become opaque process-lifetime grants. Dialogs return names, integer kinds, integer access levels, and grant IDs—not native paths.
+
+## Protocol
+
+Host and PHP worker exchange one JSON object per line. A message is limited to 1 MiB and correlated by a monotonically increasing unsigned request ID.
+
+Sequential integer variants include:
+
+| Contract | Values |
+| --- | --- |
+| Message kind | `1` request, `2` response |
+| Response status | `1` success, `2` failure |
+| Window theme | `1` system, `2` light, `3` dark |
+| Effect kind | `1` title, `2` visibility, `3` close, `4` focus |
+| File access | `1` read, `2` write, `3` read-write |
+| File entry | `1` file, `2` directory |
+| Notification urgency | `1` low, `2` normal, `3` critical |
+
+Protocol version is checked on every response. A mismatch, malformed envelope, wrong request ID, oversized line, invalid kind, or failure without an error terminates that invocation explicitly.
+
+## Commands and failure
+
+Commands run one at a time through a worker mutex. Axum can serve transport concurrently, but the single Zend worker stays deterministic.
+
+When an invocation times out, is cancelled, crashes the worker, or corrupts the protocol, the host kills and reaps that worker and starts another generation.
+
+PAM does not retry the interrupted command. A handler may have committed a side effect before failing. Applications must design their own idempotency and recovery semantics.
+
+## Hot reload
+
+Asset changes reload WebViews. PHP and Composer changes restart the worker, validate a complete new bootstrap, and atomically reconfigure windows.
+
+Invalid reloads keep the host alive and emit `pam.dev.error`.
+
+Capability changes prepare a complete replacement native service before the swap. A successful replacement expires old grants. Invalid roots keep the current service active.
+
+## Unsupported trust models
+
+PAM Desktop intentionally does not support:
+
+- loading arbitrary remote pages inside a privileged application window;
+- an unrestricted shell or process API;
+- arbitrary ambient filesystem paths in browser code;
+- executing package-provided native scripts at runtime; or
+- hiding native authority inside an untyped generic bridge.
+
+New capabilities should be named, typed, bounded, validated on both sides, and disabled by default.
+
+## Current maturity
+
+The model is suitable for controlled prototypes and product exploration. Servo 0.4 and PAM Desktop's alpha API are still evolving. Security review and platform signing remain required before broad consumer distribution.
+

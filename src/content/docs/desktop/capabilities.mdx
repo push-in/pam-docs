@@ -1,0 +1,152 @@
+---
+title: Native capabilities
+description: Authorize scoped filesystem, dialogs, clipboard, notifications, and drag-and-drop access.
+---
+
+No native capability is enabled by default. PHP declares policy, and the frontend receives only named, typed APIs for the enabled surface.
+
+## Declare policy
+
+```php
+use Pam\Desktop\Capabilities;
+use Pam\Desktop\FileSystemRoot;
+
+$app->capabilities(
+    Capabilities::none()
+        ->filesystem(
+            FileSystemRoot::read(
+                'assets',
+                __DIR__.'/assets',
+            ),
+            FileSystemRoot::readWrite(
+                'data',
+                __DIR__.'/storage',
+            ),
+        )
+        ->dialogs()
+        ->clipboard(read: true, write: true)
+        ->notifications()
+        ->dragAndDrop(),
+);
+```
+
+Root directories must already exist. Root IDs use the same bounded identifier grammar as windows and commands.
+
+## Filesystem access
+
+File access is an integer-backed enum:
+
+| ID | Case | Permission |
+| ---: | --- | --- |
+| `1` | Read | Metadata, list, and read text |
+| `2` | Write | Create directories and write text |
+| `3` | ReadWrite | Both permission sets |
+
+Frontend methods use a named root and relative path:
+
+```js
+const target = {
+  root: "data",
+  path: "notes/today.txt",
+};
+
+await pam.fs.createDirectory({
+  root: "data",
+  path: "notes",
+});
+
+await pam.fs.writeText(target, "Hello, PAM.");
+const text = await pam.fs.readText(target);
+const metadata = await pam.fs.metadata(target);
+const entries = await pam.fs.list({
+  root: "data",
+  path: "notes",
+});
+```
+
+Text reads and writes are UTF-8 and limited to 8 MiB. Paths must be relative and cannot contain parent components. Symbolic links are not returned or opened.
+
+Directory entries contain a name, relative path, integer kind (`1` file or `2` directory), and byte size.
+
+## Dialogs and grants
+
+```js
+const file = await pam.dialog.openFile({
+  title: "Open a document",
+  filters: [
+    {
+      name: "Text",
+      extensions: ["txt", "md"],
+    },
+  ],
+});
+
+const files = await pam.dialog.openFiles();
+const destination = await pam.dialog.saveFile({
+  fileName: "report.txt",
+});
+const directory = await pam.dialog.openDirectory({
+  access: 3,
+});
+```
+
+A cancelled single-selection dialog returns `null`; a cancelled multi-selection dialog returns an empty array.
+
+Selected resources contain:
+
+```js
+{
+  grantId: "opaque-256-bit-token",
+  name: "report.txt",
+  kind: 1,
+  access: 1
+}
+```
+
+The frontend never receives the ambient filesystem path. Pass the granted object to `pam.fs`. Directory grants may include a child relative path.
+
+Grants are random, process-lifetime capabilities. They expire when the host restarts or capability policy is hot-reloaded.
+
+## Clipboard
+
+```js
+const text = await pam.clipboard.readText();
+await pam.clipboard.writeText("Copied from PAM");
+await pam.clipboard.clear();
+```
+
+Read and write permissions are independent. Clipboard content remains owned by the host so it stays available after the immediate operation.
+
+## Notifications
+
+```js
+await pam.notification.show({
+  title: "Export complete",
+  body: "The report is ready.",
+  urgency: 2,
+});
+```
+
+Urgency is a sequential integer: `1` low, `2` normal, `3` critical.
+
+Operating-system notification support and permission behavior remain platform-specific.
+
+## Drag and drop
+
+Dropped files become opaque grants under the same filesystem API. The page receives metadata and a grant, not a host path.
+
+## Timeouts
+
+All native methods except dialogs accept optional client timeout and `AbortSignal` values:
+
+```js
+await pam.fs.readText(target, {
+  timeout: 5_000,
+  signal: controller.signal,
+});
+```
+
+## Missing capabilities
+
+Menus, tray, global shortcuts, background jobs, and a plugin system are planned for the Desktop `0.6` roadmap. A generic shell, process, or unrestricted filesystem bridge is deliberately unsupported.
+

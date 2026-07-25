@@ -1,0 +1,175 @@
+---
+title: Windows and commands
+description: Declare desktop windows, invoke typed PHP commands, send events, apply effects, and handle cancellation.
+---
+
+PAM Desktop keeps application policy and state in PHP while Servo renders trusted local HTML, CSS, and JavaScript inside native Winit windows.
+
+## Declare the application
+
+```php
+<?php
+
+declare(strict_types=1);
+
+use Pam\Desktop\Application;
+use Pam\Desktop\ApplicationCategory;
+use Pam\Desktop\Manifest;
+use Pam\Desktop\Window;
+use Pam\Desktop\WindowTheme;
+
+$app = Application::create(
+    window: Window::create('My desktop app')
+        ->size(1120, 720)
+        ->minimumSize(720, 520)
+        ->theme(WindowTheme::Dark),
+    manifest: Manifest::create(
+        'com.example.my-app',
+        'My desktop app',
+        '0.4.0',
+    )
+        ->description('A PHP-first desktop application.')
+        ->publisher('My team')
+        ->category(ApplicationCategory::Development),
+);
+```
+
+Manifest identifiers use reverse-DNS form. Application categories and window themes are integer-backed enums.
+
+## Multiple windows
+
+```php
+$app->window(
+    'settings',
+    Window::create('Settings')
+        ->entry('resources/settings.html')
+        ->size(760, 620)
+        ->visible(false),
+);
+```
+
+Every window has an identifier, trusted local entry document, size constraints, initial position and visibility policy, and a dedicated Servo WebView.
+
+Window identifiers begin with a letter, contain only ASCII letters, digits, dots, dashes, or underscores, and remain at most 64 bytes.
+
+## Register a command
+
+```php
+use Pam\Desktop\ClientEvent;
+use Pam\Desktop\CommandContext;
+use Pam\Desktop\CommandResult;
+use Pam\Desktop\WindowEffect;
+
+$app->command(
+    'greet',
+    static function (
+        CommandContext $command,
+    ): CommandResult {
+        $name = $command->string('name', 'world');
+
+        return CommandResult::success([
+            'message' => "Hello, {$name}.",
+        ])
+            ->effect(
+                WindowEffect::title(
+                    "Hello, {$name}",
+                    $command->windowId,
+                ),
+            )
+            ->event(
+                new ClientEvent(
+                    name: 'greeting.completed',
+                    payload: ['name' => $name],
+                    windowId: $command->windowId,
+                ),
+            );
+    },
+);
+```
+
+Command names use the same 64-byte identifier grammar as windows. They are application identifiers, not coded variants, so they remain strings.
+
+`CommandContext` exposes the source window and typed payload readers. Return `CommandResult::success()` or a typed failure rather than printing an ad-hoc protocol envelope.
+
+## Invoke from the frontend
+
+```js
+const result = await window.pam.invoke(
+  "greet",
+  { name: "Ada" },
+  { timeout: 5_000 },
+);
+
+console.log(result.message);
+```
+
+The injected `window.pam` API is frozen. It sends the exact source window, gateway origin, and ephemeral bridge token with every request.
+
+## Events
+
+Listen for PHP-to-JavaScript events:
+
+```js
+const unsubscribe = window.pam.on(
+  "greeting.completed",
+  ({ name }) => {
+    console.log(`Greeting completed for ${name}`);
+  },
+);
+```
+
+Send a frontend event to PHP:
+
+```js
+await window.pam.emit(
+  "editor.changed",
+  { documentId: "document-42" },
+  { timeout: 5_000 },
+);
+```
+
+The event hub retains a bounded ordered history and filters targeted events by window.
+
+## Window effects
+
+Typed effects can:
+
+- change a title;
+- show or hide a window;
+- close a window; and
+- focus a window.
+
+Effects use sequential integer kinds in the host protocol. A targeted effect includes a window identifier.
+
+## Deadlines and cancellation
+
+Both `invoke()` and `emit()` accept:
+
+```js
+const controller = new AbortController();
+
+const operation = window.pam.invoke(
+  "report.generate",
+  { reportId: "monthly" },
+  {
+    timeout: 30_000,
+    signal: controller.signal,
+  },
+);
+
+controller.abort();
+```
+
+Protocol 4 serializes commands through one PHP worker mutex. If a deadline expires, the caller aborts, the worker crashes, emits invalid output, or exceeds the message limit, PAM kills and reaps the worker and prepares a fresh generation.
+
+The interrupted command is never retried automatically because it may have completed a side effect just before failure. Design command handlers to use idempotency identifiers where safe replay matters.
+
+## Run
+
+```php
+$app->commandTimeout(10_000);
+$app->run();
+```
+
+The PHP worker remains alive across commands, so ordinary application state can persist. Commands are deterministic and serialized; PAM does not pretend a single Zend runtime is parallel.
+

@@ -83,6 +83,10 @@ export default defineConfig({
           label: 'Desktop',
           items: [
             { label: 'Overview', slug: 'desktop/overview' },
+            { label: 'Windows & commands', slug: 'desktop/windows-and-commands' },
+            { label: 'Native capabilities', slug: 'desktop/capabilities' },
+            { label: 'Security model', slug: 'desktop/security' },
+            { label: 'Distribution', slug: 'desktop/distribution' },
           ],
         },
         {
@@ -101,6 +105,8 @@ export default defineConfig({
           items: [
             { label: 'Contributing', slug: 'community/contributing' },
             { label: 'Roadmap', slug: 'community/roadmap' },
+            { label: 'Security', slug: 'community/security' },
+            { label: 'Licensing', slug: 'community/licensing' },
           ],
         },
       ],

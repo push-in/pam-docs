@@ -1,0 +1,130 @@
+---
+title: Distribution
+description: Build reproducible self-contained Linux bundles, portable archives, and Debian packages.
+---
+
+PAM Desktop `0.4` defines a Linux distribution contract. Windows and macOS packaging, platform signing, and automatic updates remain planned for `0.5`.
+
+## Application manifest
+
+```php
+use Pam\Desktop\ApplicationCategory;
+use Pam\Desktop\Manifest;
+
+$manifest = Manifest::create(
+    'com.example.my-app',
+    'My desktop app',
+    '0.4.0',
+)
+    ->description('A PHP-first desktop application.')
+    ->publisher('Example')
+    ->category(ApplicationCategory::Development)
+    ->icon('resources/icon.svg');
+```
+
+The identifier uses reverse-DNS form. Icons are validated PNG or SVG assets. Category is an integer-backed enum mapped to platform package metadata.
+
+## Build formats
+
+The default creates a directory and portable archive:
+
+```bash
+pam desktop build .
+```
+
+Select formats and output:
+
+```bash
+pam desktop build . \
+  --output dist \
+  --format directory
+
+pam desktop build . \
+  --output dist \
+  --format portable
+
+pam desktop build . \
+  --output dist \
+  --format deb
+
+pam desktop build . \
+  --output dist \
+  --format all
+```
+
+Debian packaging requires `dpkg-deb`.
+
+Existing artifacts are not replaced unless the caller explicitly passes `--force`.
+
+## Bundle contents
+
+A self-contained Linux bundle includes:
+
+- the exact PAM worker binary;
+- the exact `pam-desktop` Servo host;
+- required PHP and native runtime libraries;
+- an isolated minimal `php.ini`;
+- the application and materialized Composer dependencies;
+- frontend assets;
+- application icon and Freedesktop entry;
+- a launcher with private runtime paths;
+- portable `install.sh` and `uninstall.sh` when applicable; and
+- `manifest.json`.
+
+The launcher sets `PAM_BINARY`, `PHPRC`, `PHP_INI_SCAN_DIR`, and `LD_LIBRARY_PATH` before production run mode.
+
+## Build validation
+
+The packager boots the same PHP application and validates the same protocol bootstrap used at runtime.
+
+It stages into a random directory under the output, rejects unsafe project symlinks, materializes Composer package symlinks only when safe, omits configured exclusions and secrets, and copies trusted runtime binaries.
+
+`ldd` runs only against those trusted binaries. Non-glibc runtime libraries are copied beside the application.
+
+## Integrity manifest
+
+`manifest.json` records:
+
+- protocol version;
+- application identity and version;
+- runtime version;
+- operating-system and architecture target;
+- each included file;
+- byte size; and
+- SHA-256 digest.
+
+Entries are sorted. Publication is an atomic rename from a completed staging directory.
+
+## Reproducibility
+
+Archive metadata uses `SOURCE_DATE_EPOCH`, or zero when unset:
+
+```bash
+SOURCE_DATE_EPOCH=1784937600 \
+  pam desktop build . --format portable
+```
+
+Reproducible metadata reduces avoidable archive differences. Native toolchain and input differences can still change bytes.
+
+## Portable install
+
+The portable archive's installer uses per-user XDG application and data locations and refreshes the desktop database when the host provides the command.
+
+The uninstaller removes the corresponding per-user application files. Review application-owned user data separately; package removal should not silently destroy user documents.
+
+## Current platform matrix
+
+| Platform | Status |
+| --- | --- |
+| Linux directory bundle | Implemented |
+| Portable Linux `.tar.gz` | Implemented |
+| Debian `.deb` | Implemented when `dpkg-deb` is available |
+| Windows MSIX | Planned |
+| macOS DMG | Planned |
+| Code signing | Planned |
+| Signed automatic updates | Planned |
+
+:::caution[Alpha distribution]
+Self-contained Linux packaging is implemented, but PAM Desktop is still alpha and Servo is evolving. Validate the exact target distribution, graphics stack, native libraries, sandbox, upgrade path, and signing requirements before public release.
+:::
+

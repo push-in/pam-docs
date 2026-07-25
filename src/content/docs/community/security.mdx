@@ -1,0 +1,70 @@
+---
+title: Security
+description: Supported versions, vulnerability reporting, secrets, and security boundaries.
+---
+
+Security reports should be handled privately so maintainers can investigate and coordinate a fix before exploit details become public.
+
+## Supported versions
+
+Until PAM reaches `1.0`, security fixes are released only for the latest tagged version.
+
+PHP itself must remain on an upstream-supported PHP 8.4 patch release. A PAM bundle fixes the Embed runtime and extension set, but applications still need a release process for new PAM and PHP security updates.
+
+## Report a vulnerability
+
+Do not open a public issue containing an exploit, proof-of-concept attack, credential, or other sensitive material.
+
+Send the report privately to the repository owner. Include:
+
+- affected repository, package, and version;
+- operating system, architecture, PHP version, and target surface;
+- impact and realistic threat model;
+- reproduction steps or a minimal fixture;
+- whether the issue is remotely reachable;
+- any known workaround; and
+- a suggested mitigation when available.
+
+The current policy targets acknowledgement within 72 hours.
+
+## Never include secrets
+
+Do not commit or attach:
+
+- TLS private keys;
+- Redis or NATS credentials;
+- WebSocket resume secrets;
+- application `.env` files;
+- signing keys;
+- production database contents;
+- access tokens; or
+- unredacted diagnostics containing user data.
+
+Create a synthetic reproduction and rotate any credential that was accidentally exposed.
+
+## Runtime security boundaries
+
+PAM provides bounded parsers, request limits, verified TLS clients, trusted-proxy policy, worker isolation and recycling, structured diagnostics, and an isolated PHP configuration.
+
+Applications remain responsible for authentication, authorization, input validation, tenant isolation, secret management, safe package selection, database policy, and business-level idempotency.
+
+## Native mobile
+
+PAM Native validates binary protocol versions, counts, enum IDs, tree shape, payload size, and event size before applying mutations.
+
+Android permissions and plugin dependencies are explicit. A plugin can still introduce native code and must receive the same supply-chain and code review as another Android dependency.
+
+There is no iOS security contract because no iOS renderer exists yet.
+
+## Desktop
+
+Desktop native capabilities are disabled by default and scoped by PHP policy. The frontend receives named APIs, not a generic shell or ambient filesystem bridge.
+
+The local gateway uses loopback, an ephemeral 256-bit token, exact origin checks, source-window validation, bounded messages, asset canonicalization, and a restrictive Content Security Policy.
+
+PAM Desktop is alpha. Broader public distribution still requires product-specific security review, code signing, update policy, and target-platform validation.
+
+## Dependencies
+
+Run locked dependency audits and the release gates for the relevant repository. An audit result is evidence about known advisories in the exact dependency graph; it is not proof that the application contains no vulnerability.
+
