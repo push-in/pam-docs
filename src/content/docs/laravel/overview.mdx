@@ -3,7 +3,10 @@ title: Laravel on PAM
 description: Run an unmodified Laravel application inside PAM's persistent worker.
 ---
 
-PAM runs an unmodified Laravel application in a persistent PHP Embed worker. Integration classes live in the PAM binary under `Pam\Laravel`; your project depends on Laravel and its ordinary Composer packages.
+PAM runs an unmodified Laravel application in a persistent PHP Embed worker.
+Runtime integration classes live under `Pam\Laravel`; the
+`pushinbr/pam-laravel` package adds production presets, diagnostics,
+observability, process supervision, and deployment operations.
 
 ```bash
 pam init my-laravel-app --template laravel
@@ -46,3 +49,12 @@ pam artisan queue:work
 
 Queue workers, Horizon, and the scheduler are separate long-running console processes. Supervise them independently from the HTTP worker pool.
 
+For a production-shaped application:
+
+```bash
+composer require pushinbr/pam-laravel
+pam artisan pam:install --preset=api
+pam artisan pam:check-production
+```
+
+Continue with the [production platform](../production-platform/).

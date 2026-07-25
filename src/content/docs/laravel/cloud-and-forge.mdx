@@ -1,0 +1,100 @@
+---
+title: PAM Cloud and Forge
+description: Deploy, inspect, scale, and roll back Laravel environments through PAM Cloud or Laravel Forge.
+---
+
+PAM uses one remote operations contract for deployment and day-two tasks. A
+target names an environment such as `production` or `staging`; the provider is
+an integer-backed enum in configuration.
+
+## PAM Cloud target
+
+```dotenv
+PAM_CLOUD_URL=https://cloud.example.com
+PAM_CLOUD_PROJECT=payments
+PAM_CLOUD_TOKEN=...
+PAM_REMOTE_PRODUCTION_PROVIDER=1
+```
+
+Provider values are stable sequential integers:
+
+| Value | Provider |
+| --- | --- |
+| `1` | PAM Cloud |
+| `2` | Laravel Forge |
+
+PAM Cloud uses:
+
+```text
+/v1/projects/{project}/environments/{target}/{action}
+```
+
+Read operations use `GET`. Deploy, rollback, and scale use `POST` with bearer
+authentication.
+
+## Operate an environment
+
+```bash
+pam deploy production
+pam status production
+pam logs production --lines=200
+pam top production
+pam workers production
+pam queues production
+pam scheduler production
+pam scale production --process=queue --instances=8
+pam rollback production
+```
+
+The equivalent generic form is:
+
+```bash
+pam remote <action> production
+```
+
+Scale accepts `1..128` instances. Keep deploy and rollback authorization
+separate from read-only status and log access.
+
+## Laravel Forge
+
+Forge deployment webhooks support deploy:
+
+```dotenv
+PAM_REMOTE_PRODUCTION_PROVIDER=2
+PAM_FORGE_PRODUCTION_WEBHOOK=https://forge.laravel.com/servers/.../deploy/http
+```
+
+Generate a zero-downtime deployment script:
+
+```bash
+pam forge-script --output=deploy/forge-deploy.sh
+```
+
+The generated script uses Forge's release creation and activation macros,
+installs authoritative production dependencies, runs PAM's production audit,
+migrations, and optimization, then restarts queues and the PAM HTTP cluster.
+Review it with your migration and rollback policy before first use.
+
+## Local atomic releases
+
+For infrastructure without a remote provider:
+
+```bash
+pam deploy /srv/app/releases/20260725-1900 --local
+```
+
+The active release changes atomically. PAM starts a fresh worker generation,
+waits for readiness, and drains the old one. Keep the prior release until the
+rollback window closes.
+
+An edge may retry an idempotent request during turnover. Never replay a write
+unless the endpoint has a domain-safe idempotency contract.
+
+## Security boundaries
+
+- Remote endpoints require HTTPS by default.
+- `PAM_REMOTE_ALLOW_HTTP=true` is for deliberate local testing only.
+- Keep Cloud tokens and Forge webhooks in a secret manager.
+- Bind the PAM admin listener to loopback or a protected network.
+- Give CI the smallest set of remote operations it requires.
+- Keep MCP mutations disabled unless a trusted automation path needs them.

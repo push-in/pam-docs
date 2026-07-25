@@ -1,0 +1,72 @@
+---
+title: MCP automation
+description: Give AI and automation read-only PAM diagnostics while keeping deploy, rollback, and scale behind an explicit token.
+---
+
+`pam mcp` exposes bounded Laravel and runtime operations over JSON-RPC using MCP
+protocol `2025-06-18`.
+
+## Configure a client
+
+```json
+{
+  "mcpServers": {
+    "pam-laravel": {
+      "command": "pam",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+Start the server directly to inspect startup errors:
+
+```bash
+pam mcp
+```
+
+The transport is stdio. Keep stdout reserved for protocol messages and route
+diagnostics to stderr.
+
+## Read-only by default
+
+Read-only tools expose:
+
+- supervisor and application health;
+- bounded metrics;
+- production audit results; and
+- managed process state.
+
+Deploy, rollback, and scale are advertised so clients can understand the
+surface, but calls are disabled by default.
+
+## Enable mutations deliberately
+
+Both variables are required:
+
+```dotenv
+PAM_MCP_ALLOW_MUTATIONS=true
+PAM_MCP_CONFIRMATION_TOKEN=a-long-random-value
+```
+
+Every mutating call must include the exact confirmation value. A mutation
+without it is rejected.
+
+:::caution[Separate diagnostics from authority]
+Keep mutations disabled for editors, local assistants, and CI agents that only
+need diagnostics. When automation must deploy, give it an environment-specific
+token and the narrowest remote provider credentials possible.
+:::
+
+## Production checklist
+
+- generate the confirmation token with a cryptographically secure source;
+- keep it out of repository files, prompts, logs, and process listings;
+- scope Cloud or Forge credentials to the intended environment;
+- require human review for destructive production actions;
+- record actor, target, operation, and result in the deployment audit trail;
+- bound metrics and logs returned to a client; and
+- rotate the token after suspected disclosure.
+
+MCP authorization does not replace the remote provider's own access control.
+Both layers must accept an operation.

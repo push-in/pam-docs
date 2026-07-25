@@ -3,7 +3,10 @@ title: Deploy Laravel
 description: Prepare, start, observe, reload, and roll back a Laravel application on PAM.
 ---
 
-Laravel deployment uses PAM's supervised master/worker model and the generated `pam.php` entrypoint.
+Laravel deployment uses PAM's supervised master/worker model and the generated
+`pam.php` entrypoint. PAM 0.1.26 supports local atomic releases and remote PAM
+Cloud or Forge operations in addition to the manual signal flow documented
+below.
 
 ## Build the release
 
@@ -69,6 +72,22 @@ An idempotent request may be retried at the edge during turnover. Do not replay 
 
 Restore the `current` symlink to the prior release and send `SIGHUP` again. Retain the old release directory until the new generation is healthy and the rollback window closes.
 
+## Managed deployment commands
+
+Use the built-in release operations when the environment is configured:
+
+```bash
+pam deploy /srv/app/releases/20260725-1900 --local
+pam deploy production
+pam status production
+pam logs production --lines=200
+pam rollback production
+```
+
+The local path performs an atomic release. Remote operations target PAM Cloud
+or Forge. See [PAM Cloud and Forge](../cloud-and-forge/) for provider variables,
+scaling, security boundaries, and the generated Forge script.
+
 ## Release verification
 
 Run the Laravel compatibility and memory contract with the exact intended binary and dependency lockfile:
@@ -81,4 +100,3 @@ compat/laravel-smoke/vendor/bin/phpstan analyse \
 ```
 
 Add application-specific packages, extensions, database drivers, and request sequences to the release gate.
-

@@ -1,0 +1,99 @@
+---
+title: Release 0.1.26
+description: What shipped in PAM 0.1.26, where to download it, and which contracts were verified.
+---
+
+PAM 0.1.26 is the current public release. It combines the persistent PHP
+runtime, Laravel 12 and 13 integration, production operations, package
+certification, Native mobile authoring, and the Linux Desktop distribution.
+
+:::caution[Experimental, with executable evidence]
+The release is suitable for evaluation and controlled production pilots. PAM
+has not reached a stable 1.0 compatibility promise. Read the
+[project status](../status/) and run your application's own locked test suite
+before moving traffic.
+:::
+
+## Install the exact release
+
+Use `latest` to follow the current stable tag:
+
+```bash
+curl --proto '=https' --tlsv1.2 --fail --silent --show-error --location \
+  --output pam-install.sh \
+  https://github.com/push-in/pam/releases/latest/download/install.sh
+sh pam-install.sh
+rm pam-install.sh
+
+pam --version
+pam doctor .
+```
+
+For a reproducible build or CI job, pin the tag in the release URL:
+
+```text
+https://github.com/push-in/pam/releases/download/v0.1.26/install.sh
+```
+
+The installer selects the Linux x86_64 or ARM64 artifact, verifies its SHA-256,
+rejects unsafe archive paths, and installs the complete private runtime under
+`~/.local`.
+
+## Laravel production platform
+
+The `pushinbr/pam-laravel` package adds:
+
+- production presets for API, Livewire, Inertia, and realtime applications;
+- managed HTTP, queue, scheduler, Horizon, and Nightwatch process roles;
+- atomic local releases and remote PAM Cloud or Forge operations;
+- W3C trace context and bounded native OTLP/HTTP JSON export;
+- local process autoscaling with cooldown and live metrics;
+- an MCP 2025-06-18 server with read-only defaults and token-gated mutations;
+- a 44-package compatibility registry with auditable certification artifacts;
+- a reproducible Laravel benchmark laboratory; and
+- a complete SaaS API reference application.
+
+Start with the [production platform guide](../../laravel/production-platform/).
+
+## Native and Mobile UI
+
+The Native surface includes:
+
+- a twelve-column responsive grid for arbitrary rich children;
+- list cell templates, including image and custom component grids;
+- `v-for` over arrays, `Traversable`, or a positive integer;
+- stack navigation, deep links, Android back handling, and native transitions;
+- atomic development reloads that remount the PHP component tree; and
+- bounded overlays, safe-area layout, controlled form inputs, tabs, and
+  selection components.
+
+The Android contract is verified on API 26–36. The Swift/UIKit renderer exists
+in source, but iOS application hosting, packaging, device CI, and measured
+parity are not part of this release.
+
+## Verification performed
+
+The release gate includes:
+
+```bash
+composer validate --working-dir=packages/laravel --strict
+composer audit --working-dir=compat/laravel-smoke
+compat/laravel-smoke/vendor/bin/phpstan analyse packages/laravel/src \
+  --level=9 --no-progress
+php compat/laravel-smoke/telemetry-smoke.php
+cargo fmt --all -- --check
+cargo clippy --locked --all-targets --all-features -- -D warnings
+cargo test --locked --all-features
+```
+
+Laravel 12/13 compatibility, package certification, Composer publication, and
+release assets also run as public GitHub workflows.
+
+## Release and package records
+
+- [GitHub release v0.1.26](https://github.com/push-in/pam/releases/tag/v0.1.26)
+- [PAM repository](https://github.com/push-in/pam)
+- [`pushinbr/pam-laravel` on Packagist](https://packagist.org/packages/pushinbr/pam-laravel)
+- [Documentation source](https://github.com/push-in/pam-docs)
+
+macOS packaging is intentionally outside this release track.

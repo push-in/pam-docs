@@ -99,6 +99,27 @@ Inputs, switches, selections, tabs, accordions, sheets, and other interactive co
 
 Do not send every gesture frame to PHP. Sliders, sheets, scrolling, input selection, animations, and similar high-frequency progress stay native; PHP receives semantic results.
 
+## Responsive screens
+
+PAM Mobile UI's `Grid` and `GridItem` utilities compile into PAM Native's
+responsive layout contract:
+
+```xml
+<Grid class="grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-4">
+    <GridItem
+        v-for="$photo in $photos"
+        :key="$photo->id"
+        class="col-span-1"
+    >
+        <Image :source="$photo->url" aspectRatio="1" />
+    </GridItem>
+</Grid>
+```
+
+Use the [responsive layout guide](../../native/responsive-layout/) for the
+twelve-column low-level API, responsive spans, rich virtualized grids, and
+integer `v-for`.
+
 ## Complete API
 
 The [component catalog](../components/) lists all 61 modules, public tags, typed facade construction, maturity, runtime implementation, variants, and captured example count.

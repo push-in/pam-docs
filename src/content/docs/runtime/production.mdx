@@ -83,25 +83,28 @@ Enable telemetry response headers only when distributed correlation is needed; t
 - Monitor event-loop lag and queue pressure.
 - Keep leak sampling enabled and calibrate thresholds after warm-up.
 
-## systemd and containers
+## systemd and deployable bundles
 
 The repository ships a hardened `packaging/pam.service` using a dynamic user. A writable Laravel storage path can live under `/var/lib/pam` while application code remains read-only.
 
-The production image can be extended:
-
-```dockerfile
-FROM pam-runtime:0.1.0
-COPY --chown=10001:10001 . /app
-CMD ["start", "index.php", "--workers", "4", "--admin-address", "0.0.0.0:3010"]
-```
-
-For a relocatable directory:
+Build a relocatable directory before copying it into a minimal image or release
+artifact:
 
 ```bash
 pam build . --entry index.php --output dist
 ```
 
 The bundle includes the application, `vendor`, runtime, exact private `libphp`, and a SHA-256 manifest. Run `pam doctor .` inside the final artifact.
+
+Laravel applications can additionally publish systemd, Kubernetes, Docker
+Compose, and Forge assets with:
+
+```bash
+pam artisan pam:install --preset=api
+```
+
+See the [Laravel production platform](../../laravel/production-platform/) for
+managed processes, OTLP, remote operations, and autoscaling.
 
 ## Deploy and rollback
 
@@ -113,4 +116,3 @@ The bundle includes the application, `vendor`, runtime, exact private `libphp`, 
 6. roll back by restoring the previous symlink and sending `SIGHUP` again.
 
 WebSocket clients must reconnect during generation turnover. A strict no-reset listener handoff is not yet guaranteed; critical idempotent requests need edge retry, and critical events need domain persistence.
-

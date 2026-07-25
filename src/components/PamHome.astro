@@ -9,8 +9,8 @@ const path = (value: string) => `${base}${value}`;
       <p class="pam-home-kicker">PHP, always in memory</p>
       <h2 class="pam-home-title" id="pam-home-title">The persistent stack for PHP applications.</h2>
       <p class="pam-home-lead">
-        Build long-lived servers, Laravel applications, real native Android and iOS interfaces,
-        and desktop software — with PHP at the center and Rust at the boundary.
+        Build long-lived servers, observable Laravel applications, real Android interfaces,
+        a growing UIKit renderer, and desktop software — with PHP at the center and Rust at the boundary.
       </p>
       <div class="pam-home-actions">
         <a class="pam-button pam-button-primary" href={path('/getting-started/installation/')}>
@@ -87,7 +87,7 @@ const path = (value: string) => `${base}${value}`;
   <section class="pam-platform-strip" aria-label="PAM platform areas">
     <p>ONE RUNTIME.<br/>FOUR TARGETS.</p>
     <a href={path('/runtime/how-pam-works/')}><strong>Server</strong><span>HTTP, WebSockets, async I/O</span></a>
-    <a href={path('/laravel/overview/')}><strong>Laravel</strong><span>Boot once, isolate every request</span></a>
+    <a href={path('/laravel/production-platform/')}><strong>Laravel</strong><span>Observe, deploy, scale, automate</span></a>
     <a href={path('/native/overview/')}><strong>Native mobile</strong><span>Android Views and iOS UIKit from PHP</span></a>
     <a href={path('/desktop/overview/')}><strong>Desktop</strong><span>Secure Servo-powered windows</span></a>
   </section>
@@ -114,14 +114,47 @@ const path = (value: string) => `${base}${value}`;
     </a>
     <a href={path('/laravel/request-lifecycle/')}>
       <span class="pam-feature-number">02</span>
-      <h3>Laravel, kept familiar</h3>
-      <p>Boot the framework once while preserving request isolation, Artisan, queues, and Composer packages.</p>
+      <h3>Laravel, production-shaped</h3>
+      <p>Boot once, isolate requests, export traces, supervise processes, and ship atomic releases.</p>
     </a>
     <a href={path('/native/components/')}>
       <span class="pam-feature-number">03</span>
       <h3>Actual native UI</h3>
       <p>Describe interfaces in PHP and render Android Views or UIKit controls through PAM's typed component protocol.</p>
     </a>
+  </section>
+
+  <section class="pam-operations" aria-labelledby="pam-operations-title">
+    <div class="pam-operations-copy">
+      <p class="pam-home-kicker">One operational surface</p>
+      <h2 id="pam-operations-title">From local audit to rollback.</h2>
+      <p>
+        The Laravel package turns runtime behavior into explicit commands. Inspect health,
+        diagnose leaks, operate Cloud or Forge, and expose bounded read-only context to AI.
+      </p>
+      <a class="pam-text-link" href={path('/laravel/production-platform/')}>
+        Explore the production platform <span aria-hidden="true">→</span>
+      </a>
+    </div>
+
+    <div class="pam-command-map" aria-label="PAM Laravel command examples">
+      <div class="pam-command-map-head">
+        <span>production / payments-api</span>
+        <strong>ready</strong>
+      </div>
+      <ol>
+        <li><code>pam check-production</code><span>audit</span></li>
+        <li><code>pam health</code><span>observe</span></li>
+        <li><code>pam deploy production</code><span>release</span></li>
+        <li><code>pam scale production --process=queue --instances=8</code><span>scale</span></li>
+        <li><code>pam rollback production</code><span>recover</span></li>
+      </ol>
+      <dl>
+        <div><dt>packages tracked</dt><dd>44</dd></div>
+        <div><dt>Laravel</dt><dd>12 · 13</dd></div>
+        <div><dt>MCP</dt><dd>read-only</dd></div>
+      </dl>
+    </div>
   </section>
 
   <section class="pam-benchmark" aria-labelledby="pam-benchmark-title">
@@ -137,8 +170,8 @@ const path = (value: string) => `${base}${value}`;
         Inspect the native benchmark
         <span aria-hidden="true">→</span>
       </a>
-      <a class="pam-benchmark-link pam-benchmark-link-secondary" href="https://github.com/push-in/pam#performance">
-        Inspect the API result and caveats
+      <a class="pam-benchmark-link pam-benchmark-link-secondary" href={path('/laravel/benchmarks/')}>
+        Reproduce the Laravel laboratory
         <span aria-hidden="true">→</span>
       </a>
     </div>

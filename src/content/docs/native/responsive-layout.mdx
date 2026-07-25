@@ -1,0 +1,136 @@
+---
+title: Responsive layout
+description: Build twelve-column grids, flex layouts, rich list cells, and integer repetitions without manual two-column row logic.
+---
+
+PAM Native has a real responsive layout system. Use `Grid` when placement
+depends on columns and breakpoints, `Row` or `Column` for one-dimensional flex
+layout, and `FlatList` for large recycled collections.
+
+## Twelve-column grid
+
+`Grid` defaults to 12 columns and accepts any PAM element as a child. Every
+item can define span, offset, order, and breakpoint variants.
+
+```xml
+<Grid columns="12" gutterX="16" gutterY="16">
+    <Column span="12" spanSm="6" spanMd="4">
+        <Image :source="$photo->url" aspectRatio="1" />
+        <Text>{{ $photo->title }}</Text>
+        <Button @press="openPhoto">Open</Button>
+    </Column>
+</Grid>
+```
+
+Rows size to their tallest child. The grid recalculates for orientation, split
+screen, and foldable posture, so a cell must not assume the initial screen
+width.
+
+## Two images per row
+
+Do not alternate items into two manually maintained arrays. A six-column span
+expresses two cells in every twelve-column row:
+
+```xml
+<Grid gutterX="12" gutterY="12">
+    <Column v-for="$photo in $photos" :key="$photo->id" span="6">
+        <Image
+            :source="$photo->url"
+            aspectRatio="1"
+            resizeMode="cover"
+        />
+    </Column>
+</Grid>
+```
+
+The cell is rich content, not a `TextView` placeholder. Images, buttons,
+application components, and nested layout are supported.
+
+## Responsive placement
+
+```xml
+<Grid gutterX="16" gutterY="20">
+    <Column
+        span="12"
+        spanSm="6"
+        spanMd="4"
+        spanLg="3"
+        offsetMd="0"
+        order="2"
+        orderMd="1"
+    >
+        <ProductCard :product="$product" />
+    </Column>
+</Grid>
+```
+
+Use offsets for deliberate empty columns, not for ordinary card padding. Use
+`gutterX` and `gutterY` for spacing between cells; use padding inside a cell for
+its content.
+
+## Flex layout
+
+Use `Row` and `Column` when only one axis determines placement:
+
+```xml
+<Row class="items-center gap-3">
+    <Image :source="$avatar" width="48" height="48" />
+    <Column class="flex-1 gap-1">
+        <Text>{{ $name }}</Text>
+        <Text>{{ $subtitle }}</Text>
+    </Column>
+    <Button @press="follow">Follow</Button>
+</Row>
+```
+
+Give growing text content `flex-1` so trailing actions retain their measured
+width. Avoid fixed screen-width calculations.
+
+## Repeat an integer
+
+`v-for` accepts a positive integer directly:
+
+```xml
+<Column v-for="$item in $count" :key="$item">
+    <Text>Repeated item {{ $item }}</Text>
+</Column>
+```
+
+`$item` is `1`, `2`, …, `$count`. Zero or a negative integer produces no
+children. Arrays and `Traversable` values continue to work normally.
+
+## Recycled rich grids
+
+Use `VirtualGrid` for hundreds or thousands of rich items. Android materializes
+only the visible and prefetched cell trees through `RecyclerView`:
+
+```xml
+<VirtualGrid columns="2" rowHeight="224" prefetch="6">
+    <Pressable
+        v-for="$photo in $photos"
+        :key="$photo->id"
+        @press="openPhoto"
+    >
+        <Column class="p-2 gap-2">
+            <Image :source="$photo->url" aspectRatio="1" />
+            <Text>{{ $photo->title }}</Text>
+        </Column>
+    </Pressable>
+</VirtualGrid>
+```
+
+Choose stable keys, keep cell layout deterministic, and avoid nesting a large
+vertical list inside another vertical scroll container.
+
+`FlatList numColumns="2"` remains the specialized fast path for scalar string
+rows. It deliberately does not run a PHP render callback while scrolling.
+
+## Layout checklist
+
+- Wrap edge-to-edge screens in `SafeAreaView`.
+- Use grid gutters or flex gaps instead of per-item negative margins.
+- Give images an intrinsic size or `aspectRatio`.
+- Allow text to wrap unless truncation is intentional.
+- Keep touch targets at least 44×44 points.
+- Test the smallest supported width, font scaling, landscape, and keyboard-open
+  state.

@@ -3,7 +3,8 @@ title: Installation
 description: Install the PAM runtime on a supported Linux system.
 ---
 
-PAM currently ships prebuilt Linux releases for x86_64 and ARM64. Official archives target glibc 2.35 or newer.
+PAM 0.1.26 ships prebuilt Linux releases for x86_64 and ARM64. Official
+archives target glibc 2.35 or newer.
 
 :::caution[Experimental release]
 Review the [project status](../../project/status/) and target-specific limitations before using PAM for production workloads.
@@ -25,6 +26,13 @@ pam doctor .
 
 The installer verifies the release SHA-256, rejects unsafe archive paths, and installs without root under `~/.local`.
 
+The `latest` URL follows the current public tag. Pin a release in CI or a
+reproducible image:
+
+```text
+https://github.com/push-in/pam/releases/download/v0.1.26/install.sh
+```
+
 An official bundle includes:
 
 - the PAM binary;
@@ -42,7 +50,7 @@ You do **not** need a system PHP installation, global Composer, Rust, PHP develo
 | Linux server, x86_64 | Available; glibc 2.35+ |
 | Linux server, ARM64 | Available; glibc 2.35+ |
 | Android native | API 26–36 |
-| iOS native | Not implemented |
+| iOS native | Swift/UIKit renderer implemented; app host, packaging, and device verification incomplete |
 | Linux desktop | Experimental bundle and Debian package |
 | macOS desktop | Planned |
 | Windows desktop | Planned |
@@ -57,3 +65,6 @@ cargo build --locked --release
 ```
 
 Use `PHP_CONFIG` and `PAM_PHP_LIB_DIR` when working with a custom build toolchain. These are build-time settings, not end-user requirements.
+
+See [release 0.1.26](../../project/release-0-1-26/) for the shipped production
+operations, verification commands, and public package records.

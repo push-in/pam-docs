@@ -1,0 +1,80 @@
+---
+title: Reference application
+description: Copy a production-shaped Laravel 13 SaaS API with PAM, thin controllers, services, repositories, resources, and tests.
+---
+
+`examples/laravel-saas-api` is a deliberately small Laravel 13 application that
+demonstrates PAM's production layout without hiding domain code behind a demo
+framework.
+
+It includes:
+
+- a real migration and Eloquent model;
+- an integer-backed domain enum;
+- a repository for persistence and reusable queries;
+- a service for the use case;
+- a Form Request for validation;
+- an API Resource for the response contract;
+- a thin controller; and
+- endpoint feature tests.
+
+## Start it
+
+From the PAM repository:
+
+```bash
+cd examples/laravel-saas-api
+cp .env.example .env
+touch database/database.sqlite
+composer install
+pam artisan key:generate
+pam artisan migrate
+pam artisan pam:install --preset=api
+pam dev pam.php
+```
+
+Create and list workspaces:
+
+```bash
+curl -X POST http://127.0.0.1:3000/api/workspaces \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Community"}'
+
+curl http://127.0.0.1:3000/api/workspaces
+```
+
+Production uses:
+
+```bash
+pam start pam.php --workers N
+```
+
+Queue and scheduler roles come from the process manifest published by
+`pam:install`.
+
+## Architecture
+
+```text
+HTTP request
+  └─ Form Request
+      └─ thin controller
+          └─ application service
+              └─ repository
+                  └─ Eloquent model / database
+          └─ API Resource
+              └─ JSON response
+```
+
+The controller only orchestrates the request and response. Business rules live
+in the service. Persistence and reusable Eloquent queries live in the
+repository. Domain statuses and types are sequential integers represented by
+PHP enums rather than string magic values.
+
+## Reference versus compatibility fixture
+
+Use `examples/laravel-saas-api` as readable code to copy and extend.
+
+Use `compat/laravel-smoke` to investigate the broad executable contract. It is
+intentionally dense and exercises Blade, Livewire, Inertia, Sanctum, Scout,
+Reverb discovery, uploads, queues, scheduler, cache, databases, Telescope, and
+Pulse under persistent workers.

@@ -1,0 +1,74 @@
+---
+title: Package certification
+description: Interpret and reproduce PAM's auditable compatibility registry for popular Laravel packages.
+---
+
+PAM maintains a public registry of 44 widely used Laravel packages across
+first-party, UI, domain, media, observability, authentication, API, and quality
+categories.
+
+Compatibility is a versioned executable contract, not a claim based on package
+discovery alone.
+
+## Status values
+
+The registry stores and transmits status as a sequential integer enum:
+
+| Value | Status | Meaning |
+| --- | --- | --- |
+| `1` | Certified | The current locked certification contract passed |
+| `2` | Provisional | Tracked, but not promoted without a passing artifact |
+| `3` | Incompatible | The tested release cannot satisfy the contract |
+
+An entry is never silently promoted from provisional. Only a successful,
+auditable certification artifact justifies status `1`.
+
+## Inspect a package
+
+```bash
+pam compatibility spatie/laravel-permission --refresh
+```
+
+The versioned registry lives at:
+
+```text
+compatibility/laravel-packages.json
+```
+
+## What certification runs
+
+The weekly and manually dispatchable workflow:
+
+1. creates a fresh Laravel application for the matrix entry;
+2. resolves the current compatible package version;
+3. boots package discovery and Artisan;
+4. validates the route graph;
+5. starts two persistent PAM workers; and
+6. sends 100 requests through the application.
+
+Every job emits JSON containing the exact resolved version and timestamp.
+
+## Run one contract locally
+
+```bash
+scripts/certify-laravel-package.sh \
+  spatie/laravel-permission '*' 13
+```
+
+Use the application's real `composer.lock` before production. Registry
+certification cannot prove every feature, configuration, database version, or
+static singleton introduced by a package.
+
+## Add a package responsibly
+
+When proposing an entry:
+
+- use the package's upstream Composer constraints;
+- never bypass a Laravel version constraint to make the table greener;
+- add a behavior fixture beyond provider discovery;
+- include repeated requests to expose leaked state;
+- capture exact versions and artifacts; and
+- leave the status provisional until the public contract passes.
+
+The broader framework and first-party package coverage remains documented in
+the [package matrix](../package-matrix/).

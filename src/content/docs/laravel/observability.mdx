@@ -1,0 +1,108 @@
+---
+title: Observability
+description: Export bounded OpenTelemetry traces, integrate Nightwatch, and monitor PAM's native control plane.
+---
+
+PAM exposes native health and metrics without entering PHP, and
+`pushinbr/pam-laravel` instruments the framework lifecycle. The intended
+production design keeps vendor credentials and retry queues outside HTTP
+workers.
+
+## Native health and metrics
+
+Start an administrative listener on loopback or a protected network:
+
+```bash
+pam start pam.php \
+  --workers 8 \
+  --admin-address 127.0.0.1:3011
+```
+
+| Endpoint | Meaning |
+| --- | --- |
+| `/live` | The supervisor process is alive |
+| `/startup` | The first worker generation completed boot |
+| `/ready` | Desired workers are ready or busy and within deadlines |
+| `/metrics` | Worker, HTTP, Socket, memory, loop, and generation metrics |
+
+Use `/ready` for traffic admission. Application health may complement it but
+should not replace the supervisor contract.
+
+## OpenTelemetry over OTLP
+
+PAM emits W3C-trace-context-compatible spans for:
+
+- incoming HTTP requests;
+- database queries;
+- queued jobs and Laravel commands;
+- cache operations;
+- outgoing HTTP calls; and
+- reported exceptions.
+
+Enable native OTLP/HTTP JSON export:
+
+```dotenv
+PAM_OTLP_ENABLED=true
+OTEL_SERVICE_NAME=billing-api
+OTEL_SERVICE_VERSION=2026.07.25
+OTEL_EXPORTER_OTLP_ENDPOINT=https://otel-collector.internal:4318
+OTEL_EXPORTER_OTLP_HEADERS=Authorization=Bearer%20secret,X-Tenant=production
+OTEL_EXPORTER_OTLP_COMPRESSION=gzip
+```
+
+The signal-specific standard variables take precedence:
+
+```text
+OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+OTEL_EXPORTER_OTLP_TRACES_HEADERS
+OTEL_EXPORTER_OTLP_TRACES_TIMEOUT
+OTEL_EXPORTER_OTLP_TRACES_COMPRESSION
+```
+
+The exporter appends `/v1/traces` when needed, keeps a bounded in-process
+buffer, and fails open by default. Use `PAM_OTLP_FAIL_HARD=true` only in
+validation environments.
+
+Raw cache keys are never exported. SQL summaries replace string and numeric
+literals, and outgoing HTTP spans keep only the destination host. Place an
+OpenTelemetry Collector beside the application and let it own retries,
+sampling, and vendor credentials.
+
+Run the isolated smoke contract:
+
+```bash
+php compat/laravel-smoke/telemetry-smoke.php
+```
+
+## Laravel Nightwatch
+
+Nightwatch runs as a dedicated managed process, never inside an HTTP worker:
+
+```bash
+pam composer require laravel/nightwatch
+export NIGHTWATCH_TOKEN=...
+pam nightwatch --install-process
+pam up
+pam nightwatch
+```
+
+The diagnostic verifies package discovery, the `nightwatch:agent` command,
+secret presence, and a separate process definition.
+
+Store `NIGHTWATCH_TOKEN` in the deployment secret store. Do not place it in a
+committed process manifest or image layer.
+
+## What to alert on
+
+Start with:
+
+- readiness loss and unexpected worker restarts;
+- HTTP error rate and p95/p99 latency;
+- event-loop lag and queue pressure;
+- worker RSS and PHP memory drift;
+- queue depth, age, failures, and retry growth;
+- trace export drops; and
+- generation changes that do not become ready.
+
+Structured access logs are useful for individual requests. Use metrics for
+aggregate traffic and sample high-volume access logs.

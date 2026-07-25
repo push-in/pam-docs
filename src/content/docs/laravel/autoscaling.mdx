@@ -1,0 +1,84 @@
+---
+title: Autoscaling
+description: Scale HTTP workers and independent Laravel process roles without mixing their lifecycle boundaries.
+---
+
+PAM has two independent scaling boundaries:
+
+- `pam start pam.php --workers N` owns isolated HTTP workers behind one
+  listener; and
+- `pam.processes.json` owns queue, scheduler, Nightwatch, Horizon, and custom
+  process instances.
+
+Do not scale a queue consumer by increasing HTTP workers, and do not run queue
+work inside a request.
+
+## Estimate initial capacity
+
+```bash
+pam capacity --memory-mb=2048 --worker-mb=110
+```
+
+Treat the result as a starting estimate. Final capacity depends on p95/p99
+latency, database connections, downstream rate limits, worker RSS after warm-up,
+and the blocking behavior of Composer packages.
+
+## Reconcile a managed process
+
+```bash
+pam autoscale queue --cpu=80 --p95=400
+```
+
+Configure bounds and targets:
+
+```dotenv
+PAM_AUTOSCALE_MIN=1
+PAM_AUTOSCALE_MAX=16
+PAM_AUTOSCALE_TARGET_CPU=80
+PAM_AUTOSCALE_TARGET_P95_MS=400
+PAM_AUTOSCALE_COOLDOWN=60
+```
+
+PAM scales up by 25% when CPU exceeds its target or p95 latency exceeds its
+target. It scales down by one instance only when both values are below half
+their target. Bounds and cooldown prevent runaway growth and rapid oscillation.
+
+## Continuous metrics
+
+Point the reconciler at a trusted JSON endpoint:
+
+```dotenv
+PAM_AUTOSCALE_METRICS_URL=https://metrics.internal/pam/capacity
+PAM_AUTOSCALE_METRICS_TOKEN=...
+```
+
+The response must contain numeric `cpuPercent` and `p95Milliseconds`. `--watch`
+is rejected without a live metrics endpoint:
+
+```bash
+pam autoscale queue --watch
+```
+
+Authenticate the endpoint, keep the payload bounded, and make stale or invalid
+metrics fail safely.
+
+## Remote HTTP scaling
+
+Use PAM Cloud for the HTTP or remote process plane:
+
+```bash
+pam scale production --process=http --instances=8
+pam scale production --process=queue --instances=12
+```
+
+Scale accepts `1..128` instances.
+
+## Operational guardrails
+
+- Cap database and Redis connections before raising worker count.
+- Alert on queue age, not only queue depth.
+- Use job idempotency and bounded retries.
+- Respect external API concurrency and rate limits.
+- Keep scheduler singleton behavior explicit.
+- Run a load step after scale-up before admitting full traffic.
+- Record why a scaling decision happened and its previous/next instance count.

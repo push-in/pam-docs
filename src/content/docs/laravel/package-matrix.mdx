@@ -85,3 +85,13 @@ It does not guarantee:
 
 Add production dependencies and behavior to a locked fixture before deployment.
 
+## Community package registry
+
+The separate public registry tracks 44 popular packages and assigns only
+integer-backed statuses: certified (`1`), provisional (`2`), or incompatible
+(`3`). Each certification job records the exact resolved version and runs
+package discovery, Artisan, route validation, two persistent workers, and 100
+requests.
+
+Read [package certification](../package-certification/) to inspect a package or
+run its contract locally.

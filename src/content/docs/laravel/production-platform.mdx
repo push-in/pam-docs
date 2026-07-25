@@ -1,0 +1,98 @@
+---
+title: Production platform
+description: Bootstrap a production Laravel application and understand the complete PAM operations command surface.
+---
+
+`pushinbr/pam-laravel` is the operational layer for Laravel 12 and 13 on PAM.
+It keeps controllers, routes, queues, Eloquent, and Composer conventional while
+adding persistent-worker safety, bounded diagnostics, process supervision, and
+release operations.
+
+## Bootstrap
+
+```bash
+composer require pushinbr/pam-laravel
+pam artisan pam:install --preset=api
+pam artisan pam:check-production
+pam start pam.php --workers "$(nproc)" --admin-address 127.0.0.1:3011
+```
+
+Available presets are:
+
+| Preset | Intended application |
+| --- | --- |
+| `api` | Stateless JSON API |
+| `livewire` | Server-driven Livewire UI |
+| `inertia` | Inertia application |
+| `realtime` | Socket and event-oriented workload |
+
+The installer publishes `config/pam.php`, `pam.processes.json`, systemd,
+Kubernetes, Docker Compose, and Laravel Forge assets. HTTP runs through PAM's
+native cluster. Queue workers, the scheduler, Horizon, and Nightwatch remain
+independent supervised processes.
+
+## Command map
+
+| Task | Command |
+| --- | --- |
+| Readiness | `pam health` |
+| Production audit | `pam check-production` |
+| Memory and state leaks | `pam leaks` |
+| Capacity estimate | `pam capacity --memory-mb=2048 --worker-mb=110` |
+| Start managed processes | `pam up` |
+| Process status | `pam status` |
+| Restart one process | `pam restart queue` |
+| Stop managed processes | `pam stop` |
+| Local atomic release | `pam deploy /srv/app/releases/<id> --local` |
+| Remote deploy | `pam deploy production` |
+| Remote operation | `pam remote <action> production` |
+| Nightwatch verification | `pam nightwatch` |
+| Add Nightwatch role | `pam nightwatch --install-process` |
+| Package registry | `pam compatibility spatie/laravel-permission --refresh` |
+| Queue autoscaling | `pam autoscale queue --cpu=80 --p95=400` |
+| Forge script | `pam forge-script --output=deploy/forge-deploy.sh` |
+| MCP server | `pam mcp` |
+
+Remote actions are `deploy`, `rollback`, `status`, `logs`, `top`, `workers`,
+`queues`, `scheduler`, and `scale`. Scale requires `--process` and
+`--instances=1..128`; logs accepts `--lines`. `rollback`, `logs`, `workers`,
+`queues`, `scheduler`, and `scale` also have direct `pam <action>` aliases.
+
+## Process topology
+
+```text
+edge / load balancer
+        │
+        ▼
+PAM master ── HTTP worker 1
+           ├─ HTTP worker 2
+           └─ HTTP worker N
+
+process supervisor
+        ├─ queue workers
+        ├─ scheduler
+        ├─ Horizon
+        └─ Nightwatch agent
+```
+
+Laravel receives one active request per HTTP worker because framework managers,
+facades, and third-party packages can contain mutable process-global state.
+Scale requests through the worker cluster. Scale queues and operational agents
+through the process manifest.
+
+## Before production traffic
+
+```bash
+pam doctor .
+pam check-production
+pam leaks
+pam health
+```
+
+Lock the Composer dependency graph, exercise the real database, cache, queue,
+storage, authentication, and upload paths, then run a long-duration RSS test.
+Choose worker count and `--max-requests` from measured p95/p99 latency, memory,
+and downstream capacity.
+
+Continue with [observability](../observability/), [Cloud and Forge](../cloud-and-forge/),
+and [autoscaling](../autoscaling/).

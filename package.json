@@ -10,7 +10,8 @@
     "check": "astro check",
     "check:links": "node scripts/check-links.mjs",
     "check:accessibility": "node scripts/check-accessibility.mjs",
-    "validate": "npm run build && npm run check:links && npm run check:accessibility"
+    "check:freshness": "node scripts/check-release-freshness.mjs",
+    "validate": "npm run check && npm run build && npm run check:links && npm run check:accessibility"
   },
   "dependencies": {
     "@astrojs/starlight": "0.41.4",
@@ -18,5 +19,9 @@
   },
   "engines": {
     "node": ">=22.12.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.9",
+    "typescript": "6.0.3"
   }
 }

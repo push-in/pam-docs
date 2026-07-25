@@ -59,7 +59,10 @@ DevTools shows live symptoms. The profile and benchmark commands produce repeata
 
 Watch the native buffer count after an update. It must return to zero after the frame finishes; a retained non-zero count indicates an ownership or release bug.
 
+When the development app redraws but buttons stop responding, or the reload
+port is already occupied, follow the [hot reload guide](../hot-reload/). It
+includes the single-listener contract and an interaction test after remount.
+
 :::caution[Debug numbers are not release claims]
 Debug overlays add instrumentation and run under a different optimization profile. Publish performance claims only from a documented device, build type, warm-up, payload, sample count, and matched harness.
 :::
-

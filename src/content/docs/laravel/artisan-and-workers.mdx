@@ -31,6 +31,19 @@ Supervise these as independent processes:
 
 Each role has different restart, scaling, memory, and failure semantics.
 
+Publish and run a managed process manifest:
+
+```bash
+pam artisan pam:install --preset=api
+pam up
+pam status
+pam restart queue
+pam stop
+```
+
+`pam.processes.json` owns independent process instances. It does not replace
+the HTTP worker cluster configured by `pam start ... --workers N`.
+
 ## Writable storage
 
 In a hardened deployment, application code may be read-only. Point Laravel storage to a writable directory:
@@ -62,3 +75,5 @@ Only cache configuration or routes when the release does not depend on runtime-d
 
 Queue workers and Horizon are also persistent processes. Follow Laravel's own retry, timeout, idempotency, and recycling guidance, and add package-specific soak tests. The HTTP request sandbox does not wrap an unrelated long-running Artisan loop.
 
+See [autoscaling](../autoscaling/) before dynamically changing queue process
+instances.

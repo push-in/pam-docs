@@ -1,0 +1,84 @@
+---
+title: Documentation contract
+description: How PAM documentation stays accurate, accessible, reproducible, and synchronized with public releases.
+---
+
+PAM documentation is part of the product contract. A feature is not complete
+when only its implementation exists; users need an accurate task guide,
+limitations, examples, verification evidence, and a discoverable navigation
+entry.
+
+## Definition of documented
+
+Every public capability should include:
+
+- the user problem and supported boundary;
+- a minimal working example;
+- production or security constraints when relevant;
+- failure diagnostics;
+- a link from the appropriate sidebar section;
+- the exact maturity level; and
+- executable evidence for compatibility or performance claims.
+
+Avoid promises based only on a class name, successful package discovery, or a
+single happy-path boot.
+
+## Release update checklist
+
+For every PAM release:
+
+1. add or update the versioned release record;
+2. update the installation page and home release banner;
+3. document new commands and configuration variables;
+4. update platform and package support matrices;
+5. link reproducible tests, benchmarks, and public artifacts;
+6. remove stale examples and unsupported image tags;
+7. run the full documentation validation; and
+8. inspect the homepage and changed guides at desktop and mobile widths.
+
+## Automated contract
+
+Every Pages publication runs:
+
+```bash
+npm run validate
+```
+
+It builds the production site, resolves internal links, verifies one main
+landmark and one page heading, checks skip links and image dimensions, protects
+browser zoom, and rejects CSS that removes focus outlines.
+
+A weekly workflow additionally runs:
+
+```bash
+npm run check:freshness
+```
+
+The freshness check queries the latest public `push-in/pam` release and requires
+the matching versioned page, installation marker, sidebar entry, and home
+banner. A failure opens or updates a repository issue instead of becoming
+silent drift.
+
+## Writing principles
+
+- Prefer direct task names such as “Deploy Laravel” over internal subsystem
+  names.
+- Keep code blocks copyable and use real public package names.
+- Distinguish implemented source, verified target, and released distribution.
+- Publish benchmark protocol and raw evidence beside any headline number.
+- State unsafe defaults, secret handling, limits, and rollback behavior.
+- Use sequential integer enums for coded status and type values.
+- Keep paragraphs short enough to scan, but do not hide necessary caveats.
+
+## Contributing a documentation fix
+
+Run locally:
+
+```bash
+npm run validate
+npm run check:freshness
+```
+
+Include the source repository commit or release that proves a changed contract.
+Documentation-only corrections may ship independently; behavior changes should
+land with or immediately after the corresponding runtime release.

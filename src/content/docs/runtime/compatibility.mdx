@@ -12,7 +12,7 @@ PAM defines compatibility through executable contracts and pinned protocol rules
 | Server releases | Linux x86_64 and ARM64, glibc 2.35+ | Windows and macOS server releases |
 | PHP | PHP 8.4 Embed | Other PHP minor or major versions unless separately tested |
 | Laravel | Laravel 12 and 13 | Future Laravel versions until added to the matrix |
-| PAM Native | PHP 8.4, Android API 26–36, protocol 1 | iOS |
+| PAM Native | PHP 8.4, Android API 26–36, protocol 1; Swift/UIKit renderer source | iOS app host, packaging, device CI, and measured parity |
 | PAM Desktop | Experimental Linux distribution | Windows and macOS distribution |
 
 ## PHP SAPI
@@ -55,4 +55,3 @@ Before deployment, add the application's actual:
 :::caution[Compatibility is specific]
 Do not turn a green framework boot test into a claim that all third-party packages, extensions, and application singletons are safe. Publish the versions and behavior your fixture actually proves.
 :::
-

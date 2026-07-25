@@ -8,7 +8,7 @@ PAM is public-facing software under active development. This page is intentional
 | Surface | Status | Supported today | Important gaps |
 | --- | --- | --- | --- |
 | Server runtime | Experimental | Linux x86_64/ARM64, PHP 8.4, HTTP 1.1/2/3, streams, async I/O | Broader platform and production adoption |
-| Laravel host | Experimental, tested | Laravel 12 and 13 | One concurrent request per worker; app/package global state remains your responsibility |
+| Laravel host | Experimental, tested | Laravel 12 and 13; OTLP, process supervisor, local/remote releases, autoscaling, MCP | One concurrent request per worker; app/package global state remains your responsibility |
 | PAM Native | Experimental | Android API 26–36; Swift/UIKit protocol peer and renderer | iOS host, packaging, device CI, accessibility, and measured parity |
 | PAM Mobile UI | Experimental per component | 61 catalog entries with individual Android parity evidence | Component maturity differs; iOS matrix is not yet part of the parity artifact |
 | PAM Desktop | Alpha | Linux bundles, `.tar.gz`, optional `.deb` | macOS, Windows, signing, updates, plugins, menus, tray |
@@ -19,6 +19,11 @@ PAM is public-facing software under active development. This page is intentional
 The runtime persists PHP, schedules native I/O through Tokio, supports isolated request Fibers for native PAM applications, supervises workers, exposes health and Prometheus endpoints, and includes operational diagnostics.
 
 Laravel 12 and 13 are tested with Eloquent on SQLite, MySQL, and PostgreSQL; Redis; database queues; Artisan; scheduler discovery; Sanctum; Flysystem; Blade; Livewire; Inertia; Scout; Reverb; Telescope; and Pulse. Horizon and Socialite are exercised on Laravel 12 because their current stable Composer constraints do not accept Laravel 13.
+
+The production package adds W3C-compatible OTLP traces, Nightwatch process
+integration, managed processes, local atomic releases, PAM Cloud and Forge
+operations, autoscaling, and a mutation-gated MCP server. The compatibility
+registry tracks 44 packages through public certification artifacts.
 
 Laravel runs one request at a time per worker. Scale through supervised workers, and independently supervise queues, Horizon, and scheduler processes.
 
@@ -43,6 +48,9 @@ Use the parity record rather than the component name alone when deciding whether
 PAM Desktop currently supports local HTML/CSS/JavaScript rendered by Servo; typed commands and events; reusable multiple windows; deadlines and cancellation; crash recovery; hot reload; capability-gated filesystem, dialogs, clipboard, notifications, and drag-and-drop; and self-contained Linux distribution.
 
 The roadmap includes macOS and Windows distribution, signing and automatic updates, PHP/Rust plugins, menus, tray, global shortcuts, background jobs, and a stable compatibility suite.
+
+See the [current release record](../release-0-1-26/) for exact artifacts and
+verification evidence.
 
 ## Ways to help
 

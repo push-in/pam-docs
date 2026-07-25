@@ -1,0 +1,93 @@
+---
+title: Hot reload
+description: Reload PHP source atomically during Android development without leaving the interface frozen or binding duplicate servers.
+---
+
+PAM Native development reload sends a bounded application bundle to the running
+Android host and remounts the PHP component tree. Local user state may reset,
+similar to a full component refresh. The Android process must remain alive and
+interactive.
+
+## Start one development session
+
+```bash
+pam mobile dev .
+```
+
+The command builds and installs the debug APK, starts the application, forwards
+the device connection, and listens for source changes.
+
+Only one process may own the default hot reload port:
+
+```text
+127.0.0.1:39100
+```
+
+## Fix “Address already in use”
+
+Find the process that owns the port:
+
+```bash
+ss -ltnp 'sport = :39100'
+```
+
+Stop the stale `pam mobile dev` process gracefully, then start one fresh
+session. Do not keep two watchers for the same application and port.
+
+If you intentionally run several applications, assign distinct development
+ports according to each project's mobile configuration.
+
+## Reload contract
+
+On a valid change PAM:
+
+1. waits for the current render operation to reach a safe boundary;
+2. transfers a size-bounded bundle with safe relative paths;
+3. activates files atomically;
+4. reloads the PHP entrypoint;
+5. remounts the component and event tree; and
+6. commits the next native render.
+
+The reload does not promise to preserve form values, navigation history, or
+arbitrary PHP objects. It does promise not to leave buttons and other semantic
+events connected to a disposed runtime.
+
+## When a reload fails
+
+Keep the last valid UI visible and inspect:
+
+```bash
+adb logcat -s PamNative PamRuntime AndroidRuntime
+pam doctor .
+```
+
+Typical causes are:
+
+- a PHP parse or type error;
+- a missing Composer class after changing dependencies;
+- a bundle larger than the development limit;
+- an unsafe or invalid source path;
+- an ADB forward that belongs to a stale session; or
+- an Android process crash in a native view or plugin.
+
+Dependency changes may require rebuilding the APK or application bundle. A PHP
+source edit should not.
+
+## Verify interactions after reload
+
+After every fix to the development pipeline, test at least:
+
+1. increment a counter;
+2. edit the component source;
+3. wait for the remount;
+4. press the same button again;
+5. navigate forward and use Android back; and
+6. open and dismiss one overlay.
+
+This catches the failure mode where the screen redraws but events still point
+to the old PHP runtime.
+
+:::note[Development only]
+The reload listener, broadcasts, and DevTools receiver are excluded from
+release builds.
+:::

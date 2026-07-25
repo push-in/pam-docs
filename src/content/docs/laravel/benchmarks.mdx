@@ -1,0 +1,84 @@
+---
+title: Benchmark laboratory
+description: Reproduce a fair Laravel comparison across PAM, FPM, Octane, FrankenPHP, and RoadRunner.
+---
+
+PAM's Laravel laboratory compares the same locked application route across:
+
+- PAM;
+- PHP-FPM plus Nginx;
+- Laravel Octane plus Swoole;
+- FrankenPHP; and
+- RoadRunner.
+
+It does not compare unrelated empty handlers.
+
+## Run the complete matrix
+
+```bash
+scripts/benchmark-laravel.sh
+```
+
+The runner builds every container, starts one runtime at a time, warms it,
+executes three measured rounds, and writes raw plus aggregated JSON under:
+
+```text
+benchmarks/results/<UTC timestamp>
+```
+
+Override workload parameters without editing the protocol:
+
+```bash
+PAM_BENCH_ROUNDS=5 \
+PAM_BENCH_WARMUP_SECONDS=20 \
+PAM_BENCH_DURATION_SECONDS=60 \
+PAM_BENCH_THREADS=4 \
+PAM_BENCH_CONNECTIONS=128 \
+PAM_BENCH_ENDPOINT=/api/ping \
+scripts/benchmark-laravel.sh
+```
+
+## Fixed contract
+
+- same machine, kernel, CPU governor, and open-file limits;
+- same Laravel release, lockfile, route, environment, and response bytes;
+- production dependencies with authoritative autoloading;
+- four application workers, two application CPUs, and 1 GiB total memory;
+- no Xdebug, debug pages, access logs, tracing, or profilers;
+- same HTTP and TLS mode; and
+- load generation on a separate recorded CPU set when the host permits it.
+
+FPM and Nginx split the same combined CPU and memory budget. Images, PHP,
+Composer, and runtime releases are pinned.
+
+## Captured evidence
+
+The vendored `wrk.lua` records:
+
+- requests per second;
+- p50, p75, p90, p95, p99, and maximum latency;
+- connection, read, write, timeout, and HTTP status errors;
+- container memory;
+- host metadata; and
+- the exact Git commit.
+
+Repeat at multiple concurrency levels. Peak throughput is not useful when tail
+latency or errors collapse.
+
+## Memory stability
+
+The Laravel integration test warms a worker, verifies request isolation, sends
+another 2,000 requests, and enforces bounded RSS growth:
+
+```bash
+cargo test --test laravel -- --nocapture
+```
+
+For a release candidate, extend the soak to millions of requests with the real
+database, authentication, logging, and package graph. Set `--max-requests` from
+measured RSS.
+
+:::caution[Publishing results]
+Do not publish “faster than” conclusions without raw rounds, commands, versions,
+hardware, configuration, errors, and the complete protocol.
+:::
