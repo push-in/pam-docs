@@ -1,0 +1,156 @@
+---
+title: Plugin SDK
+description: Ship PHP components, Android modules, native views, resources, AARs, JNI, and Maven dependencies through Composer.
+---
+
+PAM Native plugins are ordinary Composer packages. One package can include:
+
+- PHP providers, tags, components, themes, and utility tokens;
+- Android native modules;
+- Android native view factories;
+- Kotlin or Java source;
+- resources, assets, and manifests;
+- Maven dependencies and local AARs;
+- JNI libraries; and
+- R8 consumer rules.
+
+Discovery and autolinking happen at build time. Production frames do not scan classpaths or parse plugin descriptors.
+
+## Install and inspect
+
+```bash
+composer require vendor/maps-plugin
+pam mobile plugin:doctor .
+pam mobile plugin:list .
+pam mobile codegen .
+```
+
+`prepare`, `build`, `run`, and `dev` also run code generation. The resolved graph is written to `.pam-native/plugins.lock.json` with package versions and descriptor SHA-256 hashes.
+
+Commit `composer.lock`. Treat the PAM lock as generated build evidence.
+
+## Composer declaration
+
+```json
+{
+  "name": "vendor/maps-plugin",
+  "type": "pam-native-plugin",
+  "autoload": {
+    "psr-4": {
+      "Vendor\\Maps\\": "src/"
+    }
+  },
+  "extra": {
+    "pam-native": {
+      "plugin": "pam-native.plugin.json"
+    }
+  }
+}
+```
+
+## Plugin descriptor
+
+```json
+{
+  "version": 1,
+  "protocol": 1,
+  "pamNative": {
+    "minimum": "0.1.0",
+    "maximumExclusive": "0.2.0"
+  },
+  "php": {
+    "provider": "Vendor\\Maps\\MapsPluginProvider"
+  },
+  "android": {
+    "namespace": "com.vendor.pam.maps",
+    "minSdk": 26,
+    "permissions": [
+      "android.permission.ACCESS_FINE_LOCATION"
+    ],
+    "dependencies": [
+      "com.vendor:maps-android:4.2.0"
+    ]
+  },
+  "modules": [
+    {
+      "name": "maps.geocoder",
+      "class": "com.vendor.pam.maps.GeocoderModule"
+    }
+  ],
+  "views": [
+    {
+      "name": "maps.route",
+      "class": "com.vendor.pam.maps.RouteMapFactory"
+    }
+  ]
+}
+```
+
+The complete schema also supports HTTPS Maven repositories, local AARs, source/resource/asset/JNI directories, a manifest, and consumer rules.
+
+## Build safety
+
+PAM canonicalizes package-relative paths and rejects:
+
+- traversal and symlink escapes;
+- oversized descriptors;
+- duplicate binding names;
+- incompatible SDK or protocol ranges;
+- non-HTTPS Maven repositories;
+- invalid coordinates; and
+- a plugin `minSdk` above the application minimum.
+
+PAM deliberately does not execute arbitrary package-provided Gradle scripts. The declared integration surface remains auditable.
+
+## PHP provider
+
+Providers register in package-name order before the first render:
+
+```php
+final class MapsPluginProvider implements PluginProvider
+{
+    public function register(): void
+    {
+        TemplateRegistry::component(
+            'RouteMap',
+            static fn (
+                array $props,
+                array $_children,
+                ?object $_scope,
+            ): CustomView => CustomView::make(
+                'maps.route',
+                [
+                    'routeId' => (string) (
+                        $props['routeId'] ?? ''
+                    ),
+                ],
+            ),
+        );
+    }
+
+    public function boot(): void
+    {
+    }
+}
+```
+
+Providers are optional. A plugin may be PHP-only, Android-only, or combined.
+
+## Native modules
+
+Native modules receive an Android `Context` and compile against the stable `:plugin-api` library. PHP calls a typed scalar map with `NativeModules::call()` or a package-owned binary payload with `callRaw()`.
+
+Slow module work must leave the UI thread. Completion returns success or failure through the bounded callback contract.
+
+## Compatibility policy
+
+- Descriptor versions, protocols, statuses, and operation kinds are sequential integers.
+- Packages declare a closed SDK range with `minimum` and `maximumExclusive`.
+- Binding names are globally unique.
+- A breaking plugin API change requires a protocol or compatibility-range change.
+- Test the lowest and newest SDK versions claimed.
+
+:::note[Community example]
+The PAM Native repository includes a complete `examples/community-plugin` package showing a provider, native module, native view, descriptor, Composer metadata, and Android sources.
+:::
+

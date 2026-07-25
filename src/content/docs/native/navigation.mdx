@@ -1,0 +1,120 @@
+---
+title: Navigation
+description: Build typed native stacks with transitions, deep links, persistence, and Android back behavior.
+---
+
+`Navigator` is PAM Native's typed stack navigator. It keeps incoming and outgoing screens mounted while Android animates them on the UI thread.
+
+## Create a stack
+
+```php
+use Pam\Native\App;
+use Pam\Native\Navigation\NavigationTransition;
+use Pam\Native\Navigation\Navigator;
+
+$navigator = new Navigator(
+    initialRoute: 'home',
+    routes: [
+        'home' => fn () => $homeScreen,
+        'details' => fn () => $detailsScreen,
+    ],
+    persistenceKey: 'main',
+    transition: NavigationTransition::PlatformDefault,
+    transitionDurationMs: 240,
+);
+
+App::run($navigator);
+```
+
+Or build a stack fluently:
+
+```php
+use Pam\Native\Navigation\Router;
+
+$navigator = Router::stack('home')
+    ->route('home', fn () => $homeScreen)
+    ->route('details', fn () => $detailsScreen)
+    ->transitions(
+        NavigationTransition::SlideFromRight,
+        240,
+    )
+    ->persistence('main')
+    ->build();
+```
+
+## Navigate
+
+```php
+$navigator->push('details', ['id' => 42]);
+$navigator->pop();
+$navigator->replace('details', ['id' => 84]);
+$navigator->reset('home');
+$navigator->navigate('details', ['id' => 42]);
+$navigator->popTo('home');
+$navigator->popToTop();
+```
+
+`navigate()` returns to an existing stack entry when possible instead of adding a duplicate.
+
+## Typed route context
+
+Route factories can accept an immutable `RouteContext`:
+
+```php
+use Pam\Native\Navigation\RouteContext;
+
+Router::stack('home')
+    ->route('home', fn () => $home)
+    ->route(
+        'profile',
+        fn (RouteContext $route) => new ProfileScreen(
+            userId: $route->integer('id'),
+            preview: $route->boolean('preview', false),
+        ),
+    )
+    ->deepLink('/profiles/{id}', 'profile')
+    ->build();
+```
+
+## Deep links
+
+```php
+$navigator->open(
+    'pam://app/profiles/42?preview=1',
+);
+```
+
+Deep links decode path parameters and accept bounded scalar query values. Route parameters allow at most 64 safe keys and strings up to 16 KiB so untrusted URLs cannot inflate the retained tree without bounds.
+
+## Persistence
+
+Persistence format version 2 stores route names and parameters. Legacy name-only stacks continue to restore.
+
+Do not persist sensitive secrets as route parameters. Persist a safe identifier and reload protected data through the application domain.
+
+## System back
+
+Android back button and gesture support is automatic:
+
+- pop when another stack entry exists;
+- close the activity from the root route.
+
+Disable it only when the application installs a custom `App::onBack()` handler:
+
+```php
+$router->systemBack(false);
+```
+
+## Transitions
+
+Available integer-backed transitions include:
+
+- platform default;
+- slide from right, left, top, or bottom;
+- fade and fade from bottom;
+- scale;
+- shared axis X and Y; and
+- none.
+
+Transitions use transform and opacity on the UI thread, mirror horizontally in RTL layouts, respect Android's disabled-animation accessibility setting, and keep only the incoming screen reachable by TalkBack during and after the transition.
+

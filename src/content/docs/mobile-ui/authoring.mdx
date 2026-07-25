@@ -1,0 +1,105 @@
+---
+title: Authoring
+description: Compose PAM Mobile UI with declarative tags, typed PHP facades, themes, and native escape hatches.
+---
+
+PAM Mobile UI has one renderer and three authoring styles. Declarative tags, typed PHP, and native extensions all produce the same retained PAM element tree.
+
+## Declarative tags
+
+```xml
+<SafeAreaView class="ui-bg">
+    <VStack class="p-6 gap-4">
+        <Heading size="2xl">Create account</Heading>
+        <Input>
+            <InputField
+                value="{{ $email }}"
+                keyboardType="email"
+                on:change="setEmail"
+            />
+        </Input>
+        <Button on:press="submit">
+            <ButtonText>Continue</ButtonText>
+        </Button>
+    </VStack>
+</SafeAreaView>
+```
+
+Templates are parsed and validated once. Utility classes compile into numeric native properties before crossing the protocol; Android does not receive CSS or class-name strings.
+
+## Typed PHP
+
+Use facades when IDE completion, refactoring, and enum props matter more than concise markup:
+
+```php
+use Pam\MobileUi\Component\Button;
+use Pam\MobileUi\Component\ButtonText;
+use Pam\MobileUi\Component\Card;
+use Pam\MobileUi\Component\Heading;
+use Pam\MobileUi\Component\VStack;
+use Pam\MobileUi\Enum\ButtonVariant;
+use Pam\MobileUi\Enum\ComponentSize;
+use Pam\Native\Style;
+
+$screen = Card::make(
+    null,
+    VStack::make(
+        ['space' => 'md'],
+        Heading::make('Checkout')
+            ->size(ComponentSize::ExtraLarge),
+        Button::make(
+            null,
+            ButtonText::make('Pay now'),
+        )
+            ->variant(ButtonVariant::Default)
+            ->onPress($pay),
+    ),
+)->style(new Style(padding: 24.0));
+```
+
+Every public tag has a facade under `Pam\MobileUi\Component`. The PHP facade for `Switch` is `SwitchControl` because `switch` is reserved by PHP.
+
+## Application components as tags
+
+```php
+use Pam\Native\TemplateRegistry;
+
+TemplateRegistry::component(
+    'OrderSummary',
+    static fn (
+        array $props,
+        array $_children,
+        ?object $_scope,
+    ): OrderSummary => new OrderSummary(
+        orderId: (int) ($props['orderId'] ?? 0),
+    ),
+);
+```
+
+```xml
+<OrderSummary orderId="{{ $order.id }}" />
+```
+
+The component may return Mobile UI facades, PAM Native primitives, another template, or a mixture.
+
+## Choose the appropriate level
+
+| Need | Use |
+| --- | --- |
+| Concise screen markup | Declarative `.pam` tags |
+| IDE-safe component construction | Typed PHP facades |
+| Dynamic component selected by tag | `UiNode` |
+| Low-level built-in layout | PAM Native primitives |
+| Application-specific Android View | `CustomView` |
+| Reusable packaged native feature | PAM Native plugin |
+
+## Controlled state
+
+Inputs, switches, selections, tabs, accordions, sheets, and other interactive components expose controlled or documented local behavior according to their component contract.
+
+Do not send every gesture frame to PHP. Sliders, sheets, scrolling, input selection, animations, and similar high-frequency progress stay native; PHP receives semantic results.
+
+## Complete API
+
+The [component catalog](/mobile-ui/components/) lists all 61 modules, public tags, typed facade construction, maturity, runtime implementation, variants, and captured example count.
+

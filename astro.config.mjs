@@ -59,12 +59,24 @@ export default defineConfig({
           label: 'Native mobile',
           items: [
             { label: 'Overview', slug: 'native/overview' },
+            { label: 'Components', slug: 'native/components' },
+            { label: 'State & lifecycle', slug: 'native/state-and-lifecycle' },
+            { label: 'Navigation', slug: 'native/navigation' },
+            { label: 'Native views', slug: 'native/native-views' },
+            { label: 'Plugin SDK', slug: 'native/plugins' },
+            { label: 'DevTools', slug: 'native/devtools' },
+            { label: 'Protocol & limits', slug: 'native/protocol' },
           ],
         },
         {
           label: 'Mobile UI',
           items: [
             { label: 'Overview', slug: 'mobile-ui/overview' },
+            { label: 'Authoring', slug: 'mobile-ui/authoring' },
+            { label: 'Component catalog', slug: 'mobile-ui/components' },
+            { label: 'Themes & utilities', slug: 'mobile-ui/themes' },
+            { label: 'Parity contract', slug: 'mobile-ui/parity' },
+            { label: 'Performance', slug: 'mobile-ui/performance' },
           ],
         },
         {

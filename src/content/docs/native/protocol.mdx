@@ -1,0 +1,81 @@
+---
+title: Protocol and limits
+description: PAM Native protocol versioning, frame types, compatibility gates, and hard resource bounds.
+---
+
+PAM Native uses a versioned, bounded, little-endian binary protocol between persistent PHP, the Rust engine, and Android.
+
+## Compatibility
+
+| SDK | Protocol | PHP | Android |
+| --- | ---: | --- | --- |
+| `pushinbr/pam-native 0.1.x` | `1` | `8.4.x` | API 26–36 |
+
+All three peers must support the exact protocol version. A mismatch is rejected before applying a node or mutation.
+
+Protocol identifiers are sequential integers beginning at `1`. Existing identifiers are never renamed, reused, or renumbered.
+
+New optional properties, node kinds, events, and operations may be appended. Changing an existing field's representation or meaning requires a new protocol version and an explicit compatibility adapter.
+
+Protocol version 1 currently defines properties through ID `262` and events through ID `34`.
+
+## Frame types
+
+| Frame | Magic | Producer | Consumer |
+| --- | --- | --- | --- |
+| Complete tree | `PNT1` | PHP | Rust |
+| Incremental patch | `PNP1` | PHP | Rust |
+| UI mutation batch | `PNB1` | Rust | Android |
+
+Each frame starts with a four-byte magic value, a `u16` protocol version, and bounded payload counts. Strings and opaque values use a `u32` byte length. Node IDs are non-zero `u64` values.
+
+Decoders reject:
+
+- duplicate node IDs or properties;
+- cycles and disconnected trees;
+- invalid enum values;
+- trailing bytes;
+- malformed lengths; and
+- payloads above the published bounds.
+
+## Patch operations
+
+| Operation | ID |
+| --- | ---: |
+| Create subtree | `1` |
+| Remove node | `2` |
+| Update property | `3` |
+| Move node | `4` |
+| Set root | `5` |
+
+## Runtime limits
+
+| Resource | Limit |
+| --- | ---: |
+| Complete frame | 16 MiB |
+| Nodes | 100,000 |
+| Tree depth | 512 |
+| Properties per node | 128 |
+| String or opaque property | 1 MiB |
+| Queued native event payload | 1 MiB |
+
+These are part of protocol version 1. They protect memory use and decoder complexity and must not be raised silently for a single application.
+
+## Golden gates
+
+Rust tests pin byte-for-byte tree, patch, and mutation frames. PHP tests pin sequential enums and deterministic encoding. Android checks the protocol version before decoding.
+
+Changing a golden frame under protocol version 1 is a release blocker, not a routine snapshot update.
+
+## Canonical enums
+
+The canonical tables live in:
+
+- PHP: `NodeKind`, `PropKey`, `EventKind`, and `NativeOperation`;
+- Rust: `pam-native-protocol/src/lib.rs`; and
+- Android: `PamProtocol.kt`, `PamRenderer.kt`, and `NativeModuleRegistry.kt`.
+
+:::caution[iOS is not a protocol peer yet]
+The binary format can support another renderer, but no iOS peer currently implements or passes these gates. Protocol design alone is not iOS support.
+:::
+

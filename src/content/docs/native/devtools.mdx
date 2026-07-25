@@ -1,0 +1,65 @@
+---
+title: DevTools
+description: Inspect FPS, render cost, commits, nodes, batches, and native heap on a device.
+---
+
+Debug builds include an on-device performance overlay.
+
+## Toggle the overlay
+
+Start the development application:
+
+```bash
+pam mobile dev .
+```
+
+From another terminal:
+
+```bash
+pam mobile devtools .
+```
+
+Run the DevTools command again to hide it.
+
+The receiver and overlay are excluded from release builds.
+
+## Metrics
+
+The overlay reports:
+
+- smoothed frame rate;
+- decode time;
+- mount and commit time;
+- rendered node count;
+- mutation batch count;
+- patch versus full commits; and
+- native heap use.
+
+Use it to identify an expensive interactive path, not as the final benchmark artifact.
+
+## Raw Android command
+
+Integrations can send the broadcast directly:
+
+```bash
+adb shell am broadcast \
+  -a dev.pam.nativeapp.action.TOGGLE_DEVTOOLS \
+  -p your.application.id.debug
+```
+
+## Profiling workflow
+
+```bash
+pam mobile devtools .
+pam mobile profile .
+pam mobile benchmark .
+```
+
+DevTools shows live symptoms. The profile and benchmark commands produce repeatable evidence suitable for comparison and CI.
+
+Watch the native buffer count after an update. It must return to zero after the frame finishes; a retained non-zero count indicates an ownership or release bug.
+
+:::caution[Debug numbers are not release claims]
+Debug overlays add instrumentation and run under a different optimization profile. Publish performance claims only from a documented device, build type, warm-up, payload, sample count, and matched harness.
+:::
+

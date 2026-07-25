@@ -1,0 +1,109 @@
+---
+title: State and lifecycle
+description: Understand component identity, local state, rerendering, native ownership, and cleanup.
+---
+
+PAM keeps the PHP runtime and component instances alive. State mutations schedule a new render, Rust compares the resulting element tree, and Android receives only the necessary mutation batch.
+
+## Local state
+
+Single-file components can mark mutable properties with `#[State]`:
+
+```php
+final class Counter extends Component
+{
+    #[State]
+    public int $count = 0;
+
+    public function increment(): void
+    {
+        $this->count++;
+    }
+}
+```
+
+State belongs to a stable component identity. Reordering repeated children without keys may transfer identity to the wrong item. Use a stable `key` whenever children can be inserted, removed, sorted, or moved.
+
+## Props
+
+Public constructor parameters are component props. PAM updates mutable public props on a stable child instance.
+
+A private or readonly constructor value cannot be updated safely. When it changes, PAM remounts that child intentionally.
+
+## Lifecycle
+
+Components may react to mount, updated props/state, and unmount through the component lifecycle contract. Keep lifecycle work bounded:
+
+- start subscriptions or resources at mount;
+- update only when relevant values changed;
+- release resources at unmount;
+- cancel late asynchronous work; and
+- never manipulate Android Views from the PHP worker.
+
+## Render and commit path
+
+```text
+PHP component state
+  │ render
+  ▼
+Element tree
+  │ PNT1 first frame / PNP1 updates
+  ▼
+Rust reconciliation and layout
+  │ PNB1 mutation batch
+  ▼
+Kotlin frame queue
+  │ one UI commit per VSYNC
+  ▼
+Android Views
+```
+
+The first render is a complete tree. Later renders use numeric create, remove, property-update, move, and set-root operations.
+
+Node IDs are stable 64-bit hashes of keyed PHP identities. Reused immutable subtrees are cached through `WeakMap`; returning the same tree can produce no native commit.
+
+## Layout invalidation
+
+Paint-only changes can skip layout. Dimensions, flex rules, gaps, margins, min/max constraints, and alignment invalidate the relevant layout path.
+
+The renderer applies only layout IDs emitted by Rust instead of rescanning every Android View.
+
+## Native-owned interaction
+
+High-frequency interaction remains native:
+
+- input text, cursor, and selection;
+- press feedback and long-press recognition;
+- scroll and fling progress;
+- list recycling and prefetch;
+- modal and navigation animations;
+- image fetch, decode, and caching;
+- safe-area and IME calculations; and
+- transform and opacity animations.
+
+PHP receives semantic events according to the chosen synchronization policy.
+
+## Input synchronization
+
+Text remains in the Android input while the user types. Change delivery defaults to a 48 ms debounce and can be configured as:
+
+| Mode | PHP synchronization |
+| --- | --- |
+| Native | No per-keystroke state synchronization |
+| Debounced | Coalesced after a short quiet period |
+| Immediate | Every accepted change |
+| Blur | When the input loses focus |
+| Submit | When the input submits |
+
+Selection events are coalesced to VSYNC. Key, content-size, end-editing, and other detailed events are opt-in.
+
+## Cleanup and buffer ownership
+
+Rust-owned `PNB1` buffers cross JNI through direct, read-only `ByteBuffer` instances. Kotlin accepts ownership, applies the batch, and releases the buffer. Shutdown drains queued and accepted buffers before destroying the renderer.
+
+Debug output exposes the number of retained buffers; it must return to zero after a completed frame.
+
+:::caution[Do not block the UI thread]
+Native view lifecycle functions that create, update, or release Android Views run on the UI thread. Network, disk, large decoding, and other slow work must move to a bounded background executor.
+:::
+

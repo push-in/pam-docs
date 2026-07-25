@@ -1,0 +1,192 @@
+---
+title: Components
+description: Build PAM Native screens with typed trees, declarative templates, or single-file PHP components.
+---
+
+PAM Native has one retained render tree and several authoring styles. Typed trees, `.pam` templates, class components, functional components, and single-file `*.pam.php` components all become the same `Renderable → Element → PNT1/PNP1` plan.
+
+There is no WebView, JavaScript runtime, virtual DOM, or second bridge.
+
+## Typed PHP tree
+
+```php
+use Pam\Native\App;
+use Pam\Native\Style;
+use Pam\Native\UI\Button;
+use Pam\Native\UI\Column;
+use Pam\Native\UI\Screen;
+use Pam\Native\UI\Text;
+
+App::run(fn () => Screen::make(
+    Column::make(
+        Text::make('Checkout')->style(
+            new Style(fontSize: 28),
+        ),
+        Button::make('Pay')->onPress($pay),
+    )->style(
+        new Style(
+            flexGrow: 1,
+            padding: 24,
+            gap: 16,
+        ),
+    ),
+));
+```
+
+Use typed trees for explicit construction, IDE navigation, and low-level control.
+
+## Class component and template
+
+```php
+final class Checkout extends Component
+{
+    private string $email = '';
+    private bool $loading = false;
+
+    public function render(): View
+    {
+        return View::make('screens.checkout');
+    }
+
+    public function pay(): void
+    {
+        // Business logic remains ordinary PHP.
+    }
+}
+```
+
+```xml
+<Screen>
+    <SafeAreaView class="flex-1 bg-white">
+        <Column class="flex-1 p-6 gap-4">
+            <Text height="56" fontSize="28">Checkout</Text>
+            <Input
+                model="email"
+                keyboardType="email"
+                sync="debounced"
+                placeholder="Email"
+            />
+            <Button loading="$loading" on:press="pay">Pay</Button>
+        </Column>
+    </SafeAreaView>
+</Screen>
+```
+
+Register view roots and the theme before running:
+
+```php
+App::views(
+    __DIR__.'/resources/native',
+    __DIR__.'/.pam-native/views',
+);
+App::theme(Theme::pamLab());
+App::run(new Checkout());
+```
+
+Templates are parsed and validated once. Expressions use a restricted engine, read component or data paths, and never call `eval`.
+
+## Single-file component
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Components;
+
+use Pam\Native\Attributes\State;
+use Pam\Native\Component;
+
+final class ProfileCard extends Component
+{
+    #[State]
+    public bool $following = false;
+
+    public function __construct(
+        public string $name,
+        public ?string $subtitle = null,
+    ) {
+    }
+
+    public function toggleFollowing(): void
+    {
+        $this->following = !$this->following;
+        $this->emit('changed', $this->following);
+    }
+}
+?>
+
+<template>
+    <Column class="card p-4">
+        <Text>{{ $name }}</Text>
+        <Text v-if="$subtitle">{{ $subtitle }}</Text>
+        <Button @press="toggleFollowing">
+            {{ $following ? 'Following' : 'Follow' }}
+        </Button>
+        <Slot />
+    </Column>
+</template>
+```
+
+Register component directories:
+
+```php
+App::components(
+    __DIR__.'/src',
+    __DIR__.'/.pam-native/components',
+);
+```
+
+Constructor-promoted public properties become props. Required parameters are required props; PHP defaults define optional props. A changed private or readonly constructor prop remounts the child rather than mutating it.
+
+## Template syntax
+
+The compiler supports:
+
+- `{{ expression }}` interpolation;
+- `:prop="expression"` and conditional class bindings;
+- `@press="method"` native events;
+- `@event="method"` component events;
+- `bind:value` and `bind:checked`;
+- `v-if`, `v-else-if`, and `v-else`;
+- `v-for` over arrays, `Traversable`, or a positive integer;
+- default and named slots; and
+- `key` for stable identity.
+
+Keep business rules in PHP methods rather than embedding them in markup.
+
+## Core component families
+
+| Family | Components |
+| --- | --- |
+| Layout | `Screen`, `View`, `Column`, `Row`, `Grid`, `SafeAreaView`, `Spacer` |
+| Content | `Text`, `Image`, `ImageBackground` |
+| Input | `Input`, `TextInput`, `Button`, `Pressable`, `Toggle`, `Switch` |
+| Scrolling | `ScrollView`, `FlatList`, `VirtualizedList`, `SectionList`, `RefreshControl` |
+| Presentation | `Modal`, `ActivityIndicator`, `StatusBar`, `KeyboardAvoidingView` |
+| Android | `DrawerLayoutAndroid`, `TouchableNativeFeedback`, `InputAccessoryView` |
+| Compatibility | `TouchableOpacity`, `TouchableHighlight`, `TouchableWithoutFeedback` |
+
+## Responsive grid
+
+`Grid` defaults to twelve columns and accepts any PAM element. Spans can change at breakpoints, rows size to their tallest child, and the grid reflows for orientation, split screen, and foldable posture.
+
+```xml
+<Grid gutterX="16" gutterY="16">
+    <Column span="12" spanSm="6" spanMd="4">
+        <Image :source="$photo->url" aspectRatio="1" />
+        <Text>{{ $photo->title }}</Text>
+    </Column>
+</Grid>
+```
+
+## Generators
+
+```bash
+pam mobile make:screen Orders .
+pam mobile make:component MetricCard .
+pam mobile make:native-view CameraPreview .
+```
+
+Generators are non-destructive. The package also ships a JSON schema for `pam-native.json` and custom HTML data for `.pam` tag completion.
+

@@ -1,0 +1,112 @@
+---
+title: Native views
+description: Add application-owned Android Views without leaving PAM's retained tree.
+---
+
+Use a native view for a platform widget or rendering surface that should remain entirely in Android: maps, camera preview, video, rich charts, document viewers, or another high-cost custom control.
+
+## Declare a factory
+
+Add the generated view binding to `pam-native.json`:
+
+```json
+{
+  "views": [
+    {
+      "name": "maps.route",
+      "class": "app.maps.RouteMapFactory"
+    }
+  ]
+}
+```
+
+Run code generation:
+
+```bash
+pam mobile codegen .
+```
+
+## Render from PHP
+
+```php
+use Pam\Native\UI\CustomView;
+
+$map = CustomView::make('maps.route', [
+    'latitude' => -23.5505,
+    'longitude' => -46.6333,
+])->onNativeEvent($handleMapEvent);
+```
+
+Properties are a typed scalar map. Events return through PAM's bounded binary event channel.
+
+## Implement the factory
+
+```kotlin
+class RouteMapFactory(
+    @Suppress("UNUSED_PARAMETER") context: Context,
+) : NativeViewFactory {
+    override fun create(
+        context: Context,
+        emit: (ByteArray) -> Unit,
+    ): View = VendorMapView(context).apply {
+        onRouteTap { routeId ->
+            emit(
+                WireMap.encode(
+                    mapOf(
+                        "routeId" to WireValue.Text(routeId),
+                    ),
+                ),
+            )
+        }
+    }
+
+    override fun update(
+        view: View,
+        properties: Map<String, WireValue>,
+    ) {
+        val map = view as VendorMapView
+        map.routeId =
+            (properties["routeId"] as? WireValue.Text)
+                ?.value
+                .orEmpty()
+    }
+
+    override fun release(view: View) {
+        (view as VendorMapView).close()
+    }
+}
+```
+
+PAM calls `create`, `update`, and `release` on Android's UI thread.
+
+## Ownership rules
+
+Keep these on the UI thread:
+
+- Android View creation and property mutation;
+- native focus and gesture state;
+- local pressed and selected state;
+- scroll position; and
+- frame-driven view animation.
+
+Move these off the UI thread:
+
+- network calls;
+- filesystem operations;
+- database work;
+- large image or binary decoding;
+- expensive geometry; and
+- long plugin computations.
+
+## Identity and layout
+
+A custom view remains a normal PAM node. It receives stable identity, participates in Rust layout, moves with its parent tree, and uses the same mount, update, event, accessibility, and release boundaries as built-in nodes.
+
+## Choosing modules or views
+
+Use a native module for work that does not own a visible Android View. Use a native view factory for a mounted visual object. A package can ship both.
+
+:::note[Platform scope]
+This extension mechanism currently targets Android. There is no iOS native view registry because the iOS renderer has not been implemented.
+:::
+
