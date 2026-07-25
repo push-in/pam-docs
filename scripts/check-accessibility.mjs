@@ -1,8 +1,13 @@
-import { readFile, readdir } from 'node:fs/promises';
+import { access, readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const outputDirectory = fileURLToPath(new URL('../dist/', import.meta.url));
+const distributionDirectory = fileURLToPath(new URL('../dist/', import.meta.url));
+const clientDirectory = join(distributionDirectory, 'client');
+const outputDirectory = await access(clientDirectory).then(
+  () => clientDirectory,
+  () => distributionDirectory,
+);
 
 async function collectHtml(directory) {
   const entries = await readdir(directory, { withFileTypes: true });

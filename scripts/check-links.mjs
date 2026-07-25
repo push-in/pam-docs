@@ -2,7 +2,10 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { extname, join, relative, resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
-const output = join(root, 'dist');
+const distribution = join(root, 'dist');
+const output = existsSync(join(distribution, 'client'))
+  ? join(distribution, 'client')
+  : distribution;
 
 if (!existsSync(output)) {
   console.error('The dist directory does not exist. Run npm run build first.');

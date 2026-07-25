@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && node scripts/prepare-hosting.mjs",
     "preview": "astro preview",
     "check": "astro check",
     "check:links": "node scripts/check-links.mjs",
@@ -13,6 +13,7 @@
     "validate": "npm run build && npm run check:links && npm run check:accessibility"
   },
   "dependencies": {
+    "@astrojs/node": "^11.0.2",
     "@astrojs/starlight": "0.41.4",
     "astro": "7.1.3"
   },
