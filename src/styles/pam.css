@@ -703,6 +703,12 @@ select:focus-visible {
   color: #ff795b;
 }
 
+.pam-benchmark-link-secondary {
+  margin-left: 1.25rem;
+  color: #a8e6cf;
+  text-decoration-color: #a8e6cf;
+}
+
 .pam-benchmark-link:focus-visible {
   outline: 3px solid #a8e6cf;
   outline-offset: 0.4rem;
@@ -747,6 +753,51 @@ select:focus-visible {
 
 .pam-benchmark-trace {
   border-bottom: 1px solid #3b3933;
+}
+
+.pam-api-throughput {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.4rem 1.5rem;
+  border-bottom: 1px solid #3b3933;
+}
+
+.pam-api-throughput > div {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.pam-api-throughput span,
+.pam-api-throughput code {
+  color: #8f8b82;
+  font-family: var(--sl-font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pam-api-throughput strong {
+  color: #f7f4eb;
+  font-family: var(--sl-font-mono);
+  font-size: clamp(1.55rem, 3vw, 2.35rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.06em;
+  line-height: 1;
+}
+
+.pam-api-throughput small {
+  color: #ff795b;
+  font-size: 0.42em;
+  letter-spacing: 0;
+}
+
+.pam-api-throughput code {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-transform: none;
 }
 
 .pam-benchmark-trace-head {
@@ -1024,6 +1075,10 @@ select:focus-visible {
     display: block;
   }
 
+  .pam-benchmark-link-secondary {
+    margin-left: 0;
+  }
+
   .pam-home .pam-benchmark h2 {
     font-size: clamp(2.75rem, 15vw, 4.5rem);
   }
@@ -1034,6 +1089,11 @@ select:focus-visible {
 
   .pam-benchmark-grid {
     grid-template-columns: 1fr;
+  }
+
+  .pam-api-throughput {
+    align-items: start;
+    flex-direction: column;
   }
 
   .pam-benchmark-grid > div,

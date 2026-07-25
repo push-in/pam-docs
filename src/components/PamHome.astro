@@ -126,14 +126,19 @@ const path = (value: string) => `${base}${value}`;
 
   <section class="pam-benchmark" aria-labelledby="pam-benchmark-title">
     <div class="pam-benchmark-copy">
-      <p class="pam-home-kicker">Physical Android benchmark</p>
-      <h2 id="pam-benchmark-title"><span>18 µs.</span><br/>Native means native.</h2>
+      <p class="pam-home-kicker">Measured hot paths</p>
+      <h2 id="pam-benchmark-title"><span>18 µs.</span><br/>404k req/s.</h2>
       <p>
         PAM decoded and applied a native host update in 18 microseconds at p50
-        and 53 microseconds at p99 on a Galaxy S23 Ultra.
+        on a Galaxy S23 Ultra. Its persistent server also delivered 404,150.56
+        requests per second in a local run against a trivial in-memory endpoint.
       </p>
       <a class="pam-benchmark-link" href={path('/mobile-ui/performance/')}>
-        Read the methodology and every measured operation
+        Inspect the native benchmark
+        <span aria-hidden="true">→</span>
+      </a>
+      <a class="pam-benchmark-link pam-benchmark-link-secondary" href="https://github.com/push-in/phast#performance">
+        Inspect the API result and caveats
         <span aria-hidden="true">→</span>
       </a>
     </div>
@@ -163,6 +168,14 @@ const path = (value: string) => `${base}${value}`;
         </div>
       </div>
 
+      <div class="pam-api-throughput">
+        <div>
+          <span>Persistent API hot path</span>
+          <strong>404,150.56 <small>req/s</small></strong>
+        </div>
+        <code>wrk -t4 -c1000 -d10s</code>
+      </div>
+
       <dl class="pam-benchmark-grid">
         <div>
           <dt>p50 native update</dt>
@@ -179,8 +192,9 @@ const path = (value: string) => `${base}${value}`;
       </dl>
 
       <p class="pam-benchmark-context">
-        Samsung Galaxy S23 Ultra · Android API 36 · debug instrumented build ·
-        10,000-operation samples · July 24, 2026
+        Native: Samsung Galaxy S23 Ultra · Android API 36 · debug instrumented build ·
+        10,000-operation samples · July 24, 2026. API: 10 workers · local development
+        result · trivial in-memory endpoint · no universal throughput claim.
       </p>
     </div>
   </section>
