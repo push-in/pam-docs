@@ -1,0 +1,96 @@
+---
+title: HTTP applications
+description: Configure PAM's native HTTP server, request isolation, streaming, and transport limits.
+---
+
+PAM owns the HTTP transport in Rust and dispatches application work into PHP Fibers. A native PAM application can keep several requests in flight while suspended on cooperative I/O.
+
+## Start a server
+
+The API preset creates the smallest useful server:
+
+```bash
+pam init my-api --template api
+cd my-api
+pam dev index.php
+```
+
+With `pam/api`, application code registers routes and starts the listener:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+use Pam\App;
+
+$app = new App();
+
+$app->get('/users/{id}', static fn ($request, $response) =>
+    $response->json([
+        'id' => $request->route('id'),
+    ])
+);
+
+$app->listen(3000);
+```
+
+The listener supports HTTP/1.1, HTTP/2, and HTTP/3 when the corresponding transport and TLS settings are enabled. HTTP/3 also requires UDP exposure on the configured port.
+
+## Request isolation
+
+PAM creates isolated request superglobals, headers, sessions, uploads, output buffers, and runtime scopes. The application entrypoint and objects created outside the handler remain alive.
+
+This means persistent objects are useful for immutable configuration, route tables, connection pools, and compiled application state. They must not retain request-specific values.
+
+```php
+// Unsafe in a persistent process:
+final class CurrentUser
+{
+    public static ?User $user = null;
+}
+```
+
+Do not keep a request, response, authenticated user, tenant, transaction, uploaded file, or per-request logger context in a static property or process-global singleton.
+
+## Streaming responses
+
+Response streams use a bounded queue between PHP and the Rust transport. The queue applies backpressure instead of accumulating an unlimited response in PHP memory.
+
+When a client disconnects, PAM cancels the request Fiber and runs scope cleanup. Configure both:
+
+- `maxResponseBytes`, the maximum complete response; and
+- `maxResponseChunkBytes`, the maximum individual chunk.
+
+The chunk limit cannot exceed the total response limit. Size the queue for bounded flow control, not as a cache.
+
+## Concurrency
+
+Native PAM applications may suspend several isolated request Fibers concurrently. A synchronous extension still blocks its worker while the call runs.
+
+Laravel has a stricter rule: it accepts one request or Socket callback per worker because framework managers and facades contain mutable process-global state. See [Laravel request lifecycle](/laravel/request-lifecycle/).
+
+## Request limits
+
+Set limits according to the product rather than relying on permissive defaults:
+
+- request body and header size;
+- header count;
+- read and write timeouts;
+- maximum concurrent requests;
+- response and chunk size;
+- slowloris protection; and
+- trusted proxy addresses.
+
+Requests forwarded by an address outside `trustedProxies` cannot supply trusted client metadata through forwarded headers.
+
+## TLS and proxies
+
+PAM can terminate TLS, HTTP/2, and QUIC/HTTP/3 directly. A dedicated edge proxy can still be useful for automated certificate management, WAF rules, global rate limiting, and routing.
+
+Certificates are read when a worker starts. After renewing certificate files, send `SIGHUP` to the master so a new worker generation loads them.
+
+:::note[Rate limiting is local by default]
+The first-party rate-limit middleware uses a token bucket per worker. Put a global policy at the edge or use distributed storage when limits must span workers or nodes.
+:::
+

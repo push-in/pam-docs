@@ -1,0 +1,84 @@
+---
+title: Deploy Laravel
+description: Prepare, start, observe, reload, and roll back a Laravel application on PAM.
+---
+
+Laravel deployment uses PAM's supervised master/worker model and the generated `pam.php` entrypoint.
+
+## Build the release
+
+```bash
+pam composer install --no-dev --classmap-authoritative
+pam doctor .
+```
+
+Create framework caches only when the deployed environment and configuration strategy make them safe:
+
+```bash
+pam artisan config:cache
+pam artisan route:cache
+pam artisan view:cache
+```
+
+Generate caches before making the application directory read-only.
+
+## Start HTTP workers
+
+```bash
+APP_ENV=production \
+APP_DEBUG=false \
+PAM_LARAVEL_STORAGE_PATH=/var/lib/pam \
+pam start pam.php \
+  --workers 8 \
+  --max-requests 1000000 \
+  --admin-address 127.0.0.1:3010
+```
+
+Laravel accepts one request or Socket callback per worker. Tune worker count from CPU, p95/p99 latency, RSS, database capacity, and the blocking behavior of application dependencies.
+
+## Supervise console roles
+
+Run queues, Horizon, and scheduler workers as separate services. They must not share the HTTP worker process.
+
+Give each role explicit restart policy, shutdown timeout, memory limit, log collection, and health monitoring.
+
+## Readiness
+
+Probe the PAM master:
+
+```bash
+curl --fail http://127.0.0.1:3010/startup
+curl --fail http://127.0.0.1:3010/ready
+```
+
+The new generation should boot and warm before traffic moves to it. Observe worker state, generation, request latency, errors, event-loop lag, RSS, and PHP memory.
+
+## Reload
+
+Point an atomic `current` symlink at the new release, then:
+
+```bash
+kill -HUP <master-pid>
+```
+
+PAM starts a new generation and drains the old one. Certificates are also re-read when new workers boot.
+
+An idempotent request may be retried at the edge during turnover. Do not replay a write unless the endpoint uses an idempotency key or another domain-safe replay contract.
+
+## Roll back
+
+Restore the `current` symlink to the prior release and send `SIGHUP` again. Retain the old release directory until the new generation is healthy and the rollback window closes.
+
+## Release verification
+
+Run the Laravel compatibility and memory contract with the exact intended binary and dependency lockfile:
+
+```bash
+pam composer install --working-dir=compat/laravel-smoke
+cargo test --test laravel -- --nocapture
+compat/laravel-smoke/vendor/bin/phpstan analyse \
+  -c compat/laravel-smoke/phpstan.neon --no-progress
+```
+
+Add application-specific packages, extensions, database drivers, and request sequences to the release gate.
+

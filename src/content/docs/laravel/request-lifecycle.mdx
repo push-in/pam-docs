@@ -1,0 +1,81 @@
+---
+title: Request lifecycle
+description: How PAM isolates a persistent Laravel application for each request.
+---
+
+PAM boots Laravel once, then creates a request sandbox around the booted application for every HTTP request or Socket callback.
+
+## One-time worker boot
+
+The worker loads:
+
+- `bootstrap/app.php`;
+- configuration;
+- service providers;
+- package discovery;
+- routes;
+- the HTTP kernel; and
+- long-lived framework infrastructure.
+
+Development reload restarts the child when PHP source, routes, configuration, `.env`, or Composer metadata changes. `vendor`, `storage`, and `bootstrap/cache` are ignored as generated directories.
+
+## Per-request sequence
+
+For every request PAM:
+
+1. creates an Illuminate request from the native request and isolated superglobals;
+2. clones the booted application container into a sandbox;
+3. points the kernel, router, events, Bus pipeline, Eloquent, managers, facades, validator, translator, and scoped bindings at that sandbox;
+4. executes middleware, routing, controllers, exceptions, and response conversion;
+5. streams or writes the response through the native transport;
+6. invokes terminating callbacks after completion or cancellation;
+7. flushes facades, controllers, guards, queued cookies, views, query logs, log context, locale-sensitive services, and scoped bindings;
+8. destroys the sandbox; and
+9. restores the root application.
+
+## Concurrency boundary
+
+Laravel managers, facades, routing, and many packages keep mutable process-global state. PAM enforces:
+
+```text
+maxConcurrentRequests = 1 per Laravel worker
+```
+
+The same slot covers Socket callbacks. PAM rejects an unsafe override during startup.
+
+Scale with several workers:
+
+```bash
+pam start pam.php --workers "$(nproc)"
+```
+
+An excess request presented to a busy Laravel worker receives `503`. An edge may retry an idempotent method; do not automatically replay non-idempotent writes without an idempotency contract.
+
+## What PAM resets
+
+The Laravel host resets framework-owned request state including facades, scoped bindings, guard resolution, cookies, view state, query logs, logging context, locale-sensitive services, controllers, and request injection through Events and Bus.
+
+## What application code must avoid
+
+Do not retain any of these across requests:
+
+- `Illuminate\Http\Request` or Symfony request objects;
+- authenticated users, guards, or authorization decisions;
+- tenant or locale selection;
+- responses, streams, uploaded files, or sessions;
+- active database transactions;
+- query-builder instances bound to request state; or
+- request-specific values in static properties.
+
+PAM cannot infer the meaning of arbitrary application globals.
+
+## Streamed and binary responses
+
+`StreamedResponse` and `BinaryFileResponse` are not accumulated in PHP memory. PAM writes 64 KiB chunks into a bounded native queue, applies client backpressure, supports `HEAD` and byte ranges, and cancels the request Fiber on disconnection.
+
+`maxResponseBytes` and `maxResponseChunkBytes` are hard transport boundaries. The generated `pam.php` includes conservative defaults that should be adjusted to the application's legitimate largest response.
+
+:::caution[Worker recycling still matters]
+Request sandboxing protects known framework state. It cannot prove every third-party package cleans up correctly. Keep worker recycling and long-duration memory tests in the production contract.
+:::
+

@@ -1,0 +1,77 @@
+---
+title: Async I/O
+description: Suspend PHP Fibers on Tokio-backed operations without introducing a new language.
+---
+
+PAM exposes cooperative APIs for timers, HTTP, streams, storage, processes, and other native operations. PHP code remains ordinary PHP; a Fiber suspension yields to the Rust runtime until Tokio reports completion.
+
+## Execution model
+
+```text
+PHP request Fiber
+  │ starts native operation
+  ▼
+Rust command boundary
+  │ schedules work
+  ▼
+Tokio runtime
+  │ waits without occupying PHP execution
+  ▼
+completion wakes the original Fiber
+```
+
+The request scope owns its in-flight operations. Cancellation or client disconnection cancels outstanding work and prevents a late completion from resuming a destroyed request.
+
+## Native HTTP client
+
+Use PAM's HTTP client for hot paths that should cooperate with the runtime:
+
+```php
+use Pam\Http\Client;
+
+$client = new Client(
+    timeout: 10.0,
+    maxResponseBytes: 4 * 1024 * 1024,
+);
+
+$response = $client->get('https://api.example.com/products');
+
+if ($response->status !== 200) {
+    throw new RuntimeException('The product service returned an error.');
+}
+
+$products = $response->json();
+```
+
+TLS verification is enabled. Treat redirects, response sizes, timeouts, allowed schemes, and destination networks as security policy, especially when a URL originates from user input.
+
+## Streams and backpressure
+
+Native streams are bounded. Producers suspend when a consumer is slower instead of allocating without limit. A disconnected transport cancels the stream and its request scope.
+
+This behavior is important for downloads, proxying, server-sent output, and long-running responses. It does not turn an unbounded PHP array or string into a streaming response automatically.
+
+## Blocking libraries
+
+An ordinary synchronous library continues to work when its PHP and extension requirements are compatible, but it blocks that worker for the duration of the call.
+
+Choose one of these approaches:
+
+1. use a PAM-native cooperative API;
+2. use a compatible Amp/Revolt integration for compatibility-sensitive code;
+3. move blocking or CPU-heavy work to `Pam\Task\ProcessPool`; or
+4. run more workers and accept that each blocking call occupies one.
+
+## Amp and Revolt
+
+Amp 3 uses Revolt. When a third-party Future suspends the root Fiber without a PAM operation envelope, PAM runs the Revolt loop until that Future completes, then resumes dispatch.
+
+This is a compatibility bridge, not a Tokio driver for Revolt. While the third-party loop runs, it occupies the worker. Prefer PAM-native operations on latency-sensitive paths.
+
+## ReactPHP and other loops
+
+Composer smoke tests load and exercise Amp, Revolt, and ReactPHP behavior, but no runtime can guarantee every future event-loop package or integration. Add your exact package versions and behavior to a compatibility fixture before production use.
+
+:::caution[Async does not make unsafe state isolated]
+Several suspended requests may interleave in the same native PAM worker. Never use global mutable state for request data. Laravel avoids this class of risk by enforcing one concurrent request per worker.
+:::

@@ -1,0 +1,116 @@
+---
+title: Production
+description: Operate supervised PAM workers with health checks, metrics, reloads, limits, and rollback.
+---
+
+PAM's production model is a master process supervising disposable workers. Workers boot the application, serve requests, report metrics and readiness, drain on reload, and can be replaced after a crash or recycling limit.
+
+## Prepare the application
+
+```bash
+pam composer install --no-dev --classmap-authoritative
+pam doctor .
+```
+
+Start a native application:
+
+```bash
+pam start index.php \
+  --workers 8 \
+  --max-requests 10000000 \
+  --graceful-timeout 15000 \
+  --startup-timeout 30000 \
+  --watchdog-grace 250 \
+  --restart-backoff 100 \
+  --admin-address 127.0.0.1:3010
+```
+
+For Laravel, use the generated `pam.php`:
+
+```bash
+APP_ENV=production APP_DEBUG=false \
+pam start pam.php \
+  --workers 8 \
+  --max-requests 1000000 \
+  --admin-address 127.0.0.1:3010
+```
+
+Begin around one worker per available CPU core, then tune from p95/p99 latency, RSS, event-loop lag, and downstream capacity.
+
+## Signals and generations
+
+```bash
+kill -HUP <master-pid>   # start a new generation
+kill -TERM <master-pid>  # graceful shutdown
+```
+
+`SIGHUP` boots a new worker generation before draining the old one. `SIGTERM` stops accepting work and waits up to the graceful timeout.
+
+`--max-requests` limits the impact of fragmentation and third-party caches. PAM staggers the effective limit between workers so they do not all recycle simultaneously. Choose the final value from soak-test evidence.
+
+## Health endpoints
+
+The master control plane does not enter PHP:
+
+| Endpoint | Meaning |
+| --- | --- |
+| `/live` | The supervisor process is alive |
+| `/startup` | The first worker generation completed boot |
+| `/ready` | Desired workers are ready or busy and within deadlines |
+| `/metrics` | Aggregated worker, generation, process, HTTP, Socket, memory, and loop metrics |
+
+Bind `--admin-address` to loopback or a protected administrative network.
+
+Application health may complement `/ready`, but should not replace the supervisor readiness contract.
+
+## Metrics and logs
+
+Important metrics include HTTP totals, errors, active requests, duration, bytes, WebSocket connections and messages, backpressure, event-loop lag, RSS, PHP memory, Fibers, worker state, PID, and generation.
+
+Access logs are structured JSON on stderr when enabled. Server errors remain logged when routine access logging is disabled. At high traffic, sample access logs and use metrics for aggregate visibility.
+
+Enable telemetry response headers only when distributed correlation is needed; they are disabled by default to avoid per-response formatting and bytes.
+
+## Security and capacity
+
+- Keep `exposeErrors` disabled in production.
+- Bound bodies, headers, request time, response size, chunks, Fibers, and Socket messages.
+- Configure trusted proxies narrowly.
+- Apply global rate limits at the edge or through distributed storage.
+- Authenticate Socket connections before privileged handlers.
+- Store `websocketResumeSecret` in a secret manager.
+- Move CPU-heavy and blocking work to a process pool.
+- Monitor event-loop lag and queue pressure.
+- Keep leak sampling enabled and calibrate thresholds after warm-up.
+
+## systemd and containers
+
+The repository ships a hardened `packaging/pam.service` using a dynamic user. A writable Laravel storage path can live under `/var/lib/pam` while application code remains read-only.
+
+The production image can be extended:
+
+```dockerfile
+FROM pam-runtime:0.1.0
+COPY --chown=10001:10001 . /app
+CMD ["start", "index.php", "--workers", "4", "--admin-address", "0.0.0.0:3010"]
+```
+
+For a relocatable directory:
+
+```bash
+pam build . --entry index.php --output dist
+```
+
+The bundle includes the application, `vendor`, runtime, exact private `libphp`, and a SHA-256 manifest. Run `pam doctor .` inside the final artifact.
+
+## Deploy and rollback
+
+1. publish code and `vendor` into a new versioned directory;
+2. atomically update the `current` symlink;
+3. send `SIGHUP` to the master;
+4. wait for readiness and generation metrics;
+5. keep idempotent retry at the edge during the transition; and
+6. roll back by restoring the previous symlink and sending `SIGHUP` again.
+
+WebSocket clients must reconnect during generation turnover. A strict no-reset listener handoff is not yet guaranteed; critical idempotent requests need edge retry, and critical events need domain persistence.
+

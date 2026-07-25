@@ -1,0 +1,115 @@
+---
+title: pam/api
+description: Routing, middleware, error boundaries, and package discovery for native PAM applications.
+---
+
+`pam/api` is PAM's optional HTTP application layer. It provides static and parameterized routes, `404` and `405` handling, a compiled middleware pipeline, error boundaries, providers, and package discovery.
+
+```bash
+pam composer require pam/api
+```
+
+## Register routes
+
+```php
+<?php
+
+declare(strict_types=1);
+
+use Pam\App;
+
+$app = new App();
+
+$app->get('/users/{id}', static fn ($request, $response) =>
+    $response->json([
+        'id' => $request->route('id'),
+    ])
+);
+
+$app->post('/users', static function ($request, $response) {
+    $payload = $request->json();
+
+    return $response->json([
+        'name' => $payload['name'] ?? null,
+    ], 201);
+});
+
+$app->listen(3000);
+```
+
+Convenience methods exist for `GET`, `POST`, `PUT`, `PATCH`, and `DELETE`. Use `route()` for another valid HTTP method.
+
+Route paths must be absolute and cannot include a query string. A parameter occupies an entire segment:
+
+```php
+$app->get('/teams/{team}/members/{member}', $handler);
+```
+
+Parameter names must be unique and match `[A-Za-z_][A-Za-z0-9_]*`. Static paths are normalized for a trailing slash. `HEAD` falls back to a matching `GET` route.
+
+## Routing outcomes
+
+- A matching route receives decoded route parameters.
+- A path with no route returns JSON `404`.
+- A known path with the wrong method returns JSON `405` and an `Allow` header.
+- Registering the same method and path twice throws during application configuration.
+
+## Middleware
+
+Middleware can implement PAM's `MiddlewareInterface` or be a callable:
+
+```php
+use Pam\Contracts\Http\RequestHandlerInterface;
+use Pam\Http\Request;
+use Pam\Http\Response;
+
+$app->middleware(
+    static function (
+        Request $request,
+        Response $response,
+        RequestHandlerInterface $next,
+    ): Response {
+        $response = $next->handle($request, $response);
+
+        return $response->header('x-runtime', 'pam');
+    },
+);
+```
+
+The pipeline is compiled once, in registration order, when the application first handles work. Every middleware layer must return `Pam\Http\Response`.
+
+## Error handling
+
+The default boundary logs the exception through PAM telemetry and returns:
+
+```json
+{"error":"Internal Server Error"}
+```
+
+with status `500`. It does not expose the exception message to the client.
+
+Customize the boundary before the application starts:
+
+```php
+$app->onError(
+    static fn (Throwable $error, $response) =>
+        $response->json(['error' => 'Request failed'], 500),
+);
+```
+
+The custom handler must return a PAM response.
+
+## Providers and discovery
+
+Service providers implement `register()` and `boot()`. Registration happens while the application is mutable; providers boot when the route and middleware pipeline freezes.
+
+Composer package discovery can register providers from installed package metadata. Pass `discoverPackages: false` to `new App()` when configuration must be fully explicit.
+
+## Configuration freeze
+
+Routes, middleware, providers, error handlers, and PSR handlers cannot be changed after the application begins handling requests. PAM throws rather than silently mutating a live long-lived pipeline.
+
+:::note[License]
+`pam/api` uses the Business Source License 1.1. Applications built with PAM may be commercial or proprietary; competing PAM platforms require a commercial license.
+:::
+

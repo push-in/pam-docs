@@ -1,0 +1,58 @@
+---
+title: Compatibility
+description: The supported runtime, operating system, framework, protocol, and package boundaries.
+---
+
+PAM defines compatibility through executable contracts and pinned protocol rules. A successful boot is useful evidence, but it is not enough to claim complete compatibility.
+
+## Platform matrix
+
+| Surface | Supported contract | Unsupported or incomplete |
+| --- | --- | --- |
+| Server releases | Linux x86_64 and ARM64, glibc 2.35+ | Windows and macOS server releases |
+| PHP | PHP 8.4 Embed | Other PHP minor or major versions unless separately tested |
+| Laravel | Laravel 12 and 13 | Future Laravel versions until added to the matrix |
+| PAM Native | PHP 8.4, Android API 26–36, protocol 1 | iOS |
+| PAM Desktop | Experimental Linux distribution | Windows and macOS distribution |
+
+## PHP SAPI
+
+HTTP and native application workers truthfully report `PHP_SAPI` as `embed`. Code that branches on FPM, Apache, or CLI behavior must be reviewed.
+
+Artisan receives an explicit console lifecycle with arguments, standard streams, exit codes, `PHP_BINARY`, `APP_RUNNING_IN_CONSOLE`, and console package discovery.
+
+## Native extensions
+
+Extensions work when they can be loaded by the bundled Embed SAPI and their native libraries are present. Official releases ship a reviewed extension set and an isolated INI tree.
+
+Extra extension configuration must be explicit through `PAM_PHP_INI_SCAN_DIR`. PAM does not accidentally inherit `/etc/php`.
+
+An extension can be ABI-compatible and still be unsafe in a long-lived process. Test repeated requests, failure cleanup, thread ownership, cancellation, and memory behavior.
+
+## Third-party frameworks
+
+The Composer smoke suite exercises selected Symfony, Slim, Illuminate, PSR, HTTP, logging, telemetry, and event-loop behavior. This is evidence for the exact locked fixture, not a promise about every framework feature or future release.
+
+## Versioning rule
+
+First-party contracts distinguish stable and experimental surfaces. Native protocol identifiers and coded variants use sequential integers beginning at `1`; existing identifiers are not renamed, reused, or renumbered inside a protocol version.
+
+Append-only optional additions may remain compatible. A changed representation or meaning requires a new protocol version and an explicit adapter.
+
+## What you should test
+
+Before deployment, add the application's actual:
+
+- Composer packages and lockfile;
+- PHP extensions and INI configuration;
+- database, cache, queue, and storage drivers;
+- authentication and tenant lifecycle;
+- streamed and binary responses;
+- cancellation and timeout paths;
+- WebSocket adapter and reconnect behavior; and
+- long-duration RSS and application-memory behavior.
+
+:::caution[Compatibility is specific]
+Do not turn a green framework boot test into a claim that all third-party packages, extensions, and application singletons are safe. Publish the versions and behavior your fixture actually proves.
+:::
+

@@ -1,0 +1,73 @@
+---
+title: WebSockets
+description: Serve RFC 6455 connections, rooms, acknowledgements, and distributed adapters.
+---
+
+PAM's WebSocket transport shares the native listener with HTTP. The optional `pam/socket` package adds event-oriented APIs, authentication, rooms, broadcasts, acknowledgements, adapters, and session resume support.
+
+## Create a realtime project
+
+```bash
+pam init realtime-api --template api --socket
+cd realtime-api
+pam dev index.php
+```
+
+Or add the package to an existing project:
+
+```bash
+pam composer require pam/socket
+```
+
+```php
+use Pam\Socket\Server;
+
+$io = Server::create();
+
+$io->on('connection', static function ($socket): void {
+    $socket->emit('ready', ['connected' => true]);
+});
+```
+
+## Protocol compatibility
+
+PAM uses standard RFC 6455 WebSockets. It is **not** wire-compatible with Engine.IO or Socket.IO clients. A Socket.IO client cannot connect by changing only the URL.
+
+## Authenticate before handlers
+
+Authenticate the connection before registering privileged event handlers or joining rooms. CORS is not authentication, and browser origin checks do not protect non-browser clients.
+
+Treat event names and payloads as an external API:
+
+- validate every payload;
+- authorize room membership and target resources;
+- bound message size and event rate;
+- avoid exposing internal exception details; and
+- use integer-backed enums for coded variants in public contracts.
+
+## Rooms and broadcasts
+
+Rooms organize sockets inside a process. With several workers or nodes, use a Redis Streams or NATS adapter so membership and broadcasts cross process boundaries.
+
+An in-memory room is not a durable message queue. Persist domain events separately when delivery must survive process failure or client disconnection.
+
+## Acknowledgements
+
+Acknowledgements confirm application-level handling, not durable exactly-once delivery. Design idempotent event handlers and use a domain identifier when retrying a meaningful operation.
+
+## Resume support
+
+PAM can issue a signed `sessionId` and `resumeToken`. Configure `websocketResumeSecret` through a secret manager with at least 32 bytes.
+
+Rotating the secret invalidates existing resume tokens. A resumed transport cannot recover events that were never persisted; use an application event log when missed events must be replayed.
+
+## Backpressure and limits
+
+Configure maximum message size, queue capacity, timeouts, and connection count. Observe WebSocket connections, messages, queue pressure, and event-loop lag through PAM metrics.
+
+During a generational reload, old connections drain or close with the old generation. Clients must reconnect and resend resume credentials. Domain events that require guarantees need persistence and acknowledgement above the socket layer.
+
+:::note[Laravel callbacks share the Laravel execution slot]
+In a Laravel host, Socket callbacks and HTTP requests share the enforced one-at-a-time worker slot. Increase the worker count for concurrency.
+:::
+

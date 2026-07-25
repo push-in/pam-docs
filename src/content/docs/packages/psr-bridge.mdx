@@ -1,0 +1,81 @@
+---
+title: pam/psr-bridge
+description: Run PSR-7 requests, PSR-15 middleware and handlers, and PSR-17 factories on PAM.
+---
+
+`pam/psr-bridge` provides PSR-7, PSR-15, and PSR-17 interoperability using the official PHP-FIG interfaces.
+
+```bash
+pam composer require pam/psr-bridge
+```
+
+## Use a PSR-15 handler
+
+Pass a PSR-15 handler to the application:
+
+```php
+use Pam\App;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+
+final class HealthHandler implements RequestHandlerInterface
+{
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        $factory = new Pam\Http\Psr7\Factory();
+        $response = $factory->createResponse(200);
+        $response->getBody()->write('healthy');
+
+        return $response;
+    }
+}
+
+$app = new App();
+$app->handler(new HealthHandler());
+$app->listen(3000);
+```
+
+When a PSR handler is configured, PAM registers it at the runtime boundary and converts the native request and response.
+
+## Add PSR-15 middleware
+
+```php
+$app->middleware(new RequestIdMiddleware());
+$app->middleware(new AuthenticationMiddleware());
+```
+
+Objects implementing `Psr\Http\Server\MiddlewareInterface` enter the PSR middleware chain. PAM-native middleware continues to use the PAM request, response, and handler contracts.
+
+## Implemented PSR-7 surface
+
+The package includes implementations for:
+
+- streams;
+- URIs;
+- requests and server requests;
+- responses;
+- uploaded files; and
+- PSR-17 factories.
+
+Messages follow PSR immutability: `with*()` methods return cloned values.
+
+## Boundary and limitations
+
+The bridge makes standards-based handlers interoperable. It does not make a synchronous PSR middleware asynchronous, and it does not guarantee that middleware written for FPM is free of long-lived global state.
+
+Check:
+
+- stream ownership and closing behavior;
+- uploaded-file lifetime;
+- middleware statics and singletons;
+- body size and buffering assumptions;
+- SAPI checks; and
+- exception and cancellation cleanup.
+
+Use the native PAM transport suite for protocol, timeout, disconnect, and streaming behavior. Unit tests that call a PSR handler directly do not cover that boundary.
+
+:::note[License]
+`pam/psr-bridge` uses the Business Source License 1.1. Applications built with PAM may be commercial or proprietary; competing PAM platforms require a commercial license.
+:::
+

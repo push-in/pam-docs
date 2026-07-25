@@ -1,0 +1,64 @@
+---
+title: Artisan and workers
+description: Run Artisan, queues, Horizon, and the scheduler with an explicit console lifecycle.
+---
+
+PAM HTTP workers truthfully use the Embed SAPI. Artisan receives a separate, explicit console lifecycle with normal arguments, streams, exit codes, console environment, and package discovery.
+
+## Run commands
+
+```bash
+pam artisan migrate
+pam artisan route:list
+pam artisan test
+pam artisan queue:work
+pam artisan schedule:work
+```
+
+`PHP_BINARY`, `APP_RUNNING_IN_CONSOLE`, standard input/output/error, command arguments, and exit status are available to console code.
+
+## Separate process roles
+
+Do not run queue consumption or the scheduler inside a persistent HTTP request.
+
+Supervise these as independent processes:
+
+- `pam start pam.php` for HTTP and Socket traffic;
+- `pam artisan queue:work` for Laravel queues;
+- `pam artisan horizon` for Horizon;
+- `pam artisan schedule:work` for the scheduler; and
+- any custom long-running Artisan worker.
+
+Each role has different restart, scaling, memory, and failure semantics.
+
+## Writable storage
+
+In a hardened deployment, application code may be read-only. Point Laravel storage to a writable directory:
+
+```bash
+PAM_LARAVEL_STORAGE_PATH=/var/lib/pam \
+  pam start pam.php --workers 8
+```
+
+Before boot, PAM calls Laravel's `useStoragePath()` and creates the standard subdirectories when absent:
+
+```text
+app/
+framework/cache/
+framework/sessions/
+framework/views/
+logs/
+```
+
+The packaged systemd unit provisions `/var/lib/pam` through `StateDirectory=pam`.
+
+## Caches
+
+Build configuration, route, view, and package caches during deployment rather than mutating a read-only application directory at runtime.
+
+Only cache configuration or routes when the release does not depend on runtime-dynamic configuration. Warm the new worker generation before declaring it ready.
+
+## Long-running console state
+
+Queue workers and Horizon are also persistent processes. Follow Laravel's own retry, timeout, idempotency, and recycling guidance, and add package-specific soak tests. The HTTP request sandbox does not wrap an unrelated long-running Artisan loop.
+

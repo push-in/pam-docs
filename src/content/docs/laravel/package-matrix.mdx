@@ -1,0 +1,87 @@
+---
+title: Package matrix
+description: The executable Laravel framework, database, package, and response compatibility contract.
+---
+
+PAM's Laravel claim is based on a locked executable matrix, not only a successful framework boot.
+
+## Maintained versions
+
+| Framework | PHP | Status |
+| --- | --- | --- |
+| Laravel 12 | PHP 8.4 Embed | Maintained and exercised |
+| Laravel 13 | PHP 8.4 Embed | Maintained and exercised |
+| Future Laravel releases | — | Unsupported until added to the matrix |
+
+Use only framework versions that still receive upstream security fixes.
+
+## Framework behavior
+
+The matrix exercises:
+
+- HTTP kernel boot and service providers;
+- middleware and route dispatch;
+- validation, exceptions, and terminating callbacks;
+- scoped dependency injection;
+- request injection through Events and Bus;
+- locale, facade, guard, and scoped-binding reset;
+- stable RSS over repeated requests; and
+- development and production entrypoints.
+
+## Data and infrastructure
+
+| Area | Exercised |
+| --- | --- |
+| SQL | SQLite, MySQL, PostgreSQL |
+| Eloquent | Queries, transactions, models, events |
+| Cache | Redis and array stores |
+| Queues | Database queue, sync jobs, worker commands |
+| Files | Multipart uploads and Flysystem |
+| Sessions | Isolated sessions, encrypted cookies, CSRF |
+| Authentication | Guards and Sanctum |
+
+## First-party Laravel packages
+
+The locked Laravel 13 contract installs and exercises:
+
+- Inertia;
+- Livewire;
+- Pulse;
+- Reverb provider discovery;
+- Sanctum;
+- Scout; and
+- Telescope.
+
+Telescope and Pulse are checked by persisting records after real HTTP requests, not only by provider discovery.
+
+Horizon and Socialite are exercised on Laravel 12 because their current stable Composer constraints do not accept Laravel 13. PAM does not falsify or bypass upstream constraints to make a compatibility table look broader.
+
+## Response behavior
+
+The suite covers:
+
+- ordinary JSON and HTML responses;
+- Blade rendering;
+- multipart uploads;
+- streamed responses;
+- binary file responses;
+- `HEAD`;
+- byte ranges;
+- repeated headers and cookies;
+- native backpressure;
+- disconnect cancellation; and
+- total and per-chunk response limits.
+
+## What the matrix does not prove
+
+It does not guarantee:
+
+- every feature of every listed package;
+- future package versions;
+- every community Laravel package;
+- every database server version or configuration;
+- application-specific service providers; or
+- static state introduced by your application.
+
+Add production dependencies and behavior to a locked fixture before deployment.
+

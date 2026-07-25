@@ -1,0 +1,89 @@
+---
+title: pam/socket
+description: Event APIs over PAM's native RFC 6455 WebSocket transport.
+---
+
+`pam/socket` adds an event-oriented PHP API above PAM's native WebSocket transport.
+
+```bash
+pam composer require pam/socket
+```
+
+## Create a server
+
+```php
+use Pam\Socket\Server;
+
+$io = Server::create();
+
+$io->auth(static function ($handshake) {
+    // Validate credentials before connection handlers run.
+    return $handshake->header('authorization') !== null;
+});
+
+$io->on('connection', static function ($socket): void {
+    $socket->emit('ready', ['connected' => true]);
+});
+```
+
+The package checks the runtime ABI and requires the native WebSocket capability during construction. It fails immediately when loaded outside a compatible PAM runtime.
+
+## Events
+
+Register handlers with `on()` and send events with `emit()`:
+
+```php
+$io->on('message.send', static function ($socket, array $payload): void {
+    $socket->to('room:'.$payload['roomId'])->emit('message.created', [
+        'id' => $payload['id'],
+        'body' => $payload['body'],
+    ]);
+});
+```
+
+Validate and authorize payloads inside the domain boundary. Event names and values cross the network and must be treated as public input.
+
+## Rooms
+
+Target a room through `to()`:
+
+```php
+$io->to('project:42')->emit('project.updated', [
+    'projectId' => 42,
+]);
+```
+
+In-memory rooms belong to a worker. Configure an adapter when several workers or nodes must share broadcasts.
+
+## Adapters
+
+The native WebSocket surface supports distributed adapters including Redis Streams and NATS. An adapter coordinates live events; it does not replace durable domain storage.
+
+## Protocol limitation
+
+PAM speaks RFC 6455 WebSockets. It is not compatible with the Engine.IO or Socket.IO wire protocols. Use a standards-based WebSocket client or implement a separate compatibility gateway.
+
+## Delivery semantics
+
+Rooms, emits, acknowledgements, and resume tokens help realtime applications, but they do not create exactly-once delivery.
+
+For critical actions:
+
+- assign a stable domain event or command ID;
+- make handlers idempotent;
+- persist state before acknowledging success;
+- store replayable events when offline recovery matters; and
+- reconnect after worker generation changes.
+
+## Security
+
+- Authenticate before privileged handlers or room membership.
+- Authorize every resource referenced by a payload.
+- Limit message size, connection count, and event rate.
+- Keep internal exception details out of client events.
+- Configure a resume secret of at least 32 bytes through a secret manager.
+
+:::note[License]
+`pam/socket` uses the Business Source License 1.1. Applications built with PAM may be commercial or proprietary; competing PAM platforms require a commercial license.
+:::
+

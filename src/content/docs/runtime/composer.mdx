@@ -1,0 +1,65 @@
+---
+title: Composer
+description: Use standard Composer projects and understand the persistent-process compatibility boundary.
+---
+
+PAM uses Composer without a package wrapper or alternate lockfile. It discovers `vendor/autoload.php` from the entrypoint and respects a custom `config.vendor-dir`.
+
+## Run Composer through PAM
+
+```bash
+pam composer install
+pam composer require pam/api
+pam composer update
+pam composer audit --locked
+```
+
+PAM caches a verified Composer PHAR in the user's XDG cache. On the first automatic download, it verifies Composer's official SHA-384 installer signature. Set `PAM_COMPOSER` to use a specific trusted PHAR.
+
+The official PAM release does not require a system PHP CLI. Composer executes inside the same PHP 8.4 Embed environment used by the application, so platform requirements are checked against the relevant runtime.
+
+## Diagnose a project
+
+```bash
+pam doctor .
+pam test .
+```
+
+`doctor` validates the Embed runtime, isolated INI tree, Composer autoloader, and generated platform check. If a system PHP CLI is present, it also compares the version, ABI, thread-safety mode, debug build, integer size, and extensions.
+
+The system CLI is diagnostic context, not a runtime dependency. A difference in loaded extensions is reported rather than hidden.
+
+## Compatibility categories
+
+| Category | Current contract |
+| --- | --- |
+| Pure PHP and PSR-4 packages | Loaded by the normal Composer autoloader |
+| PSR-7, PSR-15, PSR-17 | Available through `pam/psr-bridge` |
+| PSR-3 | Consumed when `psr/log` is installed |
+| PHPUnit and Pest | Run inside Embed through `pam test` |
+| Amp, Revolt, ReactPHP | Exercised by compatibility smoke tests |
+| Guzzle, Monolog, OpenTelemetry | Exercised by compatibility smoke tests |
+| Illuminate 13 components | Container, Events, and Pipeline exercised |
+| Symfony 8 | HttpFoundation and HttpKernel exercised |
+| Slim 4 | Request handling and routing exercised |
+| PHP extensions | Compatible when loadable by PAM's Embed SAPI |
+
+## Persistent-process risks
+
+“Works with Composer” is not the same as “every package is safe in a persistent worker.” A package can:
+
+- require an extension that the release does not ship;
+- assume `PHP_SAPI` is `fpm-fcgi`, `apache2handler`, or `cli`;
+- install a global error, signal, or shutdown handler;
+- cache the current user, request, tenant, locale, or transaction;
+- keep a database connection in an invalid state after failure; or
+- grow a process-global cache without bounds.
+
+PAM resets runtime-owned request state. It cannot infer and reset arbitrary third-party globals.
+
+## Make compatibility executable
+
+Add important dependencies to a locked smoke application and exercise the behavior that matters: multiple sequential requests, failures, cancellation, memory stability, package boot, and shutdown.
+
+Worker recycling remains a production boundary even after tests pass. A green matrix reduces known risk; it cannot prove that future package versions or application code contain no long-lived state.
+

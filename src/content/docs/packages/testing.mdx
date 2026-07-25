@@ -1,0 +1,99 @@
+---
+title: pam/testing
+description: Test pam/api applications in memory with fluent response assertions.
+---
+
+`pam/testing` invokes a `pam/api` application pipeline without opening a network port.
+
+```bash
+pam composer require --dev pam/testing
+```
+
+## Create a client
+
+```php
+use Pam\App;
+use Pam\Testing\TestClient;
+
+$app = new App();
+$app->get('/users/{id}', static fn ($request, $response) =>
+    $response->json(['id' => $request->route('id')])
+);
+
+$client = new TestClient($app);
+
+$client->get('/users/42')
+    ->assertSuccessful()
+    ->assertJsonPath('id', '42');
+```
+
+## Requests
+
+Use `get()`, `postJson()`, or the general request method:
+
+```php
+$response = $client->request(
+    method: 'PATCH',
+    target: '/users/42?notify=1',
+    headers: [
+        'authorization' => 'Bearer test-token',
+        'x-request-id' => 'request-1',
+    ],
+    body: '{"name":"Ada"}',
+);
+```
+
+The target must contain an absolute path. Query parameters are parsed into the PAM request, header names are normalized, and the application receives a fresh response.
+
+## JSON requests
+
+```php
+$client->postJson('/users', [
+    'name' => 'Ada',
+])->assertStatus(201);
+```
+
+`postJson()` serializes with `JSON_THROW_ON_ERROR`, preserves Unicode, and sets `content-type: application/json`.
+
+## Assertions
+
+```php
+$response
+    ->assertStatus(200)
+    ->assertSuccessful()
+    ->assertHeader('content-type')
+    ->assertHeader('x-runtime', 'pam')
+    ->assertJson(['id' => '42'])
+    ->assertJsonPath('profile.name', 'Ada');
+```
+
+`assertJson()` performs an exact array comparison. `assertJsonPath()` traverses dot-separated array keys and uses strict comparison.
+
+## What in-memory tests cover
+
+- route matching and parameters;
+- middleware order;
+- application error boundaries;
+- PAM request and response composition;
+- status, headers, body, chunks, and JSON assertions; and
+- provider boot and configuration freeze.
+
+## What they do not cover
+
+In-memory tests do not open a socket and therefore do not prove:
+
+- HTTP parser behavior;
+- TLS, HTTP/2, or HTTP/3;
+- native request limits;
+- transport streaming and backpressure;
+- timeouts and slow clients;
+- client disconnection cancellation;
+- worker supervision; or
+- WebSocket framing.
+
+Use PAM's Rust integration suite for the runtime boundary.
+
+:::note[License]
+`pam/testing` uses the Business Source License 1.1. Applications built with PAM may be commercial or proprietary; competing PAM platforms require a commercial license.
+:::
+

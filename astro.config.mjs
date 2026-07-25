@@ -37,12 +37,22 @@ export default defineConfig({
           label: 'Server runtime',
           items: [
             { label: 'How PAM works', slug: 'runtime/how-pam-works' },
+            { label: 'HTTP applications', slug: 'runtime/http' },
+            { label: 'Async I/O', slug: 'runtime/async-io' },
+            { label: 'WebSockets', slug: 'runtime/websockets' },
+            { label: 'Composer', slug: 'runtime/composer' },
+            { label: 'Production', slug: 'runtime/production' },
+            { label: 'Compatibility', slug: 'runtime/compatibility' },
           ],
         },
         {
           label: 'Laravel',
           items: [
             { label: 'Overview', slug: 'laravel/overview' },
+            { label: 'Request lifecycle', slug: 'laravel/request-lifecycle' },
+            { label: 'Artisan & workers', slug: 'laravel/artisan-and-workers' },
+            { label: 'Package matrix', slug: 'laravel/package-matrix' },
+            { label: 'Deploy Laravel', slug: 'laravel/deployment' },
           ],
         },
         {
@@ -67,6 +77,11 @@ export default defineConfig({
           label: 'Packages',
           items: [
             { label: 'Package ecosystem', slug: 'packages/overview' },
+            { label: 'pam/api', slug: 'packages/api' },
+            { label: 'pam/socket', slug: 'packages/socket' },
+            { label: 'pam/psr-bridge', slug: 'packages/psr-bridge' },
+            { label: 'pam/testing', slug: 'packages/testing' },
+            { label: 'pam/core-api', slug: 'packages/core-api' },
           ],
         },
         {

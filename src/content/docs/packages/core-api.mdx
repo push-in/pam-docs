@@ -1,0 +1,105 @@
+---
+title: pam/core-api
+description: Stable package contracts for HTTP applications, middleware, providers, and runtime capability checks.
+---
+
+`pam/core-api` contains small versioned contracts for packages that extend PAM. It does not include a router, server, or application framework.
+
+```bash
+pam composer require pam/core-api
+```
+
+## HTTP application contract
+
+`ApplicationInterface` defines:
+
+```php
+interface ApplicationInterface
+{
+    public function route(
+        string $method,
+        string $path,
+        callable $handler,
+    ): self;
+
+    public function middleware(object|callable $middleware): self;
+
+    public function onError(callable $handler): self;
+
+    public function handle(
+        Request $request,
+        Response $response,
+    ): Response;
+}
+```
+
+Packages should depend on this contract when they need to register routes or middleware without requiring `pam/api` directly.
+
+## Middleware contract
+
+```php
+interface MiddlewareInterface
+{
+    public function process(
+        Request $request,
+        Response $response,
+        RequestHandlerInterface $next,
+    ): Response;
+}
+```
+
+Middleware must return a PAM response. The request handler contract exposes a single `handle()` operation.
+
+## Service providers
+
+```php
+interface ServiceProviderInterface
+{
+    public function register(ApplicationInterface $application): void;
+
+    public function boot(ApplicationInterface $application): void;
+}
+```
+
+Use `register()` to add application configuration while it remains mutable. Use `boot()` for work that requires all providers to be registered. Do not perform request-specific work in either lifecycle method.
+
+## Runtime compatibility
+
+Packages that require native capabilities should fail during boot:
+
+```php
+use Pam\Contracts\Runtime\RuntimeCompatibility;
+use Pam\Native\Capability;
+
+RuntimeCompatibility::discover()->assert([
+    Capability::WebSocket,
+]);
+```
+
+The compatibility object checks the native ABI version and sequential integer capability IDs. It throws when PAM is unavailable, the ABI differs, or a required capability is missing.
+
+## Stability enum
+
+Runtime contracts use an integer-backed stability enum:
+
+| Value | Case |
+| ---: | --- |
+| `1` | `Experimental` |
+| `2` | `Stable` |
+| `3` | `Deprecated` |
+
+Application and package code should use enum cases instead of magic numbers.
+
+## Package design rules
+
+- Depend on the smallest contract package required.
+- Check native capabilities at boot, not after receiving traffic.
+- Keep provider registration deterministic.
+- Do not retain request objects in providers or singletons.
+- Add only append-compatible integer identifiers within an ABI version.
+- Document the minimum PAM ABI and capabilities.
+
+:::note[License]
+`pam/core-api` uses the Business Source License 1.1. Applications built with PAM may be commercial or proprietary; competing PAM platforms require a commercial license.
+:::
+
