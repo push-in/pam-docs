@@ -120,6 +120,15 @@ header.header {
 .sidebar-content a[aria-current='page'] {
   font-weight: 700;
   background: color-mix(in srgb, var(--pam-coral) 11%, transparent);
+  color: var(--pam-coral-dark);
+}
+
+:root[data-theme='dark'] .sidebar-content a[aria-current='page'] {
+  color: #ff8a70;
+}
+
+.sidebar-content a[aria-current='page']:hover {
+  color: var(--pam-coral);
 }
 
 .content-panel {
