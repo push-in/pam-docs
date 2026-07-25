@@ -1,18 +1,8 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
-import node from '@astrojs/node';
 
 export default defineConfig({
   site: 'https://pam.dev',
-  output: 'server',
-  adapter: node({
-    mode: 'standalone',
-  }),
-  vite: {
-    ssr: {
-      noExternal: true,
-    },
-  },
   integrations: [
     starlight({
       title: 'PAM',

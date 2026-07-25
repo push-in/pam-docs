@@ -13,7 +13,6 @@
     "validate": "npm run build && npm run check:links && npm run check:accessibility"
   },
   "dependencies": {
-    "@astrojs/node": "^11.0.2",
     "@astrojs/starlight": "0.41.4",
     "astro": "7.1.3"
   },

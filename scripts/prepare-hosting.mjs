@@ -1,10 +1,20 @@
-import { access, copyFile, mkdir, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, readdir, rename, writeFile } from 'node:fs/promises';
 
 const distribution = new URL('../dist/', import.meta.url);
-const serverEntry = new URL('./server/entry.mjs', distribution);
+const clientDirectory = new URL('./client/', distribution);
+const serverDirectory = new URL('./server/', distribution);
 const hostingDirectory = new URL('./.openai/', distribution);
 
-await access(serverEntry);
+await mkdir(clientDirectory, { recursive: true });
+for (const entry of await readdir(distribution, { withFileTypes: true })) {
+  if (['client', 'server', '.openai'].includes(entry.name)) continue;
+  await rename(
+    new URL(`./${entry.name}`, distribution),
+    new URL(`./${entry.name}`, clientDirectory),
+  );
+}
+
+await mkdir(serverDirectory, { recursive: true });
 await mkdir(hostingDirectory, { recursive: true });
 await copyFile(
   new URL('../.openai/hosting.json', import.meta.url),
@@ -12,8 +22,13 @@ await copyFile(
 );
 await writeFile(
   new URL('./server/index.js', distribution),
-  "import './entry.mjs';\n",
+  `export default {
+  fetch(request, environment) {
+    return environment.ASSETS.fetch(request);
+  },
+};
+`,
   'utf8',
 );
 
-console.log('Prepared the standalone Sites entrypoint and hosting metadata.');
+console.log('Prepared the static Sites asset worker and hosting metadata.');
