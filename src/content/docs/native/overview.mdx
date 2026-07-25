@@ -1,0 +1,50 @@
+---
+title: PAM Native
+description: Build Android applications in PHP with real native Views and no JavaScript runtime.
+---
+
+PAM Native keeps PHP 8.4 alive inside an Android process and renders real Android Views. Rust owns validation, reconciliation, diffing, and layout; Kotlin applies the resulting mutations on the Android UI thread.
+
+It is not a WebView and does not ship React's JavaScript runtime.
+
+```php
+App::run(fn () => Screen::make(
+    Column::make(
+        Text::make('Checkout')->style(new Style(fontSize: 28)),
+        Button::make('Pay')->onPress($pay),
+    )->style(new Style(flexGrow: 1, padding: 24, gap: 16)),
+));
+```
+
+## Authoring styles
+
+Every public authoring style resolves to the same `Renderable → Element → PNT1/PNP1` path:
+
+- explicit typed PHP trees;
+- class components;
+- functional components;
+- declarative `.pam` views;
+- single-file `*.pam.php` components; and
+- generated custom native views.
+
+Templates are parsed once, validated, and kept in memory. Expressions read component or data paths and do not use `eval`.
+
+## Native component surface
+
+The Android renderer includes layout, text, images, inputs, pressables, scrolling and virtualized lists, modals, activity indicators, status bar control, keyboard avoidance, refresh control, Android-specific touch behavior, and system APIs.
+
+Performance-sensitive behavior stays native: input cursor and selection, press feedback, scrolling, list recycling, image fetch/decode, insets, IME overlap, animations, and view mutation commits do not require a round trip through PHP.
+
+## Platform support
+
+| Requirement | Contract |
+| --- | --- |
+| PHP | 8.4.x |
+| Android | API 26–36 |
+| PAM Native protocol | Version 1 |
+| iOS | Not implemented |
+
+:::caution[Android-only]
+There is no iOS application host, renderer, packaging toolchain, or verified component mapping. Community help with the iOS architecture and implementation is welcome.
+:::
+

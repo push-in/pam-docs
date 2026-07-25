@@ -1,0 +1,57 @@
+---
+title: PAM — PHP, always in memory
+description: Build persistent servers, Android applications, and native desktop software with PHP.
+template: splash
+hero:
+  tagline: One persistent PHP runtime. HTTP, WebSockets, Laravel, real Android Views, and Servo-powered desktop applications — with Rust at the boundary and Composer left intact.
+  actions:
+    - text: Start building
+      link: /getting-started/installation/
+      icon: right-arrow
+      variant: primary
+    - text: Explore the platform
+      link: /getting-started/choose-a-target/
+      icon: open-book
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## PHP beyond the request
+
+PAM embeds PHP 8.4 through the official Embed SAPI and keeps your application alive. Rust owns the runtime boundary, Tokio schedules native I/O, and isolated PHP Fibers handle work without rebuilding the application for every request.
+
+<CardGrid>
+  <Card title="Server runtime" icon="seti:php">
+    Serve HTTP/1.1, HTTP/2, HTTP/3, WebSockets, streams, and asynchronous I/O from a supervised persistent process.
+  </Card>
+  <Card title="Laravel" icon="rocket">
+    Boot an unmodified Laravel 12 or 13 application once, isolate each request, and keep Artisan, queues, packages, and Composer familiar.
+  </Card>
+  <Card title="Native Android" icon="mobile">
+    Write screens in typed PHP or declarative PAM components and render real Android Views through a Rust diff and layout engine.
+  </Card>
+  <Card title="Desktop" icon="laptop">
+    Control secure Servo windows from PHP, expose only explicit native capabilities, and ship self-contained applications.
+  </Card>
+</CardGrid>
+
+## Honest documentation, by design
+
+PAM is ambitious and still experimental. Every guide separates what is implemented today from what is partial, planned, or deliberately unsupported.
+
+<div class="status-grid">
+  <div class="status-card"><strong>Available</strong><span>Implemented and covered by the current executable contract.</span></div>
+  <div class="status-card"><strong>Experimental</strong><span>Usable for evaluation, but APIs or behavior may still change.</span></div>
+  <div class="status-card"><strong>Planned</strong><span>Designed or scheduled, but not something you should depend on yet.</span></div>
+  <div class="status-card"><strong>Help wanted</strong><span>A concrete place where a community contribution can move PAM forward.</span></div>
+</div>
+
+:::caution[Android today; iOS help wanted]
+PAM Native and PAM Mobile UI currently target Android API 26–36. There is no iOS renderer yet. The protocol and ownership model were designed to allow another native renderer, and contributions toward iOS are especially welcome.
+:::
+
+## One ecosystem, not a replacement ecosystem
+
+PAM does not replace PHP, Composer, Laravel, or PSR standards. It supplies a runtime beneath them and publishes optional first-party Composer packages above it. Start with the target that matches what you want to build.
+

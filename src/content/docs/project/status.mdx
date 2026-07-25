@@ -1,0 +1,57 @@
+---
+title: Project status
+description: An honest support matrix for every major PAM surface.
+---
+
+PAM is public-facing software under active development. This page is intentionally conservative: “implemented” means code exists and the documented contract is exercised; it does not mean every workload or third-party package is production-safe.
+
+| Surface | Status | Supported today | Important gaps |
+| --- | --- | --- | --- |
+| Server runtime | Experimental | Linux x86_64/ARM64, PHP 8.4, HTTP 1.1/2/3, streams, async I/O | Broader platform and production adoption |
+| Laravel host | Experimental, tested | Laravel 12 and 13 | One concurrent request per worker; app/package global state remains your responsibility |
+| PAM Native | Experimental | Android API 26–36 | No iOS renderer |
+| PAM Mobile UI | Experimental per component | 61 catalog entries with individual parity evidence | Component maturity and verification differ; no iOS |
+| PAM Desktop | Alpha | Linux bundles, `.tar.gz`, optional `.deb` | macOS, Windows, signing, updates, plugins, menus, tray |
+| First-party Composer packages | Experimental | API, socket, PSR bridge, testing, core contracts | Stable 1.0 API guarantees |
+
+## Server and Laravel
+
+The runtime persists PHP, schedules native I/O through Tokio, supports isolated request Fibers for native PAM applications, supervises workers, exposes health and Prometheus endpoints, and includes operational diagnostics.
+
+Laravel 12 and 13 are tested with Eloquent on SQLite, MySQL, and PostgreSQL; Redis; database queues; Artisan; scheduler discovery; Sanctum; Flysystem; Blade; Livewire; Inertia; Scout; Reverb; Telescope; and Pulse. Horizon and Socialite are exercised on Laravel 12 because their current stable Composer constraints do not accept Laravel 13.
+
+Laravel runs one request at a time per worker. Scale through supervised workers, and independently supervise queues, Horizon, and scheduler processes.
+
+## Native mobile
+
+PAM Native renders real Android Views. PHP owns state and composition, Rust validates, reconciles, diffs, and lays out the tree, while Kotlin commits native mutations on the Android UI thread.
+
+The v1 protocol supports PHP 8.4 and Android API 26–36. No iOS host, renderer, packaging pipeline, or compatibility contract exists yet.
+
+:::danger[Do not assume iOS compatibility]
+The public PHP component model may inform a future iOS renderer, but Android-specific components and behaviors require platform design. iOS support is work to be implemented, not a hidden experimental flag.
+:::
+
+## Mobile UI
+
+The component catalog contains 61 entries. Each entry records a sequential integer category, maturity level, implementation kind, examples, and ten verification gates. Some components are native primitives, some are composed PHP components, and some exist for compatibility or authoring structure.
+
+Use the parity record rather than the component name alone when deciding whether a component is ready for your application.
+
+## Desktop
+
+PAM Desktop currently supports local HTML/CSS/JavaScript rendered by Servo; typed commands and events; multiple windows; deadlines and cancellation; crash recovery; hot reload; capability-gated filesystem, dialogs, clipboard, notifications, and drag-and-drop; and self-contained Linux distribution.
+
+The roadmap includes macOS and Windows distribution, signing and automatic updates, PHP/Rust plugins, menus, tray, global shortcuts, background jobs, and a stable compatibility suite.
+
+## Ways to help
+
+The highest-impact contribution areas are:
+
+1. an iOS host and native renderer;
+2. component parity and accessibility verification;
+3. Windows and macOS desktop packaging;
+4. reproducible compatibility fixtures for real Composer packages;
+5. documentation examples and technical review; and
+6. benchmarks that follow the published protocol instead of marketing-only numbers.
+

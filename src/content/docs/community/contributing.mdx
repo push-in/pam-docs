@@ -1,0 +1,42 @@
+---
+title: Contributing
+description: Help build, verify, document, and expand PAM.
+---
+
+PAM is moving into public development, and contributions are welcome across runtime engineering, PHP APIs, native platforms, UI components, compatibility testing, documentation, and design.
+
+## High-impact areas
+
+### Build the iOS path
+
+PAM Native has no iOS renderer today. This requires more than mapping Android classes to UIKit: the project needs an iOS host lifecycle, protocol decoder, view registry, layout application, event transport, accessibility contract, input and keyboard ownership, packaging, and executable compatibility gates.
+
+Experience with Swift, UIKit, SwiftUI interoperability, PHP embedding, Rust FFI, or mobile accessibility can help.
+
+### Verify Mobile UI parity
+
+Each component has explicit verification gates. Contributions can improve behavioral parity, native implementation, accessibility evidence, examples, performance measurements, and documentation without expanding the public API prematurely.
+
+### Expand Desktop platforms
+
+Windows and macOS packaging, platform metadata, signing, automatic updates, menus, tray, global shortcuts, and background jobs remain open roadmap areas.
+
+### Add compatibility contracts
+
+Reliable fixtures for Composer packages, PHP extensions, Laravel packages, databases, observability tools, and long-lived memory behavior are more valuable than unverified compatibility claims.
+
+## Contribution principles
+
+- Add tests or executable evidence for behavior claims.
+- Preserve integer-backed, sequential protocol and domain enums.
+- Keep native capabilities explicit and disabled by default.
+- Document limitations alongside new functionality.
+- Do not silently weaken safety limits for a demo.
+- Benchmark with a published method, environment, and claim boundary.
+
+## Documentation contributions
+
+Good documentation contributions include runnable examples, clearer failure cases, platform notes, corrections to support tables, diagrams that explain ownership, and reports of behavior that differs from the documented contract.
+
+Every page is designed to link back to its source on GitHub after the documentation repository becomes public.
+

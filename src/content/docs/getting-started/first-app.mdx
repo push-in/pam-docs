@@ -1,0 +1,54 @@
+---
+title: Create your first app
+description: Create and run a persistent PHP API with PAM.
+---
+
+Create an API project and start its development server:
+
+```bash
+pam init hello-pam --template api
+cd hello-pam
+pam dev index.php
+```
+
+The generated project exposes `GET /api/ping` on port `3000`.
+
+```bash
+curl http://127.0.0.1:3000/api/ping
+```
+
+```json
+{"message":"pong"}
+```
+
+This is already a persistent PHP application. PAM loaded the Composer autoloader and application once; subsequent requests execute inside isolated Fibers.
+
+## What `pam init` does
+
+The initializer creates a normal Composer project, selects the first-party packages required by the preset, and installs them using Composer inside PAM's Embed SAPI. There is no PAM-specific dependency lockfile.
+
+Use `--no-install` when you want source generation without dependency resolution:
+
+```bash
+pam init hello-pam --template api --no-install
+```
+
+## Add WebSockets
+
+The socket preset enables PAM's native WebSocket transport on the same listener:
+
+```bash
+pam init realtime-api --template api --socket
+```
+
+## Try another target
+
+```bash
+pam init my-laravel-app --template laravel
+pam init native-core --template mobile
+pam init native-ui --template mobile-ui
+pam init my-desktop-app --template desktop
+```
+
+Read [Choose a target](/getting-started/choose-a-target/) before committing to native mobile or desktop: their platform support differs from the server runtime.
+

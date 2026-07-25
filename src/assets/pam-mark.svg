@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 142 40" role="img" aria-labelledby="title">
+  <title id="title">PAM</title>
+  <rect width="40" height="40" rx="10" fill="#11110f"/>
+  <path fill="#ff5a36" d="M11 9h11c7 0 11 4 11 10s-4 10-11 10h-3v5h-8V9Zm8 6v8h3c3 0 4-1 4-4s-1-4-4-4h-3Z"/>
+  <path fill="#ff5a36" d="M53 10h13c8 0 13 4 13 11s-5 12-13 12h-5v7h-8V10Zm8 6v11h5c3 0 5-2 5-6s-2-5-5-5h-5Zm27-6h9l11 30h-8l-2-6H87l-2 6h-8l11-30Zm1 18h7l-3-11-4 11Zm22-18h10l5 17 5-17h10v30h-7V20l-5 20h-6l-5-20v20h-7V10Z"/>
+</svg>

@@ -1,0 +1,36 @@
+---
+title: Package ecosystem
+description: Understand the first-party Composer packages that extend PAM.
+---
+
+The PAM binary owns runtime-level capabilities. Optional application abstractions remain ordinary Composer packages with versioned PHP contracts.
+
+| Package | Purpose |
+| --- | --- |
+| `pam/api` | Routing, route parameters, middleware, error handling, and package discovery |
+| `pam/socket` | WebSocket events, rooms, broadcasts, acknowledgements, adapters, and resume support |
+| `pam/psr-bridge` | PSR-7, PSR-15, and PSR-17 interoperability using official interfaces |
+| `pam/testing` | In-memory HTTP client and fluent response assertions |
+| `pam/core-api` | Small contracts for packages that extend PAM |
+| `pushinbr/pam-native` | PHP authoring and protocol surface for native Android applications |
+| `pushinbr/pam-mobile-ui` | Themed component library above PAM Native |
+| `pam/desktop` | Typed PHP API and worker loop for PAM Desktop |
+
+## Composer remains Composer
+
+PAM discovers the normal Composer autoloader, including projects with a custom `config.vendor-dir`. It does not introduce a package wrapper or alternate lockfile.
+
+```bash
+pam composer install
+pam composer require vendor/package
+pam composer update
+```
+
+Compatibility with Composer does not guarantee compatibility with every package. A package may depend on an unavailable extension, assume FPM or Apache, install process-global handlers, or retain request state in a singleton.
+
+## Extension model
+
+Server packages can publish providers through the versioned core contracts. Native plugins may ship PHP providers, components, themes, Android resources, manifests, Maven dependencies, AARs, JNI libraries, native modules, and native view factories.
+
+Protocol and enum identifiers are sequential integers and append-only within a protocol version.
+

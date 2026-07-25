@@ -1,0 +1,48 @@
+---
+title: Laravel on PAM
+description: Run an unmodified Laravel application inside PAM's persistent worker.
+---
+
+PAM runs an unmodified Laravel application in a persistent PHP Embed worker. Integration classes live in the PAM binary under `Pam\Laravel`; your project depends on Laravel and its ordinary Composer packages.
+
+```bash
+pam init my-laravel-app --template laravel
+cd my-laravel-app
+pam dev pam.php
+```
+
+PAM downloads the official Laravel skeleton, installs its Composer dependencies, runs package discovery, creates the application key, and adds a stateless `GET /api/ping` route.
+
+## Supported framework versions
+
+The maintained executable contract covers Laravel 12 and current Laravel 13 on PHP 8.4 Embed.
+
+The matrix exercises boot, providers, middleware, routing, validation, exceptions, terminating callbacks, Eloquent, authentication, sessions, CSRF, uploads, streamed responses, binary responses, package discovery, and stable memory behavior.
+
+## Persistent lifecycle
+
+PAM boots `bootstrap/app.php`, the HTTP kernel, providers, configuration, and routes once. For every request, it clones the application container into a sandbox, points framework managers and scoped services at that sandbox, handles the request, terminates it, flushes request state, destroys the sandbox, and restores the root application.
+
+Application code must still avoid keeping the current request, authenticated user, tenant, response, or transaction in global or static state.
+
+## Concurrency
+
+Laravel managers, facades, the router, and third-party packages contain mutable process-global state. PAM therefore enforces one concurrent Laravel request per worker, including Socket callbacks.
+
+```bash
+pam start pam.php --workers "$(nproc)"
+```
+
+Scale through multiple workers. A native PAM application does not inherit this Laravel-specific concurrency restriction.
+
+## Console processes
+
+```bash
+pam artisan migrate
+pam artisan route:list
+pam artisan test
+pam artisan queue:work
+```
+
+Queue workers, Horizon, and the scheduler are separate long-running console processes. Supervise them independently from the HTTP worker pool.
+

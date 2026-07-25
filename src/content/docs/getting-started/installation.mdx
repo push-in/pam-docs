@@ -1,0 +1,60 @@
+---
+title: Installation
+description: Install the PAM runtime on a supported Linux system.
+---
+
+PAM currently ships prebuilt Linux releases for x86_64 and ARM64. Official archives target glibc 2.35 or newer.
+
+:::caution[Experimental release]
+Review the [project status](/project/status/) and target-specific limitations before using PAM for production workloads.
+:::
+
+## Install a release
+
+```bash
+curl --proto '=https' --tlsv1.2 --fail --silent --show-error --location \
+  --output pam-install.sh \
+  https://github.com/push-in/pam/releases/latest/download/install.sh
+
+sh pam-install.sh
+rm pam-install.sh
+
+pam --version
+pam doctor .
+```
+
+The installer verifies the release SHA-256, rejects unsafe archive paths, and installs without root under `~/.local`.
+
+An official bundle includes:
+
+- the PAM binary;
+- its exact private PHP Embed library;
+- a reviewed set of common PHP extensions;
+- an isolated PHP INI tree; and
+- the non-system shared libraries required by the runtime.
+
+You do **not** need a system PHP installation, global Composer, Rust, PHP development headers, or an FPM service to use an official release.
+
+## Platform support
+
+| Target | Current support |
+| --- | --- |
+| Linux server, x86_64 | Available; glibc 2.35+ |
+| Linux server, ARM64 | Available; glibc 2.35+ |
+| Android native | API 26–36 |
+| iOS native | Not implemented |
+| Linux desktop | Experimental bundle and Debian package |
+| macOS desktop | Planned |
+| Windows desktop | Planned |
+
+## Build the runtime from source
+
+Runtime contributors need Rust 1.88 or newer, a C toolchain, PHP 8.4 development headers, and the matching Embed library.
+
+```bash
+sudo apt-get install -y build-essential php8.4-dev libphp8.4-embed
+cargo build --locked --release
+```
+
+Use `PHP_CONFIG` and `PAM_PHP_LIB_DIR` when working with a custom build toolchain. These are build-time settings, not end-user requirements.
+

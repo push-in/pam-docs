@@ -1,0 +1,31 @@
+---
+title: How PAM works
+description: Understand the persistent Zend, Tokio, Fiber, and worker architecture.
+---
+
+PAM embeds the Zend Engine through PHP's official Embed SAPI. Rust owns process lifecycle, HTTP transport, supervision, and the boundary to Tokio. PHP owns application code and familiar Composer objects.
+
+## Boot
+
+At process start, PAM initializes Zend and Tokio, loads its bundled runtime files, discovers `vendor/autoload.php`, and evaluates the application entrypoint. Long-lived application objects remain available for subsequent work.
+
+## Request execution
+
+A native PAM application can run isolated request Fibers concurrently. Suspending a Fiber on a PAM cooperative operation returns control to Tokio; the runtime resumes that Fiber when the operation completes.
+
+PAM resets superglobals, headers, sessions, uploads, output buffers, and request-scoped runtime state. It cannot discover arbitrary request data retained by application statics or third-party singletons.
+
+## I/O ownership
+
+Native HTTP client operations, timers, streams, DNS, filesystem work, process tasks, and socket transport are scheduled outside the PHP execution frame. Bounded queues and cancellation connect the PHP-facing API to Tokio.
+
+Synchronous PHP extensions remain synchronous. If a database driver blocks, it occupies that worker until the call returns.
+
+## Production boundary
+
+The master process supervises workers, replaces crashed or unhealthy children, supports graceful drain and generational reload, and can recycle workers after request or memory limits. Worker recycling is a safety boundary for applications and third-party packages that accumulate long-lived state.
+
+:::note[Truthful SAPI identity]
+HTTP workers report `PHP_SAPI` as `embed`. Artisan receives an explicit CLI lifecycle, but PAM does not pretend that every embedded request is running under FPM or Apache.
+:::
+

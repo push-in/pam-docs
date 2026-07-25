@@ -1,0 +1,43 @@
+---
+title: Introduction
+description: What PAM is, why it exists, and where it fits in the PHP ecosystem.
+---
+
+PAM stands for **PHP, Always in Memory**. It is a persistent, event-driven application runtime powered by Rust, Tokio, PHP Fibers, and the Zend Engine.
+
+Traditional PHP deployments provide excellent request isolation, but they usually reconstruct meaningful application state for every request. PAM changes that lifecycle: it starts PHP and your Composer application once, then handles work inside a supervised long-lived process.
+
+```text
+Traditional PHP                      PAM
+
+request                              process starts
+├─ bootstrap PHP                     ├─ start Zend + Tokio
+├─ load Composer                     ├─ load Composer
+├─ build application                 ├─ build application once
+├─ execute handler                   ├─ request 1 ─┐
+└─ discard state                     ├─ request 2 ─┼─ isolated Fibers
+request                              └─ request N ─┘
+└─ repeat                               process stays alive
+```
+
+## What PAM is
+
+- A PHP 8.4 Embed runtime with a Rust and Tokio execution boundary.
+- A server for HTTP, WebSockets, streaming, native asynchronous I/O, and supervised workers.
+- A host for unmodified Laravel applications with per-request sandboxing.
+- The runtime behind PAM Native, which renders real Android Views from PHP.
+- The worker used by PAM Desktop, where Servo displays local web interfaces inside native windows.
+- A collection of optional Composer packages for routing, sockets, PSR interoperability, testing, native UI, and extension contracts.
+
+## What PAM is not
+
+PAM is not a new programming language, a PHP fork, a framework, or a Composer replacement. A standard `composer.json`, `composer.lock`, PSR-4 autoloader, and `vendor/autoload.php` remain the project contract.
+
+It also does not make every synchronous PHP library asynchronous. A blocking extension or library blocks its worker while it runs. Use PAM-native I/O, a compatible event-loop package, a process pool, or multiple workers depending on the workload.
+
+## Current maturity
+
+The server runtime is currently experimental at `0.1.x`. PAM Native is Android-only and uses protocol version `1`. PAM Mobile UI exposes a broad but individually graded component surface. PAM Desktop targets controlled prototypes and product exploration while Servo and multi-platform distribution continue to mature.
+
+The [project status](/project/status/) page is the shortest accurate overview of what you can use today.
+

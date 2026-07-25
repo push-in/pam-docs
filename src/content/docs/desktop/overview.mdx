@@ -1,0 +1,49 @@
+---
+title: PAM Desktop
+description: Build capability-secured desktop applications with PHP, Rust, and Servo.
+---
+
+PAM Desktop is a direct Servo host for native desktop applications whose application logic remains in typed PHP. It lives in a separate repository because its native toolchain, release cadence, and security boundary differ from the server runtime.
+
+```bash
+pam init hello-desktop --template desktop
+cd hello-desktop
+pam desktop doctor .
+pam desktop dev .
+pam desktop build .
+```
+
+## Application model
+
+PHP declares the manifest, windows, commands, events, effects, and allowed native capabilities. Local HTML, CSS, and JavaScript render directly in Servo and call only the commands or native surfaces the application explicitly exposes.
+
+```php
+$app = Application::create(
+    window: Window::create('My desktop app')
+        ->size(1120, 720)
+        ->minimumSize(720, 520)
+        ->theme(WindowTheme::Dark),
+    manifest: Manifest::create(
+        'com.example.my-app',
+        'My desktop app',
+        '0.4.0',
+    ),
+);
+```
+
+## Available today
+
+- local HTML, CSS, JavaScript, and assets rendered by Servo;
+- typed commands and bidirectional events;
+- deadlines, cancellation, crash detection, and worker recovery;
+- multiple windows and targeted effects;
+- development hot reload;
+- named filesystem roots with read/write policy;
+- dialogs, clipboard, notifications, and drag-and-drop grants;
+- Linux directory bundles, portable archives, and optional Debian packages; and
+- per-file SHA-256 integrity metadata.
+
+## Not ready yet
+
+PAM Desktop is not a drop-in Electron replacement. Windows and macOS distribution, platform signing, automatic updates, plugins, menus, tray, global shortcuts, background jobs, and a stable `1.0` API are roadmap work.
+
