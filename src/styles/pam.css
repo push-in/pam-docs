@@ -51,6 +51,11 @@
   --sl-color-gray-5: #4a4740;
   --sl-color-gray-6: #292824;
   --sl-color-black: var(--pam-paper);
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
 }
 
 html {
@@ -127,6 +132,8 @@ header.header {
 .sl-markdown-content h2 {
   font-family: 'Newsreader', Georgia, serif;
   letter-spacing: -0.035em;
+  scroll-margin-top: 6rem;
+  text-wrap: balance;
 }
 
 .sl-markdown-content h1 {
@@ -182,6 +189,26 @@ header.header {
   font-size: 0.72rem;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+}
+
+.sl-markdown-content td,
+.sl-markdown-content th {
+  font-variant-numeric: tabular-nums;
+}
+
+a,
+button,
+summary,
+select {
+  touch-action: manipulation;
+}
+
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--pam-coral);
+  outline-offset: 3px;
 }
 
 .hero {
@@ -267,21 +294,7 @@ header.header {
 
 @media (max-width: 50rem) {
   .pam-release-bar {
-    align-items: center;
-    justify-content: flex-start;
-    gap: 0.4rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-align: left;
-  }
-
-  .pam-release-bar span {
     display: none;
-  }
-
-  .pam-release-bar a {
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   .hero {

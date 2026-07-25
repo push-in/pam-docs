@@ -12,6 +12,30 @@ export default defineConfig({
         replacesTitle: true,
       },
       favicon: '/favicon.svg',
+      head: [
+        {
+          tag: 'link',
+          attrs: {
+            rel: 'preconnect',
+            href: 'https://fonts.googleapis.com',
+          },
+        },
+        {
+          tag: 'link',
+          attrs: {
+            rel: 'preconnect',
+            href: 'https://fonts.gstatic.com',
+            crossorigin: 'anonymous',
+          },
+        },
+        {
+          tag: 'meta',
+          attrs: {
+            name: 'theme-color',
+            content: '#141411',
+          },
+        },
+      ],
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/push-in/pam' },
       ],
