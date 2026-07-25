@@ -124,6 +124,67 @@ const path = (value: string) => `${base}${value}`;
     </a>
   </section>
 
+  <section class="pam-benchmark" aria-labelledby="pam-benchmark-title">
+    <div class="pam-benchmark-copy">
+      <p class="pam-home-kicker">Physical Android benchmark</p>
+      <h2 id="pam-benchmark-title"><span>18 µs.</span><br/>Native means native.</h2>
+      <p>
+        PAM decoded and applied a native host update in 18 microseconds at p50
+        and 53 microseconds at p99 on a Galaxy S23 Ultra.
+      </p>
+      <a class="pam-benchmark-link" href={path('/mobile-ui/performance/')}>
+        Read the methodology and every measured operation
+        <span aria-hidden="true">→</span>
+      </a>
+    </div>
+
+    <div class="pam-benchmark-console">
+      <div class="pam-benchmark-budget">
+        <span>60 fps frame budget</span>
+        <strong>16,667 µs</strong>
+      </div>
+
+      <div
+        class="pam-benchmark-trace"
+        role="img"
+        aria-label="The p99 decode and apply operation used 53 microseconds, or 0.32 percent of a 16,667 microsecond frame budget."
+      >
+        <div class="pam-benchmark-trace-head">
+          <span>decode / apply · p99</span>
+          <strong>53 µs</strong>
+        </div>
+        <div class="pam-benchmark-rail" aria-hidden="true">
+          <span></span>
+        </div>
+        <div class="pam-benchmark-trace-foot">
+          <span>0 µs</span>
+          <strong>0.32% of budget</strong>
+          <span>16,667 µs</span>
+        </div>
+      </div>
+
+      <dl class="pam-benchmark-grid">
+        <div>
+          <dt>p50 native update</dt>
+          <dd>18 <span>µs</span></dd>
+        </div>
+        <div>
+          <dt>semantic event reduction</dt>
+          <dd>10,000<span>:1</span></dd>
+        </div>
+        <div>
+          <dt>measured families in budget</dt>
+          <dd>24<span>/24</span></dd>
+        </div>
+      </dl>
+
+      <p class="pam-benchmark-context">
+        Samsung Galaxy S23 Ultra · Android API 36 · debug instrumented build ·
+        10,000-operation samples · July 24, 2026
+      </p>
+    </div>
+  </section>
+
   <section class="pam-home-status" aria-labelledby="honest-status">
     <div>
       <p class="pam-home-kicker">Open development</p>
