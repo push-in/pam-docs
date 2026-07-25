@@ -1,8 +1,12 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 
+const site = process.env.SITE_URL ?? 'https://pam.dev';
+const base = process.env.BASE_PATH ?? '/';
+
 export default defineConfig({
-  site: 'https://pam.dev',
+  site,
+  base,
   integrations: [
     starlight({
       title: 'PAM',

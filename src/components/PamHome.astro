@@ -1,3 +1,8 @@
+---
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const path = (value: string) => `${base}${value}`;
+---
+
 <div class="pam-home">
   <section class="pam-home-hero" aria-labelledby="pam-home-title">
     <div class="pam-home-copy">
@@ -8,11 +13,11 @@
         and desktop software — with PHP at the center and Rust at the boundary.
       </p>
       <div class="pam-home-actions">
-        <a class="pam-button pam-button-primary" href="/getting-started/installation/">
+        <a class="pam-button pam-button-primary" href={path('/getting-started/installation/')}>
           Get started
           <span aria-hidden="true">→</span>
         </a>
-        <a class="pam-button pam-button-secondary" href="/introduction/">
+        <a class="pam-button pam-button-secondary" href={path('/introduction/')}>
           Read the documentation
         </a>
       </div>
@@ -81,10 +86,10 @@
 
   <section class="pam-platform-strip" aria-label="PAM platform areas">
     <p>ONE RUNTIME.<br/>FOUR TARGETS.</p>
-    <a href="/runtime/how-pam-works/"><strong>Server</strong><span>HTTP, WebSockets, async I/O</span></a>
-    <a href="/laravel/overview/"><strong>Laravel</strong><span>Boot once, isolate every request</span></a>
-    <a href="/native/overview/"><strong>Android</strong><span>Real native Views from PHP</span></a>
-    <a href="/desktop/overview/"><strong>Desktop</strong><span>Secure Servo-powered windows</span></a>
+    <a href={path('/runtime/how-pam-works/')}><strong>Server</strong><span>HTTP, WebSockets, async I/O</span></a>
+    <a href={path('/laravel/overview/')}><strong>Laravel</strong><span>Boot once, isolate every request</span></a>
+    <a href={path('/native/overview/')}><strong>Android</strong><span>Real native Views from PHP</span></a>
+    <a href={path('/desktop/overview/')}><strong>Desktop</strong><span>Secure Servo-powered windows</span></a>
   </section>
 
   <section class="pam-home-section pam-home-intro" aria-labelledby="beyond-request">
@@ -97,22 +102,22 @@
         PAM embeds PHP 8.4 through the official Embed SAPI and keeps your application alive.
         Composer stays familiar while Rust and Tokio own scheduling, native I/O, and process supervision.
       </p>
-      <a class="pam-text-link" href="/runtime/how-pam-works/">See how PAM works <span aria-hidden="true">→</span></a>
+      <a class="pam-text-link" href={path('/runtime/how-pam-works/')}>See how PAM works <span aria-hidden="true">→</span></a>
     </div>
   </section>
 
   <section class="pam-feature-grid" aria-label="PAM capabilities">
-    <a href="/runtime/http/">
+    <a href={path('/runtime/http/')}>
       <span class="pam-feature-number">01</span>
       <h3>Persistent servers</h3>
       <p>Serve HTTP, WebSockets, streams, and async I/O without rebuilding PHP for every request.</p>
     </a>
-    <a href="/laravel/request-lifecycle/">
+    <a href={path('/laravel/request-lifecycle/')}>
       <span class="pam-feature-number">02</span>
       <h3>Laravel, kept familiar</h3>
       <p>Boot the framework once while preserving request isolation, Artisan, queues, and Composer packages.</p>
     </a>
-    <a href="/native/components/">
+    <a href={path('/native/components/')}>
       <span class="pam-feature-number">03</span>
       <h3>Actual native UI</h3>
       <p>Describe interfaces in PHP and render real Android Views through PAM's typed component protocol.</p>
@@ -131,8 +136,8 @@
         a contribution can move the project forward.
       </p>
       <div class="pam-home-actions">
-        <a class="pam-button pam-button-primary" href="/project/status/">View project status</a>
-        <a class="pam-button pam-button-secondary" href="/community/contributing/">Contribute to PAM</a>
+        <a class="pam-button pam-button-primary" href={path('/project/status/')}>View project status</a>
+        <a class="pam-button pam-button-secondary" href={path('/community/contributing/')}>Contribute to PAM</a>
       </div>
     </div>
   </section>

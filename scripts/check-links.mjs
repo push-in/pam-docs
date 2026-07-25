@@ -6,6 +6,7 @@ const distribution = join(root, 'dist');
 const output = existsSync(join(distribution, 'client'))
   ? join(distribution, 'client')
   : distribution;
+const basePath = (process.env.BASE_PATH ?? '/').replace(/\/+$/, '');
 
 if (!existsSync(output)) {
   console.error('The dist directory does not exist. Run npm run build first.');
@@ -34,7 +35,11 @@ for (const file of htmlFiles) {
     inspectedLinks++;
 
     const url = new URL(href, 'https://pam.dev');
-    const pathname = decodeURIComponent(url.pathname);
+    const decodedPathname = decodeURIComponent(url.pathname);
+    const pathname =
+      basePath && decodedPathname.startsWith(`${basePath}/`)
+        ? decodedPathname.slice(basePath.length)
+        : decodedPathname;
     const target = resolveTarget(output, pathname);
 
     if (!target) {

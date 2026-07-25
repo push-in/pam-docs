@@ -68,7 +68,7 @@ The chunk limit cannot exceed the total response limit. Size the queue for bound
 
 Native PAM applications may suspend several isolated request Fibers concurrently. A synchronous extension still blocks its worker while the call runs.
 
-Laravel has a stricter rule: it accepts one request or Socket callback per worker because framework managers and facades contain mutable process-global state. See [Laravel request lifecycle](/laravel/request-lifecycle/).
+Laravel has a stricter rule: it accepts one request or Socket callback per worker because framework managers and facades contain mutable process-global state. See [Laravel request lifecycle](../../laravel/request-lifecycle/).
 
 ## Request limits
 
@@ -93,4 +93,3 @@ Certificates are read when a worker starts. After renewing certificate files, se
 :::note[Rate limiting is local by default]
 The first-party rate-limit middleware uses a token bucket per worker. Put a global policy at the edge or use distributed storage when limits must span workers or nodes.
 :::
-
