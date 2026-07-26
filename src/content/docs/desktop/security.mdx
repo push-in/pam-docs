@@ -15,11 +15,14 @@ HTML / CSS / JavaScript
         ▼
 Rust host
 Winit ─ Servo ─ loopback gateway
-  │                  │
-  │ typed effects    │ bounded JSON lines
-  │                  ▼
-  └──────────── PAM worker
-                  PHP 8.4
+  │         │            │
+  │         │            ├── supervised Rust plugin processes
+  │         │            └── interruptible background scheduler
+  │         │
+  │ typed effects / bounded JSON lines
+  ▼
+PAM worker
+PHP 8.4
 ```
 
 PAM core owns the PHP Embed runtime. The desktop package owns application policy. The protocol crate owns envelopes and integer contracts. The Rust shell owns Servo, Winit, gateway, native adapters, and operating-system handles.
@@ -64,11 +67,19 @@ Sequential integer variants include:
 | File entry | `1` file, `2` directory |
 | Notification urgency | `1` low, `2` normal, `3` critical |
 
+Protocol 6 extends effect kinds through tray visibility and adds sequential
+integer contracts for update policy/state, menu items, tray close behavior,
+shortcut state, and job overlap. Rust plugins use their own stable protocol
+`1`.
+
 Protocol version is checked on every response. A mismatch, malformed envelope, wrong request ID, oversized line, invalid kind, or failure without an error terminates that invocation explicitly.
 
 ## Commands and failure
 
-Commands run one at a time through a worker mutex. Axum can serve transport concurrently, but the single Zend worker stays deterministic.
+Commands, PHP events, and background jobs run one at a time through a worker
+mutex. Axum can serve transport concurrently, while the single Zend worker
+stays deterministic. Each Rust plugin has an independent supervised process
+and bounded protocol.
 
 When an invocation times out, is cancelled, crashes the worker, or corrupts the protocol, the host kills and reaps that worker and starts another generation.
 
@@ -96,5 +107,8 @@ New capabilities should be named, typed, bounded, validated on both sides, and d
 
 ## Current maturity
 
-The model is suitable for controlled prototypes and product exploration. Servo 0.4 and PAM Desktop's alpha API are still evolving. Security review and platform signing remain required before broad consumer distribution.
-
+Public API 1, worker protocol 6, and Rust plugin protocol 1 are compatibility
+gated on Linux x86-64. Servo 0.4 and platform graphics stacks still evolve, and
+Rust plugins are trusted native executables rather than operating-system
+sandboxes. Run an application-specific security review, update rollback test,
+and target-distribution qualification before broad consumer release.

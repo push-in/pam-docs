@@ -9,7 +9,7 @@ PAM Native uses a versioned, bounded, little-endian binary protocol between pers
 
 | SDK | Protocol | PHP | Android |
 | --- | ---: | --- | --- |
-| `pushinbr/pam-native 0.1.x` | `1` | `8.4.x` | API 26–36 |
+| `pushinbr/pam-native 0.2.x` | `1` | `8.4.x` | API 26–36 |
 
 The Swift peer decodes protocol version `1` and rejects unknown node kinds, invalid property values, oversized frames, malformed lengths, and trailing bytes before UIKit mutation.
 
@@ -19,7 +19,7 @@ Protocol identifiers are sequential integers beginning at `1`. Existing identifi
 
 New optional properties, node kinds, events, and operations may be appended. Changing an existing field's representation or meaning requires a new protocol version and an explicit compatibility adapter.
 
-Protocol version 1 currently defines properties through ID `262` and events through ID `34`.
+Protocol version 1 currently defines properties through ID `284` and events through ID `34`.
 
 ## Frame types
 

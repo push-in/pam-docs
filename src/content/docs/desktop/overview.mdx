@@ -3,7 +3,10 @@ title: PAM Desktop
 description: Build capability-secured desktop applications with PHP, Rust, and Servo.
 ---
 
-PAM Desktop is a direct Servo host for native desktop applications whose application logic remains in typed PHP. It lives in a separate repository because its native toolchain, release cadence, and security boundary differ from the server runtime.
+PAM Desktop 1.1.1 is a direct Servo host for native desktop applications whose
+application logic remains in typed PHP. It lives in a separate repository
+because its native toolchain, release cadence, and security boundary differ
+from the server runtime.
 
 ```bash
 pam init hello-desktop --template desktop
@@ -26,13 +29,14 @@ $app = Application::create(
     manifest: Manifest::create(
         'com.example.my-app',
         'My desktop app',
-        '0.4.0',
+        '1.1.1',
     ),
 );
 ```
 
 ## Available today
 
+- stable public PHP API `1`, worker protocol `6`, and Rust plugin protocol `1`;
 - local HTML, CSS, JavaScript, and assets rendered by Servo;
 - typed commands and bidirectional events;
 - deadlines, cancellation, crash detection, and worker recovery;
@@ -40,10 +44,20 @@ $app = Application::create(
 - development hot reload;
 - named filesystem roots with read/write policy;
 - dialogs, clipboard, notifications, and drag-and-drop grants;
-- Linux directory bundles, portable archives, and optional Debian packages; and
-- per-file SHA-256 integrity metadata.
+- menus, tray behavior, global shortcuts, and periodic PHP jobs;
+- composable PHP plugins and supervised process-isolated Rust plugins;
+- signed Ed25519 update feeds with verified atomic install and rollback;
+- reproducible Linux directory bundles, portable archives, and optional Debian
+  packages; and
+- per-file SHA-256 integrity metadata and executable compatibility snapshots.
 
-## Not ready yet
+## Supported release track
 
-PAM Desktop is not a drop-in Electron replacement. Windows and macOS distribution, platform signing, automatic updates, plugins, menus, tray, global shortcuts, background jobs, and a stable `1.0` API are roadmap work.
+The stable 1.x contract targets Linux x86-64 on the Ubuntu 22.04 glibc
+baseline. Windows and macOS code is experimental groundwork and is not built,
+published, or certified in the current pipeline. Servo remains an evolving
+engine, so PAM guarantees the documented application and lifecycle contracts,
+not feature-for-feature Electron parity.
 
+Continue with [native shell](../native-shell/), [plugins](../plugins/),
+[signed updates](../signed-updates/), and [stability](../stability/).

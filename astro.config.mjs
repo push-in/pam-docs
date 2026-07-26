@@ -59,7 +59,7 @@ export default defineConfig({
             { label: 'Create your first app', slug: 'getting-started/first-app' },
             { label: 'Choose a target', slug: 'getting-started/choose-a-target' },
             { label: 'Project status', slug: 'project/status' },
-            { label: 'Release 0.1.26', slug: 'project/release-0-1-26' },
+            { label: 'Release 0.1.33', slug: 'project/release-0-1-33' },
           ],
         },
         {
@@ -125,8 +125,13 @@ export default defineConfig({
             { label: 'Overview', slug: 'desktop/overview' },
             { label: 'Windows & commands', slug: 'desktop/windows-and-commands' },
             { label: 'Native capabilities', slug: 'desktop/capabilities' },
+            { label: 'Native shell', slug: 'desktop/native-shell' },
+            { label: 'Background jobs', slug: 'desktop/background-jobs' },
+            { label: 'Plugins', slug: 'desktop/plugins' },
+            { label: 'Signed updates', slug: 'desktop/signed-updates' },
             { label: 'Security model', slug: 'desktop/security' },
             { label: 'Distribution', slug: 'desktop/distribution' },
+            { label: 'Stability & support', slug: 'desktop/stability' },
           ],
         },
         {

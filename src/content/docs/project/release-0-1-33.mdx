@@ -1,0 +1,171 @@
+---
+title: Release 0.1.33
+description: Verified PAM 0.1.33 runtime, Laravel, Native 0.2.1, PamUI 0.2.1, public artifacts, and compatibility evidence.
+---
+
+PAM 0.1.33 is the current public release. It joins the persistent PHP runtime,
+Laravel 12 and 13 production tooling, Linux Desktop, PAM Native 0.2.1, and
+PamUI 0.2.1 behind public, version-matched distributions.
+
+:::caution[Experimental, with executable evidence]
+PAM has not reached a stable 1.0 compatibility promise. Use this release for
+evaluation and controlled production pilots, read the
+[project status](../status/), and run the locked test suite for your own
+application before moving traffic.
+:::
+
+## Install the exact runtime
+
+Use `latest` to follow the current release:
+
+```bash
+curl --proto '=https' --tlsv1.2 --fail --silent --show-error --location \
+  --output pam-install.sh \
+  https://github.com/push-in/pam/releases/latest/download/install.sh
+sh pam-install.sh
+rm pam-install.sh
+
+pam --version
+pam doctor .
+```
+
+Pin 0.1.33 in CI and reproducible images:
+
+```text
+https://github.com/push-in/pam/releases/download/v0.1.33/install.sh
+```
+
+The installer selects Linux x86_64 or ARM64, verifies SHA-256, rejects unsafe
+archive paths, and installs the self-contained runtime without root under
+`~/.local`.
+
+## Runtime and operations
+
+The 0.1.27–0.1.33 production line adds:
+
+- Linux-enforced filesystem, network, process, and environment capabilities;
+- a bounded, redacting flight recorder with deterministic replay;
+- structured PHP task groups with deadlines and sibling cancellation;
+- signed, reproducible bundles with CycloneDX 1.6 SBOM verification;
+- Redis-backed discovery, fenced leases, singleton cron, rate limiting,
+  circuit breakers, queues, and WebSocket presence;
+- signed bootstrap snapshots bound to the runtime and application tree;
+- versioned durable workflows with retries, timers, idempotency, resume, and
+  compensation;
+- PHP DTO and sequential integer enum contracts that generate OpenAPI, JSON
+  Schema, TypeScript, Kotlin, mobile, forms, migrations, MCP, and reference
+  documentation;
+- authenticated zero-downtime reload and drain control-plane operations;
+- a fail-closed Composer supply-chain policy gate;
+- denied-by-default WASI Preview 1 execution with explicit resource grants; and
+- typed PAM RPC with generated TypeScript, Python, and Rust SDKs.
+
+## Laravel production platform
+
+`pushinbr/pam-laravel` provides:
+
+- presets for API, Livewire, Inertia, and realtime applications;
+- supervised HTTP, queue, scheduler, Horizon, and Nightwatch roles;
+- atomic local releases and PAM Cloud or Forge operations;
+- W3C trace context and bounded OTLP/HTTP JSON export;
+- autoscaling with cooldown and live metrics;
+- MCP 2025-06-18 automation with read-only defaults and token-gated writes;
+- a 44-package compatibility registry with auditable certification evidence;
+- a reproducible benchmark laboratory; and
+- a complete SaaS API reference application.
+
+Start with the [Laravel production platform](../../laravel/production-platform/).
+
+## PAM Native 0.2.1
+
+The certified Native distribution includes:
+
+- rich twelve-column grids with spans, offsets, ordering, responsive
+  breakpoints, independent row/column gutters, and arbitrary children;
+- `VirtualGrid` recycling for image and custom component cells;
+- integer `v-for`, where `1..N` is generated without an intermediate array and
+  zero or negative values render no iterations;
+- stack navigation, deep links, Android Back, staged transitions without
+  destination flicker, and native motion;
+- atomic hot reload that remounts the PHP component tree without leaving the
+  event bridge unresponsive;
+- bounded overlays, safe-area layout, controlled inputs, tabs, and selection
+  controls; and
+- a public Android plugin AAR, Swift/UIKit source archive, Composer package,
+  checksums, and build provenance.
+
+Android behavior is instrumented at both ends of the supported range, API 26
+and API 36. The Swift/UIKit renderer is distributed and compiled in CI; iOS
+application hosting and physical-device certification remain outside this
+Linux release track.
+
+## PamUI 0.2.1
+
+PamUI ships its own public identity and package surface:
+
+- 326 typed PHP facades across 61 modules;
+- generated component metadata and style recipes;
+- responsive tokens, themes, variants, compound variants, and interaction
+  states;
+- native accessibility semantics and minimum touch targets;
+- grid, virtual-grid, overlay, input, navigation, and selection behavior tested
+  on Android API 26 and 36; and
+- a public Composer distribution and Android AAR with checksums and provenance.
+
+The source release gate checks PHPStan level 9, deterministic generated API,
+style coverage, PHP behavior, composition performance, Kotlin unit tests,
+Android lint, the release AAR, and 40 instrumented behavior tests per Android
+API level.
+
+## PAM Desktop 1.1.1
+
+The stable Linux Desktop track provides:
+
+- public PHP API `1`, worker protocol `6`, and Rust plugin protocol `1`;
+- menus, tray behavior, global shortcuts, and interruptible background jobs;
+- composable PHP plugins and supervised process-isolated Rust plugins;
+- signed Ed25519 update feeds, bounded downloads, atomic install, one-slot
+  rollback, and relaunch;
+- reproducible self-contained Linux x86-64 host archives with a glibc 2.35
+  baseline; and
+- executable PHP reflection snapshots, golden protocol fixtures, external Rust
+  SDK compilation, clean rootless installation, launch, and uninstall gates.
+
+Windows and macOS groundwork is not part of the 1.x support promise. The
+current Linux archive has a verified adjacent SHA-256 record; GitHub artifact
+provenance is scheduled for the next Desktop patch release.
+
+## Verification evidence
+
+The PAM runtime gate executes 62 deterministic tests across the CLI, server,
+cluster, Laravel, hot reload, bounded memory, HTTP/2, HTTP/3, WebSocket, WASI,
+RPC, sandbox, replay, snapshots, workflows, contracts, and supply chain. It
+also runs:
+
+```bash
+cargo fmt --all -- --check
+cargo clippy --locked --all-targets --all-features -- -D warnings
+cargo test --locked --all-targets --all-features -- --test-threads=1
+scripts/check-generated-rpc.sh
+```
+
+Release workflows additionally build Linux x86_64, Linux ARM64, both Android
+runtime ABIs, verify every Packagist package from a clean project, and generate
+checksums for every asset. GitHub provenance is attached to both Linux runtime
+archives and the installer. The standalone Android runtime is checksum
+verified and embedded into both Linux build gates; its own provenance statement
+is scheduled for the next PAM release gate.
+
+## Public records
+
+- [PAM v0.1.33](https://github.com/push-in/pam/releases/tag/v0.1.33)
+- [PAM Native v0.2.1](https://github.com/push-in/pam-native/releases/tag/v0.2.1)
+- [PamUI v0.2.1](https://github.com/push-in/pam-mobile-ui-php/releases/tag/v0.2.1)
+- [PAM Desktop v1.1.1](https://github.com/push-in/pam-desktop/releases/tag/v1.1.1)
+- [`pushinbr/pam-native` on Packagist](https://packagist.org/packages/pushinbr/pam-native)
+- [`pushinbr/pam-mobile-ui` on Packagist](https://packagist.org/packages/pushinbr/pam-mobile-ui)
+- [`pushinbr/pam-laravel` on Packagist](https://packagist.org/packages/pushinbr/pam-laravel)
+- [Documentation source](https://github.com/push-in/pam-docs)
+
+macOS packaging and Apple physical-device certification are intentionally
+deferred until Apple hardware is available.

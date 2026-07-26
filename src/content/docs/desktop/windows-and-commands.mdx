@@ -26,7 +26,7 @@ $app = Application::create(
     manifest: Manifest::create(
         'com.example.my-app',
         'My desktop app',
-        '0.4.0',
+        '1.1.1',
     )
         ->description('A PHP-first desktop application.')
         ->publisher('My team')
@@ -54,9 +54,11 @@ Window identifiers begin with a letter, contain only ASCII letters, digits, dots
 
 ### Closing a secondary window
 
-Windows declared in the application are reusable. When the user clicks the native close control on a secondary window, PAM blurs and hides its WebView instead of destroying the configured window. A later visible/focus effect can open the same window again without rebuilding the Servo pipeline.
-
-Closing the main window still exits the application. Explicit close effects may destroy a secondary window; native teardown releases the Servo WebView first, then its rendering context, and finally the Winit window so callbacks never target an already-destroyed surface.
+Windows declared in the application are reusable. Closing a secondary window
+blurs and hides its WebView while preserving its Servo rendering context. A
+later visibility/focus effect reopens the same window without invalidating the
+shared EGL display. Closing the main window exits unless tray policy explicitly
+uses `TrayCloseBehavior::Hide`.
 
 ## Register a command
 
@@ -166,7 +168,10 @@ const operation = window.pam.invoke(
 controller.abort();
 ```
 
-Protocol 4 serializes commands through one PHP worker mutex. If a deadline expires, the caller aborts, the worker crashes, emits invalid output, or exceeds the message limit, PAM kills and reaps the worker and prepares a fresh generation.
+Protocol 6 serializes commands, PHP events, and background jobs through one PHP
+worker mutex. If a deadline expires, the caller aborts, the worker crashes,
+emits invalid output, or exceeds the message limit, PAM kills and reaps the
+worker and prepares a fresh generation.
 
 The interrupted command is never retried automatically because it may have completed a side effect just before failure. Design command handlers to use idempotency identifiers where safe replay matters.
 

@@ -1,0 +1,92 @@
+---
+title: Signed updates
+description: Publish strict Ed25519 feeds, verify bounded artifacts, install atomically, and retain rollback.
+---
+
+Desktop updates are opt-in policy. PHP pins the HTTPS endpoint, channel,
+Ed25519 public key, and sequential integer policy. The signing seed never ships
+with the application.
+
+## Application policy
+
+```php
+use Pam\Desktop\UpdatePolicy;
+use Pam\Desktop\Updates;
+
+$manifest = Manifest::create(
+    'com.example.my-app',
+    'My application',
+    '1.1.1',
+)->updates(
+    Updates::from(
+        'https://updates.example.com/'
+            .'my-app/stable.json',
+        '0123456789abcdef0123456789abcdef'
+            .'0123456789abcdef0123456789abcdef',
+    )
+        ->channel('stable')
+        ->policy(UpdatePolicy::Notify),
+);
+```
+
+| Value | Policy | Behavior |
+| ---: | --- | --- |
+| `1` | Manual | Only explicit frontend calls |
+| `2` | Notify | Background check and state events |
+| `3` | Automatic | Check, verify, install, and restart |
+
+Omitting update policy disables every updater route. Production feed and
+artifact URLs require HTTPS.
+
+## Generate and protect a key
+
+```bash
+pam desktop update-key \
+  --output /secure/my-app-update.key
+```
+
+The command creates a 32-byte Ed25519 seed, prints only its public key, and
+requires owner-only permissions on Unix. Store the private file in a secret
+manager.
+
+## Publish a feed
+
+```bash
+pam desktop publish-update . \
+  --key /secure/my-app-update.key \
+  --output dist/stable.json \
+  --published-at 2026-07-26T09:00:00Z \
+  --artifact \
+linux,x86_64,portable,dist/app-linux.tar.gz,https://cdn.example.com/app-linux.tar.gz
+```
+
+The publisher calculates byte length and SHA-256, serializes the closed
+schema in canonical field order, signs it, stages the feed atomically, and
+refuses replacement without `--force`.
+
+The stable 1.x target is Linux x86-64. Windows and macOS feed parsing is
+experimental and outside the published support contract.
+
+## Frontend lifecycle
+
+```js
+const checked = await window.pam.updater.check();
+
+if (checked.state === 4) {
+  const ready = await window.pam.updater.download();
+  if (ready.state === 6) {
+    await window.pam.updater.install();
+  }
+}
+```
+
+States are sequential integers: disabled `1`, idle `2`, checking `3`,
+available `4`, downloading `5`, ready `6`, applying `7`, up-to-date `8`, and
+failed `9`.
+
+The host strictly verifies the feed signature before target selection.
+Downloads are bounded by the signed length and must match SHA-256. Installation
+uses a copied helper, a same-filesystem staging directory, per-file manifest
+verification, atomic bundle swap, one previous-version rollback slot, final
+verification, and relaunch.
+

@@ -1,0 +1,73 @@
+---
+title: Background jobs
+description: Schedule bounded periodic PHP work with overlap policy, lifecycle events, recovery, and clean hot reload.
+---
+
+PAM Desktop 1.x schedules periodic work through the same supervised PHP worker
+as commands. Application state can persist, while one Zend runtime remains
+serialized and deterministic.
+
+## Declare a job
+
+```php
+use Pam\Desktop\BackgroundJob;
+use Pam\Desktop\ClientEvent;
+use Pam\Desktop\CommandResult;
+use Pam\Desktop\JobContext;
+use Pam\Desktop\JobOverlapPolicy;
+
+$app->job(
+    'heartbeat',
+    BackgroundJob::every(30_000)
+        ->initialDelay(5_000)
+        ->timeout(3_000)
+        ->overlap(JobOverlapPolicy::Skip),
+    static function (
+        JobContext $job,
+    ): CommandResult {
+        return CommandResult::success([
+            'runId' => $job->runId,
+            'startedAtMs' =>
+                $job->startedAtMilliseconds,
+        ])->event(new ClientEvent(
+            'heartbeat.updated',
+            ['runId' => $job->runId],
+        ));
+    },
+);
+```
+
+Intervals range from one second to 24 hours. Initial delay ranges from zero to
+24 hours; `runOnStart()` is shorthand for zero. Job timeout uses the normal
+100 ms to 120 s command bounds.
+
+Overlap policy is a sequential integer enum:
+
+| Value | Policy | Behavior |
+| ---: | --- | --- |
+| `1` | Skip | Skip when the PHP worker is busy |
+| `2` | Wait | Wait for the serialized worker, then execute |
+
+The next interval begins only after a run finishes, preventing an unbounded
+backlog when work is slower than its schedule.
+
+## Lifecycle and recovery
+
+The frontend receives ordered `pam.job.started`, `pam.job.completed`,
+`pam.job.failed`, and `pam.job.skipped` events.
+
+```js
+window.pam.on("pam.job.completed", ({ id, result }) => {
+  console.log(`${id} completed`, result);
+});
+```
+
+Effects and application events from a successful handler are delivered before
+`pam.job.completed`. A timeout, malformed response, or worker crash invalidates
+the current worker and prepares another generation. PAM never replays the
+failed run automatically.
+
+Shutdown and PHP policy reload interrupt sleeping schedules, join their worker
+threads, and only then install replacements. This prevents duplicated timers
+after hot reload.
+

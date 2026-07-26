@@ -146,7 +146,13 @@ await pam.fs.readText(target, {
 });
 ```
 
-## Missing capabilities
+## Adjacent native surfaces
 
-Menus, tray, global shortcuts, background jobs, and a plugin system are planned for the Desktop `0.6` roadmap. A generic shell, process, or unrestricted filesystem bridge is deliberately unsupported.
+Menus, tray behavior, global shortcuts, periodic PHP jobs, PHP plugins,
+process-isolated Rust plugins, and signed updates are implemented as separate,
+typed policies. They do not broaden the filesystem grants declared here.
 
+Read [native shell](../native-shell/), [background jobs](../background-jobs/),
+[plugins](../plugins/), and [signed updates](../signed-updates/). A generic
+shell, arbitrary process bridge, or unrestricted filesystem bridge remains
+deliberately unsupported.

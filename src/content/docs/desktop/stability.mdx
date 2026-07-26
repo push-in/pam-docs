@@ -1,0 +1,64 @@
+---
+title: Stability and support
+description: Understand Desktop API 1, protocol 6, plugin protocol 1, compatibility gates, and the Linux support boundary.
+---
+
+PAM Desktop 1.1.1 defines a stable application contract for Linux x86-64.
+`pam desktop` is the public workflow; `pam-desktop` is the Composer-managed
+internal native host.
+
+## Version axes
+
+| Contract | Version | Compatibility scope |
+| --- | ---: | --- |
+| Public application API | `1` | PHP objects and frozen JavaScript bridge |
+| Worker protocol | `6` | PAM/PHP bootstrap, requests, responses, and events |
+| Rust plugin protocol | `1` | Supervised executable transport and SDK |
+
+PHP exposes `Application::API_VERSION` and
+`Application::PROTOCOL_VERSION`. Rust exposes the matching public, worker, and
+plugin constants. Frontend code can feature-check `window.pam.apiVersion`.
+
+Application-owned identifiers remain strings. Statuses, kinds, categories,
+themes, policies, and other coded variants are sequential integer enums
+beginning at `1`.
+
+## SemVer promise
+
+- Patch releases fix defects without changing successful public behavior.
+- Minor releases may add optional API while existing 1.x applications keep
+  working.
+- Removing a symbol, changing a required parameter, reassigning an integer
+  discriminator, or changing existing successful behavior requires public API
+  `2` and a SemVer major.
+- Worker protocol `6` remains accepted throughout 1.x.
+
+## Executable compatibility gates
+
+CI enforces:
+
+1. reflection of every public PHP symbol and signature against
+   `compat/php-api-v1.txt`;
+2. typed round-trip of golden protocol-6 payloads;
+3. compilation of an external Rust plugin protocol-1 consumer;
+4. duplicate archive generation with byte-for-byte comparison; and
+5. clean rootless install, executable smoke test, and exact uninstall.
+
+The 1.1.1 local validation record also passes 10 protocol tests, 25 host tests,
+the PHP API snapshot, Composer validation, and PHPStan with 35 analyzed files.
+
+## Supported platform
+
+- Linux x86-64;
+- glibc baseline from Ubuntu 22.04;
+- PHP 8.4 workers;
+- Rust 1.88 for rebuilding the host and SDK;
+- supported X11 or Wayland environments in the pinned Winit/Servo stack.
+
+Tray visibility and global shortcut availability depend on the desktop
+environment and compositor; graceful fallback is part of the contract.
+
+Windows and macOS code is experimental, unbuilt, unpublished, and outside the
+1.x compatibility promise. Apple packaging and physical certification are
+deferred until Apple hardware is available.
+

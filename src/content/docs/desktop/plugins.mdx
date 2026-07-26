@@ -1,0 +1,101 @@
+---
+title: Plugins
+description: Compose PHP policy or supervise bounded process-isolated Rust plugins without loading native code into Servo.
+---
+
+PAM Desktop 1.x supports two extension models:
+
+- PHP plugins compose application policy inside the supervised PAM worker.
+- Rust plugins run as separate supervised executables over protocol `1`.
+
+Neither receives a generic browser bridge.
+
+## PHP plugins
+
+```php
+namespace App;
+
+use Pam\Desktop\Application;
+use Pam\Desktop\CommandContext;
+use Pam\Desktop\Plugin;
+
+final class RuntimePlugin implements Plugin
+{
+    public function identifier(): string
+    {
+        return 'runtime';
+    }
+
+    public function register(
+        Application $application,
+    ): void {
+        $application->command(
+            'runtime.snapshot',
+            static fn (
+                CommandContext $command,
+            ): array => [
+                'php' => PHP_VERSION,
+                'window' => $command->windowId,
+            ],
+        );
+    }
+}
+
+$app->plugin(new \App\RuntimePlugin());
+```
+
+A PHP plugin may add public commands, events, jobs, windows, and other
+application policy. Identifiers remain unique. If registration throws, PAM
+removes the incomplete declaration and fails boot.
+
+## Rust plugin workflow
+
+```bash
+pam desktop plugin new system.info .
+pam desktop plugin build system.info .
+```
+
+The scaffold pins the matching `pam-desktop-plugin` SDK. A locked release build
+is copied to `plugins/bin/system.info`.
+
+```php
+use Pam\Desktop\RustPlugin;
+
+$app->rustPlugin(
+    RustPlugin::executable(
+        'system.info',
+        'plugins/bin/system.info',
+    )->timeout(5_000),
+);
+```
+
+```js
+const snapshot = await window.pam.plugins.invoke(
+  "system.info",
+  "snapshot",
+  { detail: "short" },
+  { timeout: 5_000, signal: controller.signal },
+);
+```
+
+## Isolation contract
+
+Rust extensions are executables, not dynamic libraries. The host:
+
+1. resolves a regular project-relative executable and rejects traversal,
+   symlinks, and development/output directories;
+2. performs a protocol-1 metadata handshake;
+3. validates stable identity and the exact exported commands;
+4. serializes calls per plugin with a one-megabyte message limit, timeout, and
+   cancellation;
+5. terminates a crashed, timed-out, cancelled, or malformed process; and
+6. prepares a clean process for the next call without replaying the interrupted
+   operation.
+
+Process isolation contains crashes and avoids an unstable host ABI. It is not
+an operating-system sandbox: a Rust plugin is trusted native code with the
+authority of the application user.
+
+Configured executables are required during packaging; scaffold source is
+excluded from the production bundle.
+

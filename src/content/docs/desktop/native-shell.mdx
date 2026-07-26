@@ -1,0 +1,126 @@
+---
+title: Native shell
+description: Declare menus, tray behavior, global shortcuts, events, and dynamic shell state in typed PHP.
+---
+
+PAM Desktop 1.x keeps native shell policy in immutable PHP objects. Rust owns
+the operating-system handles, and every activation returns through the same
+typed event and effect path as application commands.
+
+## Configure the shell
+
+```php
+use Pam\Desktop\GlobalShortcut;
+use Pam\Desktop\Menu;
+use Pam\Desktop\MenuItem;
+use Pam\Desktop\Shell;
+use Pam\Desktop\Tray;
+use Pam\Desktop\TrayCloseBehavior;
+
+$app->shell(
+    Shell::none()
+        ->menu(Menu::create(
+            'application',
+            'Application',
+            MenuItem::command(
+                'show',
+                'Show window',
+                'CmdOrCtrl+Shift+KeyP',
+            ),
+            MenuItem::checkbox(
+                'background',
+                'Run in background',
+                true,
+            ),
+            MenuItem::submenu(
+                'tools',
+                'Tools',
+                MenuItem::command(
+                    'inspector',
+                    'Runtime inspector',
+                ),
+            ),
+            MenuItem::separator(),
+            MenuItem::command('quit', 'Quit'),
+        ))
+        ->tray(
+            Tray::create(
+                'application',
+                'My application',
+            )->closeBehavior(TrayCloseBehavior::Hide),
+        )
+        ->shortcut(
+            GlobalShortcut::create(
+                'show',
+                'CmdOrCtrl+Shift+KeyP',
+            ),
+        ),
+);
+```
+
+Every shell ID is unique. Menus accept at most 256 items and eight levels.
+Item kinds are sequential integers: command `1`, checkbox `2`, separator `3`,
+and submenu `4`. Tray close behavior is exit `1` or hide `2`.
+
+Accelerators use explicit `+`-separated tokens and require at least one
+modifier. PAM validates syntax before native registration.
+
+## Handle native events
+
+```js
+window.pam.on("pam.menu.selected", ({ id }) => {
+  console.log("menu", id);
+});
+
+window.pam.on("pam.tray.activated", ({ button }) => {
+  // 1 left, 2 right, 3 middle
+});
+
+window.pam.on("pam.shortcut.changed", ({ id, state }) => {
+  // 1 pressed, 2 released
+});
+```
+
+An optional PHP handler can return ordinary window or shell effects:
+
+```php
+use Pam\Desktop\CommandResult;
+use Pam\Desktop\EventContext;
+use Pam\Desktop\ShellEffect;
+use Pam\Desktop\WindowEffect;
+
+$app->on(
+    'pam.menu.selected',
+    static function (
+        EventContext $event,
+    ): ?CommandResult {
+        return match ($event->string('id')) {
+            'show' => CommandResult::success()
+                ->effect(WindowEffect::visible(true))
+                ->effect(WindowEffect::focus()),
+            'background' => CommandResult::success()
+                ->effect(
+                    ShellEffect::menuChecked(
+                        'background',
+                        true,
+                    ),
+                ),
+            'quit' => CommandResult::success()
+                ->effect(WindowEffect::close()),
+            default => null,
+        };
+    },
+);
+```
+
+Effects can enable or check a declared menu item and show or hide a declared
+tray. They cannot address arbitrary operating-system handles.
+
+## Linux behavior
+
+Linux uses StatusNotifierItem over D-Bus. A desktop without a compatible
+watcher may not display the tray icon; the application continues running.
+Global shortcut registration is best-effort because compositors may reserve an
+accelerator. Invalid syntax fails boot, while an unavailable registration emits
+a host warning and keeps the application usable.
+

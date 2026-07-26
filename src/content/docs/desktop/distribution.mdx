@@ -3,7 +3,9 @@ title: Distribution
 description: Build reproducible self-contained Linux bundles, portable archives, and Debian packages.
 ---
 
-PAM Desktop `0.4` defines a Linux distribution contract. Windows and macOS packaging, platform signing, and automatic updates remain planned for `0.5`.
+PAM Desktop 1.1.1 defines the stable Linux x86-64 distribution contract.
+Automatic application updates use signed Ed25519 feeds; GitHub host releases
+ship reproducible archives with adjacent SHA-256 files.
 
 ## Application manifest
 
@@ -14,7 +16,7 @@ use Pam\Desktop\Manifest;
 $manifest = Manifest::create(
     'com.example.my-app',
     'My desktop app',
-    '0.4.0',
+    '1.1.1',
 )
     ->description('A PHP-first desktop application.')
     ->publisher('Example')
@@ -68,6 +70,7 @@ A self-contained Linux bundle includes:
 - frontend assets;
 - application icon and Freedesktop entry;
 - a launcher with private runtime paths;
+- configured Rust plugin executables;
 - portable `install.sh` and `uninstall.sh` when applicable; and
 - `manifest.json`.
 
@@ -86,6 +89,7 @@ It stages into a random directory under the output, rejects unsafe project symli
 `manifest.json` records:
 
 - protocol version;
+- public PHP API and Rust plugin protocol versions;
 - application identity and version;
 - runtime version;
 - operating-system and architecture target;
@@ -119,12 +123,17 @@ The uninstaller removes the corresponding per-user application files. Review app
 | Linux directory bundle | Implemented |
 | Portable Linux `.tar.gz` | Implemented |
 | Debian `.deb` | Implemented when `dpkg-deb` is available |
-| Windows MSIX | Planned |
-| macOS DMG | Planned |
-| Code signing | Planned |
-| Signed automatic updates | Planned |
+| Signed automatic updates | Implemented for Linux x86-64 |
+| Windows package | Experimental, not published or supported |
+| macOS package | Deferred until Apple hardware is available |
+| GitHub host archive provenance | Planned for the next Desktop patch gate |
 
-:::caution[Alpha distribution]
-Self-contained Linux packaging is implemented, but PAM Desktop is still alpha and Servo is evolving. Validate the exact target distribution, graphics stack, native libraries, sandbox, upgrade path, and signing requirements before public release.
+:::caution[Production qualification]
+API 1 is stable, but Servo and Linux graphics stacks still vary by
+distribution. Validate the exact compositor, GPU driver, native libraries,
+plugin trust, update endpoint, rollback, and oldest glibc target before broad
+consumer deployment.
 :::
 
+See [signed updates](../signed-updates/) and
+[stability and support](../stability/).
