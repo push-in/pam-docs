@@ -59,7 +59,7 @@ export default defineConfig({
             { label: 'Create your first app', slug: 'getting-started/first-app' },
             { label: 'Choose a target', slug: 'getting-started/choose-a-target' },
             { label: 'Project status', slug: 'project/status' },
-            { label: 'Release 0.1.34', slug: 'project/release-0-1-34' },
+            { label: 'Release 0.1.35', slug: 'project/release-0-1-35' },
           ],
         },
         {
