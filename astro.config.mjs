@@ -59,7 +59,7 @@ export default defineConfig({
             { label: 'Create your first app', slug: 'getting-started/first-app' },
             { label: 'Choose a target', slug: 'getting-started/choose-a-target' },
             { label: 'Project status', slug: 'project/status' },
-            { label: 'Release 0.1.33', slug: 'project/release-0-1-33' },
+            { label: 'Release 0.1.34', slug: 'project/release-0-1-34' },
           ],
         },
         {
@@ -68,6 +68,7 @@ export default defineConfig({
             { label: 'How PAM works', slug: 'runtime/how-pam-works' },
             { label: 'HTTP applications', slug: 'runtime/http' },
             { label: 'Async I/O', slug: 'runtime/async-io' },
+            { label: 'Durable workflows', slug: 'runtime/durable-workflows' },
             { label: 'WebSockets', slug: 'runtime/websockets' },
             { label: 'Composer', slug: 'runtime/composer' },
             { label: 'Production', slug: 'runtime/production' },

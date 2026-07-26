@@ -3,7 +3,7 @@ title: Distribution
 description: Build reproducible self-contained Linux bundles, portable archives, and Debian packages.
 ---
 
-PAM Desktop 1.1.1 defines the stable Linux x86-64 distribution contract.
+PAM Desktop 1.1.2 defines the stable Linux x86-64 distribution contract.
 Automatic application updates use signed Ed25519 feeds; GitHub host releases
 ship reproducible archives with adjacent SHA-256 files.
 
@@ -16,7 +16,7 @@ use Pam\Desktop\Manifest;
 $manifest = Manifest::create(
     'com.example.my-app',
     'My desktop app',
-    '1.1.1',
+    '1.1.2',
 )
     ->description('A PHP-first desktop application.')
     ->publisher('Example')
@@ -126,7 +126,7 @@ The uninstaller removes the corresponding per-user application files. Review app
 | Signed automatic updates | Implemented for Linux x86-64 |
 | Windows package | Experimental, not published or supported |
 | macOS package | Deferred until Apple hardware is available |
-| GitHub host archive provenance | Planned for the next Desktop patch gate |
+| GitHub host archive provenance | Implemented with GitHub artifact attestation |
 
 :::caution[Production qualification]
 API 1 is stable, but Servo and Linux graphics stacks still vary by

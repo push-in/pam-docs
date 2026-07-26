@@ -1,0 +1,90 @@
+---
+title: Release 0.1.34
+description: Verified PAM 0.1.34 runtime with leased durable scheduling, Laravel compatibility, Desktop 1.1.2 provenance, Native 0.2.1, and PamUI 0.2.1.
+---
+
+PAM 0.1.34 is the current public runtime release. It adds production-grade
+local scheduling to the durable workflow engine while retaining the full
+0.1.33 server, Laravel, Native, PamUI, Desktop, sandbox, replay, cluster,
+snapshot, supply-chain, WASI, RPC, and typed-contract surface.
+
+## Install
+
+```bash
+curl --proto '=https' --tlsv1.2 --fail --silent --show-error --location \
+  --output pam-install.sh \
+  https://github.com/push-in/pam/releases/latest/download/install.sh
+sh pam-install.sh
+rm pam-install.sh
+pam --version
+pam doctor .
+```
+
+Pin the installer for reproducible automation:
+
+```text
+https://github.com/push-in/pam/releases/download/v0.1.34/install.sh
+```
+
+The release publishes Linux x86-64 and ARM64 archives, a standalone Android
+runtime bundle, the installer, and SHA-256 records. Linux runtime archives and
+the installer have public GitHub artifact attestations.
+
+## Leased durable workflows
+
+The embedded SQLite WAL workflow engine now provides:
+
+- atomic bounded claims with `BEGIN IMMEDIATE`;
+- expiring owner leases across competing local scheduler processes;
+- typed `Scheduler::tick()` execution for pending work, due retries, and timers;
+- automatic renewal before and after activities and compensations;
+- explicit `$context->heartbeat()` checkpoints for long activities;
+- fail-closed lease-loss detection before state commits;
+- stable `$context->idempotencyKey()` values per instance and step;
+- recovery of interrupted running and compensating instances;
+- duplicate-start behavior that never races an active scheduler; and
+- automatic migration of workflow databases created before lease columns.
+
+The executable contract covers claim contention, wrong-owner rejection,
+expired-owner recovery, lease loss during an activity, retry resume, reverse
+compensation, scheduler batches, idempotent starts, and legacy-schema upgrade.
+See [durable workflows](../../runtime/durable-workflows/).
+
+## Runtime and Laravel evidence
+
+The runtime gate executes deterministic coverage across the CLI, persistent
+Zend host, HTTP/1.1, HTTP/2, HTTP/3, WebSockets, streams, hot reload, worker
+supervision, bounded memory, sandbox, flight recorder, snapshots, cluster
+coordination, typed contracts, workflows, supply chain, WASI, and RPC.
+
+Laravel compatibility exercises maintained Laravel 12 and current Laravel 13,
+SQLite, MySQL, PostgreSQL, Redis, database queues, Artisan, scheduler,
+Sanctum, Scout, Livewire, Inertia, Reverb, Telescope, and Pulse. Horizon and
+Socialite remain tested on the newest Laravel version accepted by their current
+upstream Composer constraints.
+
+## Native, PamUI, and Desktop
+
+- PAM Native 0.2.1: Android API 26–36 behavior, rich virtual grids, navigation,
+  back/deep links, hot reload, plugins, DevTools, and accessible controls.
+- PamUI 0.2.1: independent identity, typed facades/tags, responsive layout,
+  tokens, themes, overlays, inputs, accessibility, and public artifact
+  provenance.
+- PAM Desktop 1.1.2: stable Linux x86-64 API 1/protocol 6, native shell,
+  supervised plugins, signed updates, reproducible archives, adjacent SHA-256,
+  and public GitHub artifact attestation.
+
+## Public records
+
+- [PAM v0.1.34](https://github.com/push-in/pam/releases/tag/v0.1.34)
+- [PAM Native v0.2.1](https://github.com/push-in/pam-native/releases/tag/v0.2.1)
+- [PamUI v0.2.1](https://github.com/push-in/pam-mobile-ui-php/releases/tag/v0.2.1)
+- [PAM Desktop v1.1.2](https://github.com/push-in/pam-desktop/releases/tag/v1.1.2)
+- [`pushinbr/pam-laravel` on Packagist](https://packagist.org/packages/pushinbr/pam-laravel)
+- [`pushinbr/pam-native` on Packagist](https://packagist.org/packages/pushinbr/pam-native)
+- [`pushinbr/pam-mobile-ui` on Packagist](https://packagist.org/packages/pushinbr/pam-mobile-ui)
+- [`pushinbr/pam-desktop` on Packagist](https://packagist.org/packages/pushinbr/pam-desktop)
+
+The [0.1.33 record](../release-0-1-33/) remains available for the preceding
+mobile/runtime integration release. macOS packaging and Apple physical-device
+certification remain deferred until Apple hardware is available.

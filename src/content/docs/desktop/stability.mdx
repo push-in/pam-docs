@@ -3,7 +3,7 @@ title: Stability and support
 description: Understand Desktop API 1, protocol 6, plugin protocol 1, compatibility gates, and the Linux support boundary.
 ---
 
-PAM Desktop 1.1.1 defines a stable application contract for Linux x86-64.
+PAM Desktop 1.1.2 defines a stable application contract for Linux x86-64.
 `pam desktop` is the public workflow; `pam-desktop` is the Composer-managed
 internal native host.
 
@@ -44,8 +44,10 @@ CI enforces:
 4. duplicate archive generation with byte-for-byte comparison; and
 5. clean rootless install, executable smoke test, and exact uninstall.
 
-The 1.1.1 local validation record also passes 10 protocol tests, 25 host tests,
-the PHP API snapshot, Composer validation, and PHPStan with 35 analyzed files.
+The 1.1.2 validation record also passes 10 protocol tests, 25 host tests, the
+PHP API snapshot, Composer validation, PHPStan with 35 analyzed files, a
+byte-identical archive rebuild, clean rootless install/uninstall, SHA-256
+verification and public artifact attestation.
 
 ## Supported platform
 
@@ -61,4 +63,3 @@ environment and compositor; graceful fallback is part of the contract.
 Windows and macOS code is experimental, unbuilt, unpublished, and outside the
 1.x compatibility promise. Apple packaging and physical certification are
 deferred until Apple hardware is available.
-

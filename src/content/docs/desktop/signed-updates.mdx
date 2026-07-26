@@ -16,7 +16,7 @@ use Pam\Desktop\Updates;
 $manifest = Manifest::create(
     'com.example.my-app',
     'My application',
-    '1.1.1',
+    '1.1.2',
 )->updates(
     Updates::from(
         'https://updates.example.com/'
@@ -89,4 +89,3 @@ Downloads are bounded by the signed length and must match SHA-256. Installation
 uses a copied helper, a same-filesystem staging directory, per-file manifest
 verification, atomic bundle swap, one previous-version rollback slot, final
 verification, and relaunch.
-
