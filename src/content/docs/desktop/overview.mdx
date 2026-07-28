@@ -8,6 +8,17 @@ application logic remains in typed PHP. It lives in a separate repository
 because its native toolchain, release cadence, and security boundary differ
 from the server runtime.
 
+PAM Desktop is our answer to desktop stacks that make application code choose
+between web productivity and native operational control. PHP owns typed
+commands, state, windows, and policy; Servo renders the interface; Rust
+supervises the process and enforces capabilities. The result is a desktop
+architecture with explicit security, recovery, plugins, signed updates, and
+reproducible distribution designed in from the beginning.
+
+It is an ambitious product, and we are proud of the engineering behind it:
+not a browser tab with filesystem access, but a controlled application host
+whose boundaries can be inspected, versioned, and tested.
+
 ```bash
 pam init hello-desktop --template desktop
 cd hello-desktop

@@ -7,6 +7,17 @@ PAM Native keeps PHP 8.4 alive and renders platform controls directly. Rust owns
 
 It is not a WebView and does not ship React's JavaScript runtime.
 
+That sentence is not a branding technicality; it is the architecture. PAM
+Native was built for teams that want the productivity and expressiveness of
+PHP without accepting a browser surface or a JavaScript-driven imitation of
+native UI. Lists recycle natively, gestures stay on the UI thread, media and
+cache work live below the component API, and the platform renders the controls
+users actually interact with.
+
+We built the difficult path on purpose: one typed PHP authoring model, a
+bounded binary protocol, a Rust rendering engine, and true platform views. That
+is why PAM Native can aim for native behavior instead of merely resembling it.
+
 ```php
 App::run(fn () => Screen::make(
     Column::make(

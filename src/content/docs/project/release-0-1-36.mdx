@@ -1,0 +1,101 @@
+---
+title: Release 0.1.36
+description: Verified PAM 0.1.36 release with product-flow generation, runnable Android benchmarks, and complete artifact provenance.
+---
+
+PAM 0.1.36 is the current public runtime release. It advances PAM Native's
+product workflow with a first-party flow generator and makes the Android
+benchmark path runnable across generated applications, including the cold
+startup journey.
+
+## Install
+
+```bash
+curl --proto '=https' --tlsv1.2 --fail --silent --show-error --location \
+  --output pam-install.sh \
+  https://github.com/push-in/pam/releases/latest/download/install.sh
+sh pam-install.sh
+rm pam-install.sh
+pam --version
+pam doctor .
+```
+
+Pin the installer for reproducible automation:
+
+```text
+https://github.com/push-in/pam/releases/download/v0.1.36/install.sh
+```
+
+## Product-flow generation
+
+The mobile CLI now generates a typed product flow instead of forcing every
+application to assemble its screen, state and navigation structure manually:
+
+```bash
+pam mobile make:flow checkout
+```
+
+Generation refuses to overwrite existing output. The command joins the
+existing screen, component and custom native-view generators as a repeatable
+starting point, while the generated application continues to use the normal
+PAM Native component and protocol path.
+
+## Runnable native benchmark
+
+The generated Android benchmark project now resolves the application under
+test generically instead of depending on one showcase-specific identity. The
+benchmark command executes the cold-startup Macrobenchmark journey and keeps
+Baseline Profile generation available:
+
+```bash
+pam mobile benchmark .
+pam mobile profile .
+```
+
+This closes the gap between having benchmark source in the repository and
+being able to run it against an ordinary generated PAM application.
+
+## Published artifacts
+
+The release publishes:
+
+- Linux x86-64 and ARM64 self-contained runtime archives;
+- a standalone Android runtime bundle for `arm64-v8a` and `x86_64`;
+- the rootless user-mode installer; and
+- adjacent SHA-256 records for every downloadable payload.
+
+The release assets are:
+
+- `pam-v0.1.36-linux-x86_64.tar.gz`;
+- `pam-v0.1.36-linux-aarch64.tar.gz`;
+- `pam-android-runtime.tar.gz`; and
+- `install.sh`.
+
+Every payload has an adjacent `.sha256` record. The installer verifies the
+selected archive before extraction and rejects unsafe archive paths.
+
+## Retained platform
+
+PAM 0.1.36 retains the complete 0.1.35 production surface:
+
+- persistent PHP 8.4 hosting across HTTP/1.1, HTTP/2, HTTP/3, WebSockets and
+  streams;
+- Rust/Tokio scheduling, native I/O and supervised workers;
+- leased durable workflows, retries, timers, heartbeats, idempotency,
+  recovery and compensation;
+- Laravel 12 and 13 integration and production operations;
+- the PAM Native Android runtime and Swift/UIKit renderer source;
+- PAM Mobile UI; and
+- PAM Desktop 1.1.2 with stable Linux API 1/protocol 6.
+
+## Public records
+
+- [PAM v0.1.36](https://github.com/push-in/pam/releases/tag/v0.1.36)
+- [Compare v0.1.35...v0.1.36](https://github.com/push-in/pam/compare/v0.1.35...v0.1.36)
+- [PAM Native releases](https://github.com/push-in/pam-native/releases)
+- [PAM Desktop v1.1.2](https://github.com/push-in/pam-desktop/releases/tag/v1.1.2)
+- [`pushinbr/pam-laravel` on Packagist](https://packagist.org/packages/pushinbr/pam-laravel)
+
+The [0.1.35 record](../release-0-1-35/) remains available for the preceding
+artifact-provenance release. See [project status](../status/) for exact target
+maturity and remaining platform boundaries.

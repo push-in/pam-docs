@@ -5,6 +5,11 @@ description: Pick the PAM runtime surface that matches the application you want 
 
 PAM uses the same persistent PHP foundation across several application targets, but each target has a different maturity and deployment model.
 
+Whichever target you choose, the thesis is the same: PHP should be allowed to
+own complete applications while purpose-built Rust and native layers handle
+the boundaries that demand them. Choose by product need and verified maturity,
+not by fear that PHP can only live behind a request-response server.
+
 | You want to build | Start with | Current boundary |
 | --- | --- | --- |
 | API or web service | `pam init my-api --template api` | Experimental Linux runtime |

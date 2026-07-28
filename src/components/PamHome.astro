@@ -7,10 +7,11 @@ const path = (value: string) => `${base}${value}`;
   <section class="pam-home-hero" aria-labelledby="pam-home-title">
     <div class="pam-home-copy">
       <p class="pam-home-kicker">PHP, always in memory</p>
-      <h2 class="pam-home-title" id="pam-home-title">The persistent stack for PHP applications.</h2>
+      <h2 class="pam-home-title" id="pam-home-title">PHP was never the limit.</h2>
       <p class="pam-home-lead">
-        Build long-lived servers, observable Laravel applications, real Android interfaces,
-        a growing UIKit renderer, and desktop software — with PHP at the center and Rust at the boundary.
+        PAM is the ambitious, persistent application platform that takes PHP from supervised
+        servers and production Laravel to real native interfaces and secure desktop software —
+        with PHP at the center and Rust at the boundary.
       </p>
       <div class="pam-home-actions">
         <a class="pam-button pam-button-primary" href={path('/getting-started/installation/')}>
@@ -85,7 +86,7 @@ const path = (value: string) => `${base}${value}`;
   </section>
 
   <section class="pam-platform-strip" aria-label="PAM platform areas">
-    <p>ONE RUNTIME.<br/>FOUR TARGETS.</p>
+    <p>ONE FOUNDATION.<br/>NO SMALL AMBITION.</p>
     <a href={path('/runtime/how-pam-works/')}><strong>Server</strong><span>HTTP, WebSockets, async I/O</span></a>
     <a href={path('/laravel/production-platform/')}><strong>Laravel</strong><span>Observe, deploy, scale, automate</span></a>
     <a href={path('/native/overview/')}><strong>Native mobile</strong><span>Android Views and iOS UIKit from PHP</span></a>
@@ -95,12 +96,13 @@ const path = (value: string) => `${base}${value}`;
   <section class="pam-home-section pam-home-intro" aria-labelledby="beyond-request">
     <div>
       <p class="pam-home-kicker">The runtime</p>
-      <h2 id="beyond-request">PHP beyond the request.</h2>
+      <h2 id="beyond-request">We built the runtime PHP deserved.</h2>
     </div>
     <div>
       <p>
         PAM embeds PHP 8.4 through the official Embed SAPI and keeps your application alive.
         Composer stays familiar while Rust and Tokio own scheduling, native I/O, and process supervision.
+        It is not a workaround for PHP's past — it is a platform for what PHP can build next.
       </p>
       <a class="pam-text-link" href={path('/runtime/how-pam-works/')}>See how PAM works <span aria-hidden="true">→</span></a>
     </div>

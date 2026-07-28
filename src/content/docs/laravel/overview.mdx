@@ -8,6 +8,13 @@ Runtime integration classes live under `Pam\Laravel`; the
 `pushinbr/pam-laravel` package adds production presets, diagnostics,
 observability, process supervision, and deployment operations.
 
+The goal is bigger than making Laravel answer a benchmark quickly. PAM treats
+Laravel as a production application platform: boot it once, isolate every
+request, measure its behavior, supervise its processes, ship atomic releases,
+scale deliberately, and preserve the framework model teams already know. It is
+Laravel with a purpose-built runtime underneath it — not Laravel rewritten to
+fit somebody else's ecosystem.
+
 ```bash
 pam init my-laravel-app --template laravel
 cd my-laravel-app

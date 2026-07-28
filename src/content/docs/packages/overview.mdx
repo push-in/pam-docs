@@ -5,6 +5,11 @@ description: Understand the first-party Composer packages that extend PAM.
 
 The PAM binary owns runtime-level capabilities. Optional application abstractions remain ordinary Composer packages with versioned PHP contracts.
 
+This is how PAM grows without becoming a monolith. The runtime provides the
+hard systems boundary; packages provide focused application contracts using
+the dependency manager PHP developers already trust. No parallel ecosystem,
+custom lockfile, or proprietary package format is required.
+
 | Package | Purpose |
 | --- | --- |
 | `pam/api` | Routing, route parameters, middleware, error handling, and package discovery |
@@ -33,4 +38,3 @@ Compatibility with Composer does not guarantee compatibility with every package.
 Server packages can publish providers through the versioned core contracts. Native plugins may ship PHP providers, components, themes, Android resources, manifests, Maven dependencies, AARs, JNI libraries, native modules, and native view factories.
 
 Protocol and enum identifiers are sequential integers and append-only within a protocol version.
-

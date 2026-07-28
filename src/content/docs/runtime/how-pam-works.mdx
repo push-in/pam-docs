@@ -5,6 +5,11 @@ description: Understand the persistent Zend, Tokio, Fiber, and worker architectu
 
 PAM embeds the Zend Engine through PHP's official Embed SAPI. Rust owns process lifecycle, HTTP transport, supervision, and the boundary to Tokio. PHP owns application code and familiar Composer objects.
 
+This division is the core of PAM's confidence: PHP does not need to become a
+systems language, and Rust does not need to become the application framework.
+Each owns the layer it is exceptionally good at. The result is a persistent PHP
+runtime designed as a platform, not a collection of request-server tricks.
+
 ## Boot
 
 At process start, PAM initializes Zend and Tokio, loads its bundled runtime files, discovers `vendor/autoload.php`, and evaluates the application entrypoint. Long-lived application objects remain available for subsequent work.
@@ -28,4 +33,3 @@ The master process supervises workers, replaces crashed or unhealthy children, s
 :::note[Truthful SAPI identity]
 HTTP workers report `PHP_SAPI` as `embed`. Artisan receives an explicit CLI lifecycle, but PAM does not pretend that every embedded request is running under FPM or Apache.
 :::
-

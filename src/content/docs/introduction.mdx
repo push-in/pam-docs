@@ -1,11 +1,21 @@
 ---
 title: Introduction
-description: What PAM is, why it exists, and where it fits in the PHP ecosystem.
+description: Meet the persistent PHP platform built for servers, Laravel, native mobile, and desktop applications.
 ---
 
-PAM stands for **PHP, Always in Memory**. It is a persistent, event-driven application runtime powered by Rust, Tokio, PHP Fibers, and the Zend Engine.
+PAM stands for **PHP, Always in Memory** — and it is an unapologetically
+ambitious answer to a simple question: how far can PHP go when we stop treating
+it as a language that must be rebuilt and discarded on every request?
 
-Traditional PHP deployments provide excellent request isolation, but they usually reconstruct meaningful application state for every request. PAM changes that lifecycle: it starts PHP and your Composer application once, then handles work inside a supervised long-lived process.
+The answer is: much further than the traditional runtime boundary suggests.
+PAM keeps the Zend Engine and your Composer application alive inside a
+supervised, event-driven runtime powered by Rust, Tokio, and PHP Fibers. The
+same foundation can serve persistent HTTP and WebSocket workloads, run Laravel
+with isolated request sandboxes, render real native mobile controls, and power
+capability-secured desktop software.
+
+This is not PHP imitating another ecosystem. It is PHP operating with a modern
+systems boundary built specifically around its strengths.
 
 ```text
 Traditional PHP                      PAM
@@ -31,6 +41,74 @@ request                              └─ request N ─┘
 - The worker used by PAM Desktop, where Servo displays local web interfaces inside native windows.
 - A collection of optional Composer packages for routing, sockets, PSR interoperability, testing, native UI, and extension contracts.
 
+## Why PAM is different
+
+Most platforms force a choice: keep the PHP ecosystem and accept the classic
+request lifecycle, or leave PHP to gain persistent processes, native
+interfaces, desktop distribution, and systems-level control.
+
+PAM rejects that trade-off.
+
+Your application remains PHP. Composer remains Composer. Laravel remains
+Laravel. Rust owns the work that benefits from strict memory, concurrency, and
+native control. PHP owns the expressive application layer developers already
+understand. Between them sits an explicit, versioned, bounded contract instead
+of an accidental pile of bridges.
+
+That combination is technically difficult, deliberately opinionated, and
+rare. We are proud of it. PAM is not a wrapper around an existing JavaScript
+stack, not a renamed process manager, and not a demo that stops at “Hello
+World.” It is an attempt to give PHP a coherent application platform from the
+server process to the screen.
+
+## One foundation, distinct products
+
+### PAM Server
+
+PAM Server turns PHP into a supervised persistent runtime for HTTP,
+WebSockets, streaming, native asynchronous I/O, workers, and durable process
+lifecycles. Zend stays warm; Rust and Tokio own transport, scheduling, and
+supervision. You keep normal PHP and Composer while gaining a runtime designed
+for long-lived work.
+
+### Laravel on PAM
+
+Laravel on PAM keeps the framework developers love and changes the operational
+ceiling around it. The application boots once, each request receives an
+isolated sandbox, and the production layer adds diagnostics, OTLP
+observability, managed processes, atomic releases, autoscaling, Cloud and
+Forge operations, and bounded MCP automation.
+
+### PAM Native
+
+PAM Native renders actual Android Views and UIKit controls from PHP. There is
+no WebView pretending to be native and no React JavaScript runtime between
+application state and the platform UI. PHP owns composition, Rust owns
+validation, reconciliation and layout, and Kotlin or Swift commits native
+mutations where they belong.
+
+### PAM Mobile UI
+
+PAM Mobile UI builds a typed, themed, accessible component system directly on
+PAM Native. It brings high-level authoring, declarative tags, utilities,
+tokens, parity records, and production verification without adding a second
+render tree or surrendering native interaction paths.
+
+### PAM Desktop
+
+PAM Desktop combines typed PHP application logic, Rust process control, and
+Servo-rendered interfaces inside capability-secured native windows. Commands,
+events, filesystem access, plugins, updates, rollback, and distribution are
+explicit contracts — not unrestricted ambient access disguised as
+convenience.
+
+### PAM Packages
+
+PAM's package ecosystem keeps optional abstractions optional. Routing,
+WebSockets, PSR interoperability, testing, native UI, and extension contracts
+remain ordinary Composer packages with versioned public APIs. PAM expands what
+PHP can host without replacing the ecosystem that made PHP valuable.
+
 ## What PAM is not
 
 PAM is not a new programming language, a PHP fork, a framework, or a Composer replacement. A standard `composer.json`, `composer.lock`, PSR-4 autoloader, and `vendor/autoload.php` remain the project contract.
@@ -47,5 +125,5 @@ surface. PAM Desktop targets controlled prototypes and product exploration
 while Servo and multi-platform distribution continue to mature.
 
 The [project status](../project/status/) page is the shortest accurate overview
-of what you can use today. The [0.1.35 release record](../project/release-0-1-35/)
+of what you can use today. The [0.1.36 release record](../project/release-0-1-36/)
 lists exact artifacts and verification evidence.
