@@ -114,7 +114,14 @@ export default defineConfig({
               ],
             },
             { label: 'Responsive layout', slug: 'native/responsive-layout' },
-            { label: 'State & lifecycle', slug: 'native/state-and-lifecycle' },
+            {
+              label: 'Application core',
+              items: [
+                { label: 'State & lifecycle', slug: 'native/state-and-lifecycle' },
+                { label: 'Component runtime', slug: 'native/component-runtime' },
+                { label: 'Global store', slug: 'native/global-store' },
+              ],
+            },
             { label: 'Navigation', slug: 'native/navigation' },
             { label: 'Hot reload', slug: 'native/hot-reload' },
             { label: 'Native views', slug: 'native/native-views' },

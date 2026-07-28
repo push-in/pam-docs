@@ -1,0 +1,410 @@
+---
+title: Global store
+description: Build Vuex-style global state with actions, computed values, transactions, selectors, persistence, migrations, optimistic updates, undo, middleware, replicas, and DevTools.
+---
+
+PAM Store is the global reactive state layer built into PAM Native. It fills
+the same role as Vuex or Pinia: one domain store, explicit actions, computed
+state, subscriptions, middleware, history, persistence, and DevTools.
+
+The important architectural difference is where it runs. The source of truth
+stays in the persistent PHP runtime. Kotlin and Swift receive only the visual
+patches caused by changed dependencies, never a serialized copy of the whole
+store on every frame.
+
+## Define a store
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Stores;
+
+use Pam\Native\Store\Attributes\Computed;
+use Pam\Native\Store\Store;
+
+final class SessionStore extends Store
+{
+    protected function state(): array
+    {
+        return [
+            'user' => null,
+            'token' => null,
+            'loading' => false,
+            'permissions' => [],
+        ];
+    }
+
+    protected function persist(): array
+    {
+        return ['user', 'token', 'permissions'];
+    }
+
+    #[Computed]
+    protected function authenticated(): bool
+    {
+        return $this->token !== null;
+    }
+
+    #[Computed]
+    protected function displayName(): string
+    {
+        return $this->user['name'] ?? 'Guest';
+    }
+
+    public function signIn(string $email, string $password): void
+    {
+        $this->loading = true;
+
+        try {
+            $session = $this->api->signIn($email, $password);
+            $this->user = $session['user'];
+            $this->token = $session['token'];
+            $this->permissions = $session['permissions'];
+        } finally {
+            $this->loading = false;
+        }
+    }
+
+    public function signOut(): void
+    {
+        $this->transaction(function (): void {
+            $this->user = null;
+            $this->token = null;
+            $this->permissions = [];
+        }, 'session:sign-out');
+    }
+}
+```
+
+State has a fixed shape and accepts JSON-compatible scalars and arrays. Keep
+API clients, repositories, closures, resources, and native objects as services
+on the class, never inside `state()`.
+
+## Resolve and use it anywhere
+
+```php
+use App\Stores\SessionStore;
+use Pam\Native\Store\Stores;
+
+$session = Stores::get(SessionStore::class);
+
+$session->dispatch('signIn', [
+    'email' => $email,
+    'password' => $password,
+]);
+
+if ($session->authenticated) {
+    $title = 'Hello, '.$session->displayName;
+}
+```
+
+`Stores::get()` returns the runtime singleton for that store class. Reading
+state or computed values during render records the dependency. A write
+invalidates only consumers of that value and schedules a retained-tree render.
+
+## Actions are commits
+
+`dispatch()` invokes a named public store method as one atomic action:
+
+```php
+$cart->dispatch('add', ['product' => $product]);
+```
+
+All writes inside the action produce one history entry, one persistence write,
+one notification, and one render request. If the action throws, PAM restores
+the previous snapshot.
+
+Only public, non-static methods declared by the concrete store are
+dispatchable. Unknown or internal methods are rejected.
+
+## Action concurrency policies
+
+```php
+use Pam\Native\Store\ActionPolicy;
+
+$search->dispatch(
+    'search',
+    ['query' => $query],
+    policy: ActionPolicy::Latest,
+);
+
+$search->dispatch(
+    'search',
+    ['query' => $query],
+    policy: ActionPolicy::Debounced,
+    debounceMs: 250,
+);
+```
+
+| Policy | Value | Behavior |
+| --- | ---: | --- |
+| `Every` | 1 | Run every dispatch |
+| `Latest` | 2 | Keep the newest overlapping action |
+| `Leading` | 3 | Accept the first and suppress overlap |
+| `Debounced` | 4 | Wait for a quiet period |
+
+Policies are sequential integer enums in the protocol and named enum cases in
+application code.
+
+## Transactions
+
+Use a transaction when several direct writes represent one domain change:
+
+```php
+$cart->transaction(function () use ($cart, $items): void {
+    $cart->items = $items;
+    $cart->loading = false;
+    $cart->error = null;
+}, 'cart:loaded');
+```
+
+Nested writes commit together. Failure restores the original state.
+
+## Computed state
+
+```php
+#[Computed]
+protected function total(): int
+{
+    return array_sum(array_column($this->items, 'price'));
+}
+
+#[Computed]
+protected function itemCount(): int
+{
+    return count($this->items);
+}
+```
+
+Read computed methods as properties: `$cart->total`. PAM memoizes the result
+for the store revision and invalidates it after a state change.
+
+## Selectors
+
+Use `select()` for a one-off projection:
+
+```php
+$expensiveItems = $cart->select(
+    fn (CartStore $store): array =>
+        array_filter($store->items, fn (array $item) => $item['price'] > 1_000),
+);
+```
+
+Use a reusable selector when several consumers need the same derived value:
+
+```php
+$badge = $cart->selector(
+    fn (CartStore $store): int => count($store->items),
+);
+
+$count = $badge->value($cart);
+```
+
+Selectors memoize against the relevant store snapshot and avoid rebuilding
+unchanged consumers.
+
+## Subscriptions
+
+```php
+$subscription = $cart->subscribe(
+    function ($change): void {
+        $this->analytics->storeChanged(
+            action: $change->action,
+            diff: $change->diff,
+        );
+    },
+);
+
+$cart->unsubscribe($subscription);
+```
+
+Subscriptions are useful for logging, analytics, replication, and work outside
+render. Components should release manual subscriptions during cleanup; render
+dependencies themselves require no manual subscription.
+
+## Optimistic updates
+
+```php
+$cart->optimistic(
+    name: 'cart:remove',
+    apply: fn () => $cart->removeLocally($productId),
+    task: fn () => $api->delete("/cart/{$productId}"),
+    rollback: fn () => $toast->error('Could not remove the item'),
+);
+```
+
+PAM snapshots before `apply`. If `task` fails, it restores that snapshot and
+then runs the optional compensation callback.
+
+## Undo, redo, reset, and snapshots
+
+```php
+$beforeCheckout = $cart->snapshot();
+
+$cart->undo();
+$cart->redo();
+$cart->reset();
+```
+
+History and redo stacks are bounded to 200 entries. `reset()` restores
+`state()`. `snapshot()` returns the current JSON-compatible state without
+exposing the internal mutable array.
+
+## Middleware
+
+```php
+use Pam\Native\Store\Stores;
+
+Stores::middleware(new AuditMiddleware());
+Stores::middleware(new PerformanceMiddleware());
+```
+
+Middleware wraps action execution. Use it for audit trails, metrics, policy,
+and diagnostics—not for view logic.
+
+## Persistence
+
+Persistence is opt-in per key:
+
+```php
+protected function persist(): array
+{
+    return ['items', 'coupon'];
+}
+```
+
+An empty list disables persistence. Transient values such as `loading` and
+`error` should normally stay out of the persisted set. PAM batches action
+writes and uses atomic state storage.
+
+### Encrypted persistence
+
+```php
+use Pam\Native\Store\Persistence\EncryptedStatePersistence;
+use Pam\Native\Store\Stores;
+
+Stores::persistence(new EncryptedStatePersistence(
+    getenv('PAM_STORE_KEY'),
+));
+```
+
+The key is base64-encoded 256-bit data. Provide it from Android Keystore or iOS
+Keychain during bootstrap; never commit it.
+
+## Versioned migrations
+
+```php
+protected function version(): int
+{
+    return 3;
+}
+
+protected function migrations(): array
+{
+    return [
+        new CartV1ToV2(),
+        new CartV2ToV3(),
+    ];
+}
+```
+
+Versions start at `1`. Migrations implement `StoreMigration` and must form a
+complete sequential chain. PAM fails startup on incompatible persisted state
+instead of silently discarding user data.
+
+## SQLite or server replication
+
+`StoreReplica` keeps synchronization outside the store engine:
+
+```php
+use Pam\Native\Store\StoreReplica;
+
+$replica = new StoreReplica(
+    $cart,
+    fn (string $key, int $version, array $state) =>
+        $repository->upsert($key, $version, $state),
+);
+
+$replica->start();
+$replica->merge(
+    remote: $serverState,
+    conflictResolver: fn (array $local, array $remote) =>
+        $this->resolveCart($local, $remote),
+);
+```
+
+The writer can target PAM SQLite or an HTTP API. Incoming data merges
+atomically, and conflict policy stays explicit.
+
+## Store DevTools and time travel
+
+```php
+use Pam\Native\Store\StoreDevTools;
+
+$timeline = StoreDevTools::timeline();
+StoreDevTools::timeTravel($timeline[0]['id']);
+StoreDevTools::reset($cart);
+
+$json = StoreDevTools::exportJson();
+```
+
+The timeline exposes actions and diffs for inspection. Time travel restores a
+known snapshot and triggers the same dependency-aware render path as a normal
+commit.
+
+## Use a store from a component
+
+```php
+final class CartBadge extends Component
+{
+    private CartStore $cart;
+
+    public function setup(): void
+    {
+        $this->cart = Stores::get(CartStore::class);
+    }
+
+    public function render(): Renderable
+    {
+        return Text::make((string) $this->cart->itemCount);
+    }
+}
+```
+
+No prop drilling is required, and no full-store bridge payload is generated.
+If only `itemCount` changes, the dependent component becomes dirty; unrelated
+native nodes remain retained.
+
+## Testing
+
+```php
+protected function tearDown(): void
+{
+    Stores::resetRuntime();
+}
+
+public function testAddingAnItemUpdatesTheTotal(): void
+{
+    $cart = Stores::get(CartStore::class);
+    $cart->dispatch('add', ['product' => ['id' => 1, 'price' => 900]]);
+
+    self::assertSame(900, $cart->total);
+}
+```
+
+Store actions, transactions, migrations, optimistic rollback, selectors, and
+history can be tested without a simulator.
+
+## Store or local state?
+
+| Requirement | Use |
+| --- | --- |
+| One component or tightly owned subtree | Component local state |
+| Shared across screens | Global store |
+| Domain actions and computed domain state | Global store |
+| Temporary input or open/closed UI state | Local state |
+| Must survive restart | Persisted store key or `Restorable` component |
+| Scoped to one flow/modal subtree | `provide()` / `inject()` |
+

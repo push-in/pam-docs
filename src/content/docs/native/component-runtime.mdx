@@ -1,0 +1,399 @@
+---
+title: Component runtime
+description: Complete reference for props, local state, lifecycle, computed values, effects, watchers, slots, events, context, refs, persistence, and error boundaries.
+---
+
+A PAM component is a long-lived PHP object backed by a retained native tree. It
+is not recreated for every frame. That lets the main class own typed props,
+reactive local state, lifecycle, derived values, effects, error recovery,
+context, slots, events, and safe references without adding a JavaScript
+runtime.
+
+## A complete component
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Components;
+
+use Closure;
+use Pam\Native\Attributes\Computed;
+use Pam\Native\Attributes\Expose;
+use Pam\Native\Attributes\Prop;
+use Pam\Native\Component;
+use Pam\Native\ComponentChanges;
+use Pam\Native\ComponentRef;
+use Pam\Native\Effect;
+use Pam\Native\ErrorContext;
+use Pam\Native\Renderable;
+use Pam\Native\Slot;
+use Pam\Native\Store\Stores;
+use Pam\Native\UI\Column;
+use Pam\Native\UI\Text;
+use Pam\Native\Watch;
+use Throwable;
+
+final class ProductCard extends Component
+{
+    private CartStore $cart;
+
+    public function __construct(
+        #[Prop(required: true, min: 1)]
+        public readonly int $productId,
+        #[Prop(required: true)]
+        public string $title,
+        #[Prop(min: 0)]
+        public int $price,
+    ) {}
+
+    protected function initialState(): array
+    {
+        return [
+            'quantity' => 1,
+            'loading' => false,
+        ];
+    }
+
+    public function setup(): void
+    {
+        $this->cart = Stores::get(CartStore::class);
+    }
+
+    public function mount(): void
+    {
+        // Runs once for this stable component identity.
+    }
+
+    #[Computed]
+    protected function subtotal(): int
+    {
+        return $this->price * $this->state->quantity;
+    }
+
+    protected function effects(): array
+    {
+        return [
+            Effect::once(fn () => $this->analytics->viewed($this->productId)),
+            Effect::watch(
+                fn () => $this->productId,
+                function (int $id): Closure {
+                    $subscription = $this->products->subscribe($id);
+
+                    return fn () => $subscription->cancel();
+                },
+            ),
+        ];
+    }
+
+    protected function watchers(): array
+    {
+        return [
+            Watch::value(
+                fn () => $this->state->quantity,
+                fn (int $current, int $previous) =>
+                    $this->analytics->quantityChanged($current, $previous),
+            ),
+        ];
+    }
+
+    public function shouldUpdate(ComponentChanges $changes): bool
+    {
+        return $changes->changed(
+            'title',
+            'price',
+            'state.quantity',
+            'state.loading',
+        );
+    }
+
+    #[Expose]
+    public function reset(): void
+    {
+        $this->state->replace(['quantity' => 1, 'loading' => false]);
+    }
+
+    public function cleanup(): void
+    {
+        // Runs after every effect cleanup, even during failure teardown.
+    }
+
+    public function render(): Renderable
+    {
+        return Column::make(
+            Text::make($this->title),
+            Text::make('Subtotal: '.$this->subtotal),
+        );
+    }
+
+    public function failed(Throwable $error, ErrorContext $context): ?Renderable
+    {
+        return Text::make('This product could not be displayed.');
+    }
+}
+```
+
+## Typed props
+
+Constructor-promoted properties are the component's public prop contract.
+Native templates and PHP callers use the same contract.
+
+```php
+enum AvatarShape: int
+{
+    case Circle = 1;
+    case Rounded = 2;
+    case Square = 3;
+}
+
+final class Avatar extends Component
+{
+    public function __construct(
+        #[Prop(required: true, min: 1)]
+        public readonly int $userId,
+        #[Prop(enum: AvatarShape::class)]
+        public readonly AvatarShape $shape = AvatarShape::Circle,
+        #[Prop(min: 16, max: 256, immutable: false)]
+        public int $size = 48,
+    ) {}
+}
+```
+
+`#[Prop]` supports:
+
+| Option | Meaning |
+| --- | --- |
+| `required` | Reject omission even when a loose authoring path is used |
+| `min` / `max` | Validate numeric limits |
+| `enum` | Require a backed enum value |
+| `immutable` | Recreate the keyed component when the value changes |
+
+Readonly and immutable props deliberately remount when changed. Mutable props
+update the stable instance and enter the update lifecycle:
+
+```php
+public function updating(string $property, mixed $next, mixed $previous): void {}
+public function updated(string $property): void {}
+public function propsChanged(ComponentChanges $changes): void {}
+```
+
+`propsChanged()` receives the whole batch. `changed('title', 'theme')` answers
+whether any named value changed; `any()` answers whether the batch is non-empty.
+
+## Local reactive state
+
+For class components, define a fixed JSON-compatible state shape:
+
+```php
+protected function initialState(): array
+{
+    return ['query' => '', 'page' => 1, 'filters' => []];
+}
+
+public function search(string $query): void
+{
+    $this->state->patch([
+        'query' => $query,
+        'page' => 1,
+    ]);
+}
+```
+
+Available operations are property read/write, `all()`, `patch()` and
+`replace()`. Equal writes are ignored. Unknown keys and objects, closures,
+resources, or other non-JSON values fail immediately instead of corrupting a
+future frame.
+
+Single-file components may also expose property state with `#[State]`:
+
+```php
+#[State(persist: true)]
+public int $selectedTab = 1;
+```
+
+Use local state for one component subtree. Use the [global store](../global-store/)
+when multiple screens or distant components own the same domain state.
+
+## Lifecycle, in order
+
+```text
+construct
+  → boot → setup → mount
+  → rendering → render → rendered
+  → attached → resumed → effects
+  → updating → propsChanged → rendering → render → updated → effects
+  → paused → unmount → effect cleanup → cleanup
+```
+
+| Hook | Use it for |
+| --- | --- |
+| `boot()` | Early one-time component initialization |
+| `setup()` | Resolve stores and services |
+| `mount()` | Start instance work that does not require native attachment |
+| `rendering()` / `rendered()` | Observe render boundaries; keep them cheap |
+| `attached()` | Work that requires committed native nodes |
+| `resumed()` / `paused()` | Application foreground/background behavior |
+| `updating()` / `updated()` | Observe individual prop changes |
+| `propsChanged()` | React once to a batch of changes |
+| `unmount()` | Stop component-owned work |
+| `cleanup()` | Final guaranteed cleanup after effect cleanups |
+
+Keep `render()` deterministic and free of I/O. Network and disk work belong in
+services/actions; native media and input work remain in their platform
+components.
+
+## Computed values and memo
+
+`#[Computed]` caches a method for the current component revision:
+
+```php
+#[Computed]
+protected function canSubmit(): bool
+{
+    return $this->state->email !== '' && !$this->state->loading;
+}
+
+// Read it like a property.
+$this->canSubmit;
+```
+
+Use `memo()` for expensive values with explicit dependencies:
+
+```php
+$rows = $this->memo(
+    'visible-rows',
+    [$this->items, $this->state->query],
+    fn () => $this->filterRows(),
+);
+```
+
+Both caches invalidate with the component lifecycle and are discarded during
+cleanup.
+
+## Effects and watchers
+
+Effects run only after the native tree is attached:
+
+```php
+protected function effects(): array
+{
+    return [
+        Effect::once(fn () => $this->load()),
+        Effect::watch(
+            fn () => [$this->userId, $this->state->online],
+            function (array $dependencies): Closure {
+                [$userId, $online] = $dependencies;
+                $handle = $this->presence->watch($userId, $online);
+
+                return fn () => $handle->cancel();
+            },
+        ),
+    ];
+}
+```
+
+When dependencies change, PAM runs the previous cleanup before the new effect.
+All registered cleanups are attempted during teardown even if one throws.
+
+`Watch::value()` is the concise previous/current form. It does not invoke the
+change callback for the initial value:
+
+```php
+Watch::value(
+    fn () => $this->state->query,
+    fn (string $current, string $previous) => $this->search($current),
+);
+```
+
+## Render control
+
+`shouldUpdate()` can retain the previous element subtree:
+
+```php
+public function shouldUpdate(ComponentChanges $changes): bool
+{
+    return $changes->changed('userId', 'theme');
+}
+```
+
+A later local-state dependency invalidation re-enables rendering. Stable keys,
+dependency tracking, computed caching, retained subtrees, Rust reconciliation,
+and frame-batched native commits work together; application code does not
+manually diff views.
+
+## Context with provide and inject
+
+Use ancestry-scoped services for flows that should not become global:
+
+```php
+protected function provide(): array
+{
+    return [CheckoutContext::class => new CheckoutContext()];
+}
+
+$checkout = $this->inject(CheckoutContext::class);
+```
+
+Resolution walks parents only. Missing providers throw immediately.
+
+## Slots and typed events
+
+```php
+protected function slots(): array
+{
+    return [
+        'header' => Slot::optional(),
+        'content' => Slot::required(),
+        'actions' => Slot::multiple(),
+    ];
+}
+
+protected function events(): array
+{
+    return [ProductSelected::class];
+}
+
+$this->emit(new ProductSelected($this->productId));
+```
+
+Slot cardinality is validated at configuration time. Typed events implement
+`ComponentEvent` and provide a stable name and payload. String events remain
+available for lightweight component APIs.
+
+## Component and native refs
+
+Expose only intentional parent-callable methods:
+
+```php
+$ref = new ComponentRef();
+
+#[Expose]
+public function reset(): void {}
+
+$ref->call('reset');
+```
+
+`ComponentRef` uses a weak reference and rejects methods without `#[Expose]`.
+`NativeRef` is the lifecycle-safe handle for `focus()`, `blur()`, `measure()`,
+`scrollIntoView()`, and custom native operations. Calls fail clearly after the
+native target detaches.
+
+## Error boundaries and restoration
+
+```php
+public function failed(Throwable $error, ErrorContext $context): ?Renderable
+{
+    return ErrorCard::make($error->getMessage());
+}
+
+public function fallback(): ?Renderable
+{
+    return ProfileSkeleton::make();
+}
+```
+
+Return `null` to let the parent boundary handle the failure. Components that
+implement `Restorable` provide a stable `stateKey()`, `saveState()`, and
+`restoreState()`; PAM persists only when the serialized state actually changes.
+

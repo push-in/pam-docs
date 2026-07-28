@@ -1,121 +1,156 @@
 ---
 title: State and lifecycle
-description: Understand component identity, local state, rerendering, native ownership, and cleanup.
+description: Choose local state, global stores, scoped context, and native-owned state while understanding PAM's retained render lifecycle.
 ---
 
-PAM keeps the PHP runtime and component instances alive. State mutations schedule a new render, Rust compares the resulting element tree, and each platform renderer receives only the necessary mutation batch.
+PAM Native has a complete application-state model, not just mutable values
+attached to views. Components stay alive, reads are dependency-tracked, writes
+schedule retained renders, Rust computes minimal mutations, and Android/iOS
+commit them on the native frame boundary.
+
+## Choose the right owner
+
+| State | Best owner | Example |
+| --- | --- | --- |
+| Temporary state for one component | Local component state | expanded card, input draft |
+| Shared domain state | [Global store](../global-store/) | session, cart, settings |
+| One subtree or flow | `provide()` / `inject()` | checkout or modal context |
+| High-frequency platform interaction | Native component | cursor, scroll, animation |
+| Restorable component instance | `Restorable` | editor draft, selected tab |
+
+This separation prevents a global store from becoming a dumping ground and
+keeps per-frame interaction away from PHP.
 
 ## Local state
-
-Single-file components can mark mutable properties with `#[State]`:
 
 ```php
 final class Counter extends Component
 {
-    #[State]
-    public int $count = 0;
+    protected function initialState(): array
+    {
+        return ['count' => 0];
+    }
 
     public function increment(): void
     {
-        $this->count++;
+        $this->state->count++;
+    }
+
+    public function render(): Renderable
+    {
+        return Button::make((string) $this->state->count)
+            ->onPress($this->increment(...));
     }
 }
 ```
 
-State belongs to a stable component identity. Reordering repeated children without keys may transfer identity to the wrong item. Use a stable `key` whenever children can be inserted, removed, sorted, or moved.
+`$this->state` supports property reads/writes, `all()`, `patch()`, and
+shape-safe `replace()`. State accepts JSON-compatible values, ignores equal
+writes, and rejects undeclared keys.
 
-## Props
+Single-file components also support `#[State]` properties:
 
-Public constructor parameters are component props. PAM updates mutable public props on a stable child instance.
+```php
+#[State]
+public string $query = '';
+```
 
-A private or readonly constructor value cannot be updated safely. When it changes, PAM remounts that child intentionally.
+## Global state
+
+```php
+final class AppStore extends Store
+{
+    protected function state(): array
+    {
+        return ['theme' => 1, 'online' => true, 'notifications' => 0];
+    }
+
+    public function markAllRead(): void
+    {
+        $this->notifications = 0;
+    }
+}
+
+$app = Stores::get(AppStore::class);
+$app->dispatch('markAllRead');
+```
+
+Stores add Vuex-style actions, computed state, transactions, selectors,
+subscriptions, concurrency policies, optimistic rollback, undo/redo,
+persistence, encryption, migrations, replication, and time-travel DevTools.
+Read the [complete global store guide](../global-store/).
 
 ## Lifecycle
 
-Components may react to mount, updated props/state, and unmount through the component lifecycle contract. Keep lifecycle work bounded:
+```text
+construct → boot → setup → mount → render → attached → resumed
+          → update cycles and effects
+          → paused → unmount → cleanup
+```
 
-- start subscriptions or resources at mount;
-- update only when relevant values changed;
-- release resources at unmount;
-- cancel late asynchronous work; and
-- never manipulate Android Views from the PHP worker.
+Use `setup()` to resolve stores/services, `attached()` for work requiring a
+committed native node, effects for dependency-owned resources, and `cleanup()`
+for final teardown. The [component runtime reference](../component-runtime/)
+covers every hook, typed props, computed values, memo, watchers, refs, slots,
+events, context, restoration, and error boundaries.
 
 ## Render and commit path
 
 ```text
-PHP component state
-  │ render
-  ▼
-Element tree
-  │ PNT1 first frame / PNP1 updates
-  ▼
-Rust reconciliation and layout
-  │ PNB1 mutation batch
-  ▼
-Kotlin or Swift frame queue
-  │ one UI commit per VSYNC
-  ▼
-Android Views or UIKit controls
+PHP component/store write
+  → dependency invalidation
+  → retained Element tree
+  → Rust reconcile + layout
+  → bounded PNB1 mutation batch
+  → one Kotlin/Swift UI commit per frame
 ```
 
-The first render is a complete tree. Later renders use numeric create, remove, property-update, move, and set-root operations.
-
-Node IDs are stable 64-bit hashes of keyed PHP identities. Reused immutable subtrees are cached through `WeakMap`; returning the same tree can produce no native commit.
-
-## Layout invalidation
-
-Paint-only changes can skip layout. Dimensions, flex rules, gaps, margins, min/max constraints, and alignment invalidate the relevant layout path.
-
-The renderer applies only layout IDs emitted by Rust instead of rescanning every Android View.
+The first frame sends a complete tree. Later frames contain numeric creates,
+removes, property updates, moves, and root changes. Stable 64-bit keyed
+identities let PAM retain unchanged native nodes.
 
 ## Native-owned interaction
 
-High-frequency interaction remains native on both renderers:
+The platform keeps high-frequency behavior local:
 
-- input text, cursor, and selection;
-- press feedback and long-press recognition;
-- scroll and fling progress;
-- list recycling and prefetch on Android;
-- modal and navigation animations;
-- image fetch, decode, and caching;
-- safe-area and IME calculations; and
-- transform and opacity animations.
+- input text, cursor, selection, and IME;
+- press, long-press, pan, pinch, and rotation recognition;
+- scroll, fling, recycled-list prefetch, and refresh;
+- image fetch, decode, disk cache, and progress;
+- video/audio playback and media cache;
+- modal, drawer, navigation, and transform animations; and
+- safe-area, keyboard, dimensions, and accessibility behavior.
 
-PHP receives semantic events according to the chosen synchronization policy. On iOS, scroll, dimensions, image progress, input selection, input content size, and pointer-move events are coalesced before the next `CADisplayLink` commit.
+PHP receives semantic events. Coalesced progress/pointer events are delivered
+at most once per frame rather than turning every native motion sample into an
+application render.
 
 ## Input synchronization
 
-Text remains in the native input while the user types. Change delivery defaults to a 48 ms debounce and can be configured as:
-
 | Mode | PHP synchronization |
 | --- | --- |
-| Native | No per-keystroke state synchronization |
-| Debounced | Coalesced after a short quiet period |
-| Immediate | Every accepted change |
-| Blur | When the input loses focus |
-| Submit | When the input submits |
+| Native | No per-keystroke synchronization |
+| Debounced | Deliver after a short quiet period |
+| Immediate | Deliver every accepted change |
+| Blur | Deliver when focus leaves |
+| Submit | Deliver on submission |
 
-Selection events are coalesced to VSYNC. Key, content-size, end-editing, and other detailed events are opt-in.
+Text and selection stay native while the user edits, so a slow domain action
+cannot make the field lose its cursor.
 
-## iOS advanced event lifecycle
+## Performance rules
 
-The Swift renderer installs and removes event bridges with the node lifecycle:
-
-- `onPressIn`, `onPressOut`, and `onPressMove` use one zero-delay native recognizer;
-- `onInputEndEditing`, `onInputSelectionChange`, `onInputContentSizeChange`, and `onInputKeyPress` stay attached to `PamInputField`;
-- modal `requestClose`, `show`, `dismiss`, and `orientationChange` callbacks are detached when the node is removed;
-- image loading emits start, progress, load or error, and load-end in lifecycle order;
-- refresh and drawer callbacks are owned by their native containers; and
-- scroll listeners support `onScroll` and `onEndReached` independently.
-
-`onEndReached` uses property ID `84` as a non-negative viewport-relative threshold, defaults to `0.5`, supports both axes, emits once for a content/viewport state, and rearms when either size changes.
-
-## Cleanup and buffer ownership
-
-Rust-owned `PNB1` buffers cross JNI through direct, read-only `ByteBuffer` instances. Kotlin accepts ownership, applies the batch, and releases the buffer. Shutdown drains queued and accepted buffers before destroying the renderer.
-
-Debug output exposes the number of retained buffers; it must return to zero after a completed frame.
+- Give moving/repeated children stable keys.
+- Keep `render()` pure and bounded.
+- Read only the store/local-state values the component actually needs.
+- Put network and disk work in services or actions.
+- Use native lists for large data sets and native media/cache components for
+  images, video, and files.
+- Use computed values and selectors for derived data.
+- Release manual subscriptions and external handles through effect cleanup.
 
 :::caution[Do not block the UI thread]
-Native view lifecycle functions that create, update, or release Android Views or UIKit controls run on the UI thread. Network, disk, large decoding, and other slow work must move to a bounded background executor.
+Native view creation, update, and release happen on the UI thread. PAM's
+networking, disk cache, decoding, and application work must stay on their
+bounded background executors.
 :::
