@@ -1,0 +1,92 @@
+---
+title: Overlays and system UI
+description: Present native modals, bottom sheets, drawers, indicators, status bars, safe keyboards, and input accessories.
+---
+
+These components coordinate with platform windows, keyboards, gestures and
+system chrome. Prefer them over emulating overlays with absolute-positioned
+views.
+
+## Modal
+
+```php
+use Pam\Native\ModalAnimationType;
+use Pam\Native\ModalPresentation;
+use Pam\Native\UI\Modal;
+
+$modal = Modal::make(
+    $dialog,
+    visible: $this->state->showDialog,
+    presentation: ModalPresentation::Dialog,
+)
+    ->animationType(ModalAnimationType::Fade)
+    ->backdropColor(0x99000000)
+    ->hardwareAccelerated()
+    ->onRequestClose(fn () => $this->state->showDialog = false)
+    ->onDismiss(fn () => $this->afterDismiss());
+```
+
+## Bottom Sheet
+
+```php
+use Pam\Native\BottomSheetKeyboardBehavior;
+use Pam\Native\UI\BottomSheet;
+
+$sheet = BottomSheet::make(
+    $filters,
+    snapPoints: [0.35, 0.7, 1],
+    index: 1,
+)
+    ->dismissible()
+    ->backdropDismiss()
+    ->handleVisible()
+    ->dragEnabled()
+    ->cornerRadius(24)
+    ->keyboardBehavior(BottomSheetKeyboardBehavior::Interactive)
+    ->onChange(fn ($event) => $this->state->sheetIndex = $event->index)
+    ->onDismiss(fn () => $this->state->filtersOpen = false);
+```
+
+```xml
+<BottomSheet
+    :snapPoints="[0.35, 0.7, 1.0]"
+    index="1"
+    keyboardBehavior="interactive"
+    on:sheetChange="sheetChanged"
+    on:sheetDismiss="sheetDismissed"
+>
+    <Filters />
+</BottomSheet>
+```
+
+## Loading, status bar, and keyboard
+
+```php
+use Pam\Native\ActivityIndicatorSize;
+use Pam\Native\KeyboardAvoidingBehavior;
+use Pam\Native\StatusBarAppearance;
+use Pam\Native\UI\ActivityIndicator;
+use Pam\Native\UI\KeyboardAvoidingView;
+use Pam\Native\UI\StatusBar;
+
+$loading = ActivityIndicator::make($this->state->loading)
+    ->size(ActivityIndicatorSize::Large)
+    ->color(0xFF2563EB)
+    ->hidesWhenStopped();
+
+$status = StatusBar::make(
+    color: 0xFFF8FAFC,
+    appearance: StatusBarAppearance::Dark,
+)->animated();
+
+$form = KeyboardAvoidingView::make(
+    $fields,
+    KeyboardAvoidingBehavior::Resize,
+)->verticalOffset(12);
+```
+
+`DrawerLayoutAndroid` supports overlay, front, back and permanent/adaptive
+drawer presentations with open/close events. `InputAccessoryView` hosts native
+keyboard accessory content. Their names are retained for platform clarity;
+verify the target-specific behavior before depending on exact cross-platform
+appearance.

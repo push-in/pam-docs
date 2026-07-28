@@ -1,0 +1,85 @@
+---
+title: Images and cache
+description: Render, resize, progressively load, authenticate, and cache native images with Image and ImageBackground.
+---
+
+`Image` and `ImageBackground` use the native image pipeline. Requests,
+deduplication, disk I/O and cache-hit decoding run below the PHP component
+layer; recycled views reject late results from an older source generation.
+
+## Production image
+
+```php
+use Pam\Native\ImageFit;
+use Pam\Native\ImageResizeMethod;
+use Pam\Native\MediaCachePolicy;
+use Pam\Native\MediaPriority;
+use Pam\Native\UI\Image;
+
+$avatar = Image::make($user->avatarUrl)
+    ->fit(ImageFit::Cover)
+    ->defaultSource('asset://avatar-placeholder.png')
+    ->loadingIndicatorSource('asset://avatar-loading.png')
+    ->fadeDuration(180)
+    ->resizeMethod(ImageResizeMethod::Resize)
+    ->resize(512, 512)
+    ->resizeMultiplier(2)
+    ->progressiveRendering()
+    ->sourceSet("{$user->avatarUrl} 1x, {$user->avatar2xUrl} 2x")
+    ->headers(['Authorization' => "Bearer {$token}"])
+    ->cache(MediaCachePolicy::StaleWhileRevalidate)
+    ->cacheKey("avatar:{$user->id}:v3")
+    ->maxAge(30 * 24 * 60 * 60 * 1000)
+    ->cacheTags(['avatar', "user:{$user->id}"])
+    ->priority(MediaPriority::Visible)
+    ->maxCacheSize(64 * 1024 * 1024)
+    ->pinOffline()
+    ->onLoad(fn ($event) => $this->recordSize($event->width, $event->height))
+    ->onError(fn ($event) => $this->reportImageError($event->error));
+```
+
+## Tags
+
+```xml
+<Image
+    :source="$user->avatarUrl"
+    fit="cover"
+    defaultSource="asset://avatar-placeholder.png"
+    cache="stale-while-revalidate"
+    cache-key="avatar:user-42:v3"
+    cache-max-age="30d"
+    cache-tags="avatar,user-42"
+    cache-max-bytes="64mb"
+    priority="visible"
+    resize-width="512"
+    resize-height="512"
+    pin-offline
+    on:cacheHit="cacheHit"
+    on:cacheMiss="cacheMiss"
+    on:cacheReady="cacheReady"
+/>
+```
+
+## ImageBackground
+
+```php
+$hero = ImageBackground::make(
+    'asset://hero.webp',
+    Column::make(
+        Text::make('Build without accepting small boundaries'),
+        Button::make('Start')->onPress($start),
+    ),
+)->fit(ImageFit::Cover);
+```
+
+## Policies and events
+
+Available policies are `none`, `memory`, `disk`, `memory-and-disk`,
+`cache-first`, `network-first`, `cache-only`, and
+`stale-while-revalidate`. Cache events expose the stable key, loaded/total
+bytes and disk origin. Image lifecycle events include load start, progress,
+decoded size, error and load end.
+
+Cache files use atomic activation, bounded downloads, checksum validation,
+least-recently-used eviction and offline pin protection. Adaptive-stream
+offline downloads remain a separate platform manifest/license workflow.

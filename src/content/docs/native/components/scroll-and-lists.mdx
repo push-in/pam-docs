@@ -1,0 +1,91 @@
+---
+title: Scroll and lists
+description: Build native scrolling surfaces, recycled lists, grids, sections, pagination, snapping, and pull-to-refresh.
+---
+
+Use `Scroll` for one composed child and a list component for large collections.
+Native lists recycle platform rows and keep scrolling away from the PHP render
+path.
+
+## ScrollView
+
+```php
+use Pam\Native\ScrollKeyboardDismissMode;
+use Pam\Native\UI\Column;
+use Pam\Native\UI\Scroll;
+
+$content = Scroll::make(
+    Column::make(...$sections),
+)
+    ->showsIndicator(false)
+    ->fillViewport()
+    ->nestedScrollEnabled()
+    ->keyboardDismissMode(ScrollKeyboardDismissMode::OnDrag)
+    ->onScroll(fn ($event) => $this->rememberOffset($event));
+```
+
+`ScrollView::make($content)` is the compatibility alias. Horizontal paging can
+combine `horizontal()`, `pagingEnabled()`, `snapToInterval()` and a bounded
+deceleration rate.
+
+## FlatList
+
+`FlatList` is optimized for native text rows:
+
+```php
+use Pam\Native\UI\FlatList;
+
+$list = FlatList::make(array_map(
+    fn ($contact) => $contact->displayName,
+    $contacts,
+))
+    ->rowHeight(56)
+    ->prefetch(8)
+    ->initialScrollIndex($restoredIndex)
+    ->removeClippedSubviews()
+    ->onEndReached(fn () => $this->loadNextPage(), threshold: 0.35);
+```
+
+## VirtualizedList and SectionList
+
+```php
+use Pam\Native\UI\SectionList;
+use Pam\Native\UI\Text;
+use Pam\Native\UI\VirtualizedList;
+
+$cards = VirtualizedList::make(
+    ...array_map(
+        fn ($item) => ContactCard::make($item)->key("contact:{$item->id}"),
+        $contacts,
+    ),
+)
+    ->rowHeight(72)
+    ->prefetch(10)
+    ->onEndReached(fn () => $this->loadMore());
+
+$sections = SectionList::make([
+    ['title' => 'Favorites', 'items' => ['Ada', 'Linus']],
+    ['title' => 'Recent', 'items' => ['Margaret', 'James']],
+])->rowHeight(52);
+```
+
+Use stable keys for composed rows. `VirtualGrid` applies the same recycled
+list contract to multi-column responsive cells.
+
+## Pull to refresh
+
+```php
+use Pam\Native\RefreshIndicatorSize;
+use Pam\Native\UI\RefreshControl;
+
+$feed = RefreshControl::make($cards, $this->state->refreshing)
+    ->colors(0xFF2563EB, 0xFF7C3AED)
+    ->progressBackgroundColor(0xFFFFFFFF)
+    ->size(RefreshIndicatorSize::Default)
+    ->onRefresh(fn () => $this->refresh());
+```
+
+Avoid rendering an unbounded collection into a `Column` inside `Scroll`.
+Choose a recycled list whenever item count can grow with remote or user data.
+Android has the mature recycled-list path; confirm the current iOS parity
+record before relying on identical large-list behavior.

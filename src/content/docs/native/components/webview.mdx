@@ -1,0 +1,59 @@
+---
+title: WebView
+description: Embed bounded web content with host allowlists, injected JavaScript, inline media, and a native message bridge.
+---
+
+PAM Native applications do not render their main interface in a WebView.
+`WebView` is an explicit component for product surfaces that genuinely require
+web content: authentication, trusted embedded tools, rich documents or a
+controlled hybrid boundary.
+
+## Typed PHP
+
+```php
+use Pam\Native\UI\WebView;
+
+$web = WebView::make('https://app.example.com/embedded')
+    ->allowedHosts(['app.example.com', 'cdn.example.com'])
+    ->javaScriptEnabled()
+    ->domStorageEnabled()
+    ->allowsInlineMedia()
+    ->userAgent('PAM/1 EmbeddedTool')
+    ->injectedJavaScript(<<<'JS'
+        window.PamNative.postMessage(JSON.stringify({
+            type: 'ready',
+            version: 1
+        }));
+        JS)
+    ->onLoad(fn () => $this->state->webReady = true)
+    ->onMessage(fn (string $message) => $this->handleWebMessage($message))
+    ->onError(fn (string $message) => $this->report($message));
+```
+
+## Tags
+
+```xml
+<WebView
+    source="https://app.example.com/embedded"
+    allowedHosts="app.example.com"
+    javaScriptEnabled
+    domStorageEnabled
+    allowsInlineMedia
+    on:webLoad="webReady"
+    on:message="webMessage"
+    on:webError="webFailed"
+/>
+```
+
+## Security boundary
+
+- Allowlisted hosts apply to main-frame navigation.
+- Root loads reject unsupported executable/custom schemes.
+- Inline HTML must be selected explicitly.
+- Main-frame navigation has a bounded timeout.
+- The page can call `PamNative.postMessage(value)`; expose a small, versioned
+  message contract and validate every payload in PHP.
+- Do not place secrets into injected JavaScript or a URL query string.
+
+Disabling JavaScript and DOM storage is safer when the embedded content does
+not need them.

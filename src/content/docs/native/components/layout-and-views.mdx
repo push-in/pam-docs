@@ -1,0 +1,73 @@
+---
+title: Layout and views
+description: Compose native screens with Screen, View, flex rows and columns, responsive grids, safe areas, and spacers.
+---
+
+PAM Native layout is reconciled by Rust and committed as native platform
+frames. `View`, `Column`, and `Row` do not introduce a browser layout engine;
+they become retained native containers.
+
+## Typed PHP
+
+```php
+use Pam\Native\SafeAreaMode;
+use Pam\Native\Style;
+use Pam\Native\UI\Column;
+use Pam\Native\UI\Grid;
+use Pam\Native\UI\Row;
+use Pam\Native\UI\SafeAreaView;
+use Pam\Native\UI\Screen;
+use Pam\Native\UI\Spacer;
+use Pam\Native\UI\Text;
+use Pam\Native\UI\View;
+
+$screen = Screen::make(
+    SafeAreaView::make(
+        Column::make(
+            Text::make('Dashboard'),
+            Row::make(
+                View::make(Text::make('Revenue')),
+                Spacer::make(12),
+                View::make(Text::make('Orders')),
+            ),
+            Grid::make(
+                View::make(Text::make('Card A')),
+                View::make(Text::make('Card B')),
+                View::make(Text::make('Card C')),
+            )->columns(12)->gutter(16),
+        )->style(new Style(flexGrow: 1, padding: 24, gap: 16)),
+    )->mode(SafeAreaMode::Padding),
+);
+```
+
+## Tags
+
+```xml
+<Screen>
+    <SafeAreaView class="flex-1">
+        <Column class="flex-1 p-6 gap-4">
+            <Text fontSize="28">Dashboard</Text>
+            <Row class="gap-3">
+                <View class="flex-1 card"><Text>Revenue</Text></View>
+                <View class="flex-1 card"><Text>Orders</Text></View>
+            </Row>
+            <Grid columns="12" gutterX="16" gutterY="16">
+                <Column span="12" spanSm="6" spanMd="4">...</Column>
+            </Grid>
+        </Column>
+    </SafeAreaView>
+</Screen>
+```
+
+## Component roles
+
+- `Screen` is the root screen surface.
+- `View` is the neutral native container.
+- `Column` and `Row` preset vertical or horizontal flex direction.
+- `Grid` provides responsive column spans, offsets, ordering and gutters.
+- `SafeAreaView` applies selected platform insets as padding or margin.
+- `Spacer` is an explicit fixed gap; prefer container `gap` for repeated
+  sibling spacing.
+
+For breakpoints, spans, `VirtualGrid`, foldable posture and responsive
+examples, continue to [Responsive layout](../responsive-layout/).

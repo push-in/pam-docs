@@ -1,0 +1,84 @@
+---
+title: Text, input, and controls
+description: Use native text, editable fields, buttons, pressables, toggles, keyboard contracts, and input events.
+---
+
+Text editing, selection, cursor movement, keyboard interaction and press
+feedback stay in native controls. PHP receives semantic events instead of
+driving each platform frame.
+
+## Text
+
+```php
+use Pam\Native\TextEllipsizeMode;
+use Pam\Native\UI\Text;
+
+$title = Text::make('A long native title')
+    ->numberOfLines(2)
+    ->ellipsize(TextEllipsizeMode::Tail)
+    ->allowFontScaling()
+    ->maxFontSizeMultiplier(1.6)
+    ->selectable();
+```
+
+`Text` also supports automatic fit, platform break strategy, hyphenation and
+data detection. Keep font scaling enabled unless a tightly constrained
+decorative label has an accessible alternative.
+
+## Input
+
+```php
+use Pam\Native\KeyboardType;
+use Pam\Native\ReturnKeyType;
+use Pam\Native\UI\Input;
+
+$email = Input::make($this->state->email)
+    ->placeholder('you@example.com')
+    ->keyboard(KeyboardType::Email)
+    ->returnKey(ReturnKeyType::Done)
+    ->maxLength(254)
+    ->onChange(fn (string $value) => $this->state->email = $value)
+    ->onSubmit(fn () => $this->submit());
+```
+
+```xml
+<Input
+    bind:value="$email"
+    keyboardType="email"
+    returnKeyType="done"
+    sync="debounced"
+    placeholder="you@example.com"
+    on:submit="submit"
+/>
+```
+
+`TextInput` is the compatibility entry point for `Input`. Inputs additionally
+support multiline and secure entry, autofill hints, capitalization,
+autocorrect, selection, content-size/key events and native-owned immediate or
+debounced state.
+
+## Buttons, pressables, and toggles
+
+```php
+$save = Button::make('Save')
+    ->loading($this->state->saving)
+    ->onPress(fn () => $this->save());
+
+$card = Pressable::make(Text::make('Open project'))
+    ->hitSlop(12)
+    ->pressRetentionOffset(20)
+    ->delayLongPress(450)
+    ->pressedOpacity(0.72)
+    ->onPress($open)
+    ->onLongPress($showMenu);
+
+$enabled = Toggle::make($this->state->enabled)
+    ->trackColors(0xFFCBD5E1, 0xFF2563EB)
+    ->thumbColor(0xFFFFFFFF)
+    ->onToggle(fn (bool $value) => $this->state->enabled = $value);
+```
+
+`NativeSwitch` exposes the same native switch family. `TouchableOpacity`,
+`TouchableHighlight`, `TouchableWithoutFeedback`, and
+`TouchableNativeFeedback` exist for authoring compatibility; new code should
+prefer `Pressable` when it needs the complete press lifecycle.

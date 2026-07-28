@@ -98,7 +98,21 @@ export default defineConfig({
           items: [
             { label: 'Overview', slug: 'native/overview' },
             { label: 'iOS renderer', slug: 'native/ios-renderer' },
-            { label: 'Components', slug: 'native/components' },
+            {
+              label: 'Components',
+              items: [
+                { label: 'Overview', slug: 'native/components' },
+                { label: 'Layout & views', slug: 'native/components/layout-and-views' },
+                { label: 'Text, input & controls', slug: 'native/components/text-input-controls' },
+                { label: 'Images & cache', slug: 'native/components/images-and-cache' },
+                { label: 'Video & audio', slug: 'native/components/video-and-audio' },
+                { label: 'Scroll & lists', slug: 'native/components/scroll-and-lists' },
+                { label: 'Interaction & motion', slug: 'native/components/interaction-and-motion' },
+                { label: 'Overlays & system UI', slug: 'native/components/overlays-and-system-ui' },
+                { label: 'WebView', slug: 'native/components/webview' },
+                { label: 'Custom native views', slug: 'native/native-views' },
+              ],
+            },
             { label: 'Responsive layout', slug: 'native/responsive-layout' },
             { label: 'State & lifecycle', slug: 'native/state-and-lifecycle' },
             { label: 'Navigation', slug: 'native/navigation' },

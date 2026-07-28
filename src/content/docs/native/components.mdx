@@ -157,15 +157,48 @@ Keep business rules in PHP methods rather than embedding them in markup.
 
 ## Core component families
 
-| Family | Components |
-| --- | --- |
-| Layout | `Screen`, `View`, `Column`, `Row`, `Grid`, `SafeAreaView`, `Spacer` |
-| Content | `Text`, `Image`, `ImageBackground` |
-| Input | `Input`, `TextInput`, `Button`, `Pressable`, `Toggle`, `Switch` |
-| Scrolling | `ScrollView`, `FlatList`, `VirtualizedList`, `SectionList`, `RefreshControl` |
-| Presentation | `Modal`, `ActivityIndicator`, `StatusBar`, `KeyboardAvoidingView` |
-| Android | `DrawerLayoutAndroid`, `TouchableNativeFeedback`, `InputAccessoryView` |
-| Compatibility | `TouchableOpacity`, `TouchableHighlight`, `TouchableWithoutFeedback` |
+The component reference is split by behavior so examples, events, cache
+policies, limits, and platform boundaries stay discoverable.
+
+| Family | Components | Guide |
+| --- | --- | --- |
+| Layout | `Screen`, `View`, `Column`, `Row`, `Grid`, `SafeAreaView`, `Spacer` | [Layout & views](./components/layout-and-views/) |
+| Text and controls | `Text`, `Input`, `TextInput`, `Button`, `Pressable`, `Toggle`, `NativeSwitch` | [Text, input & controls](./components/text-input-controls/) |
+| Images | `Image`, `ImageBackground` | [Images & cache](./components/images-and-cache/) |
+| Media | `MediaPlayer` for video and audio | [Video & audio](./components/video-and-audio/) |
+| Scrolling | `Scroll`, `ScrollView`, `FlatList`, `VirtualizedList`, `SectionList`, `VirtualGrid`, `RefreshControl` | [Scroll & lists](./components/scroll-and-lists/) |
+| Interaction | `GestureDetector`, `InteractionRegion`, `Animated`, touchable compatibility aliases | [Interaction & motion](./components/interaction-and-motion/) |
+| Presentation | `Modal`, `BottomSheet`, `ActivityIndicator`, `StatusBar`, `KeyboardAvoidingView`, `DrawerLayoutAndroid`, `InputAccessoryView` | [Overlays & system UI](./components/overlays-and-system-ui/) |
+| Web content | `WebView` | [WebView](./components/webview/) |
+| Extension | `CustomView` and generated native factories | [Custom native views](./native-views/) |
+
+Navigation hosts are documented separately in [Navigation](./navigation/).
+High-level themed components built above these primitives live in
+[PAM Mobile UI](../mobile-ui/overview/).
+
+## What every component inherits
+
+Every element can receive a stable `key`, typed protocol properties, children
+where its contract permits them, and a `Style`. Layout, transforms, opacity,
+accessibility, test identifiers, pointer behavior, intersection observation,
+resize observation and native events remain on the shared element contract.
+
+```php
+$card = View::make(
+    Text::make('Native card'),
+)
+    ->key('card:42')
+    ->style(new Style(
+        padding: 16,
+        borderRadius: 20,
+        backgroundColor: 0xFFFFFFFF,
+    ))
+    ->accessibilityLabel('Project PAM');
+```
+
+Use enums rather than numeric magic values for coded variants. Protocol IDs
+remain sequential integers internally, but application code should name their
+meaning.
 
 ## Platform renderer mapping
 

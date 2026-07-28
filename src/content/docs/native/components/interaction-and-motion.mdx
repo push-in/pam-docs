@@ -1,0 +1,84 @@
+---
+title: Interaction and motion
+description: Add native press feedback, semantic gestures, drag and drop, context menus, and declarative animation.
+---
+
+PAM keeps frame-sensitive interaction in the native renderer. PHP receives
+semantic state changes and completion events rather than every platform frame.
+
+## Semantic gestures
+
+```php
+use Pam\Native\GestureComposition;
+use Pam\Native\GestureDirection;
+use Pam\Native\GestureType;
+use Pam\Native\UI\GestureDetector;
+
+$drag = GestureDetector::make(GestureType::Pan, $card)
+    ->direction(GestureDirection::Horizontal)
+    ->composition(GestureComposition::Simultaneous)
+    ->minimumDistance(12)
+    ->pointers(1, 2)
+    ->onUpdate(fn ($event) => $this->state->dragX = $event->translationX)
+    ->onEnd(fn ($event) => $this->commitDrag($event->velocityX));
+```
+
+```xml
+<GestureDetector
+    gestureType="pan"
+    gestureDirection="horizontal"
+    gestureComposition="simultaneous"
+    gestureMinDistance="12"
+    on:gestureUpdate="drag"
+    on:gestureEnd="drop"
+>
+    <View class="card">...</View>
+</GestureDetector>
+```
+
+Tap, pan, pinch, rotation, swipe and long-press are available. Composition can
+be exclusive, simultaneous or race. Critical actions still need a visible
+non-gesture alternative for accessibility.
+
+## Drag, drop, and menus
+
+```php
+use Pam\Native\NativeMenuItem;
+use Pam\Native\UI\InteractionRegion;
+use Pam\Native\UI\Text;
+
+$project = InteractionRegion::make(Text::make('PAM'))
+    ->draggable('project:42')
+    ->acceptsDrop()
+    ->contextMenu([
+        new NativeMenuItem('open', 'Open'),
+        new NativeMenuItem('delete', 'Delete', destructive: true),
+    ])
+    ->onDrop(fn (string $data) => $this->move($data))
+    ->onMenuAction(fn (string $id) => $this->menu($id));
+```
+
+## Declarative animation
+
+```php
+use Pam\Native\AnimationEasing;
+use Pam\Native\AnimationFillMode;
+use Pam\Native\AnimationKeyframe;
+use Pam\Native\UI\Animated;
+
+$entrance = Animated::make(
+    $card,
+    [
+        new AnimationKeyframe(0, opacity: 0, translationY: 18, scaleX: .96, scaleY: .96),
+        new AnimationKeyframe(1, opacity: 1, translationY: 0, scaleX: 1, scaleY: 1),
+    ],
+    durationMs: 260,
+    easing: AnimationEasing::EaseOut,
+)
+    ->fillMode(AnimationFillMode::Forwards)
+    ->onComplete(fn () => $this->state->entered = true);
+```
+
+Animations support opacity, translation, scale and rotation, iteration,
+delay, fill mode, pause/play and auto-reverse. Reduced-motion preferences are
+respected.

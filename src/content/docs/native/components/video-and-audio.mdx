@@ -1,0 +1,80 @@
+---
+title: Video and audio
+description: Play native video and audio with controls, lifecycle events, streaming cache, offline pinning, and bounded downloads.
+---
+
+`MediaPlayer` maps to the platform media player: `VideoView`/`MediaPlayer` on
+Android and `AVPlayerViewController` on iOS. Playback frames, controls and
+timing stay native.
+
+## Video
+
+```php
+use Pam\Native\MediaCachePolicy;
+use Pam\Native\MediaType;
+use Pam\Native\UI\MediaPlayer;
+
+$video = MediaPlayer::make(
+    'https://cdn.example.com/launch.mp4',
+    MediaType::Video,
+)
+    ->controls()
+    ->autoPlay()
+    ->loop(false)
+    ->muted(false)
+    ->volume(0.9)
+    ->playbackRate(1)
+    ->thumbnail('https://cdn.example.com/launch-poster.webp')
+    ->cache(MediaCachePolicy::Disk)
+    ->cacheKey('video:launch:v4')
+    ->maxAge(7 * 24 * 60 * 60 * 1000)
+    ->maxCacheSize(2 * 1024 * 1024 * 1024)
+    ->streamingCache()
+    ->downloadWhilePlaying()
+    ->preloadSeconds(12)
+    ->onReady(fn () => $this->state->ready = true)
+    ->onProgress(fn (float $current, float $duration) => $this->progress($current, $duration))
+    ->onEnd(fn () => $this->next())
+    ->onError(fn (string $message) => $this->report($message));
+```
+
+## Audio
+
+```php
+$audio = MediaPlayer::make(
+    'https://cdn.example.com/episode-42.m4a',
+    MediaType::Audio,
+)
+    ->controls()
+    ->cache(MediaCachePolicy::CacheFirst)
+    ->cacheKey('podcast:episode-42')
+    ->pinOffline();
+```
+
+## Tags
+
+```xml
+<Video
+    source="https://cdn.example.com/launch.mp4"
+    cache="disk"
+    cache-key="video:launch:v4"
+    cache-max-age="7d"
+    cache-max-bytes="2gb"
+    preload-seconds="12"
+    streaming-cache
+    download-while-playing
+    controls
+    on:ready="playerReady"
+    on:mediaProgress="playerProgress"
+    on:end="playNext"
+    on:mediaError="playerFailed"
+/>
+```
+
+The host pauses active media with the application lifecycle and only resumes
+content that was playing. Concurrent cache requests for one identity share a
+download, completed files activate atomically, and late completions cannot
+replace a player that has moved to another source.
+
+Ordinary remote files can use PAM's file cache. Offline adaptive HLS/DASH and
+DRM require the platform-specific download manifest and license workflow.
