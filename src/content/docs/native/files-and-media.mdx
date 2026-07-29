@@ -1,0 +1,81 @@
+---
+title: Files and media picker
+description: Pick files, images, videos, audio, or a filtered image-and-video gallery with PAM Native.
+---
+
+PAM Native imports selected content into the application sandbox and returns a
+`FileReference`. The absolute device path stays private; use `uri()` as the
+opaque source for `Image` and `MediaPlayer`.
+
+## Pick one file
+
+```php
+use Pam\Native\FileReference;
+use Pam\Native\MediaPickerType;
+use Pam\Native\System\Files;
+
+Files::pick(
+    MediaPickerType::Image,
+    function (FileReference $file): void {
+        $this->previewSource = $file->uri();
+    },
+);
+```
+
+The available filters are sequential integer enum cases:
+
+| Case | Value | Native filter |
+| --- | ---: | --- |
+| `MediaPickerType::Image` | `1` | Images |
+| `MediaPickerType::Video` | `2` | Videos |
+| `MediaPickerType::Audio` | `3` | Audio |
+| `MediaPickerType::Any` | `4` | Any openable document |
+| `MediaPickerType::Media` | `5` | Images and videos |
+
+Use `Media` for social galleries. Unlike `Any`, it prevents PDFs, XML files,
+archives, and unrelated documents from appearing alongside photos and videos.
+The filter is implemented with Android MIME filters and iOS `UTType` filters.
+
+## Pick multiple media items
+
+```php
+Files::pickMany(
+    MediaPickerType::Media,
+    function (array $files): void {
+        $this->media = array_map(
+            static fn (FileReference $file): array => [
+                'mimeType' => $file->mimeType,
+                'name' => $file->name,
+                'size' => $file->size,
+                'uri' => $file->uri(),
+            ],
+            $files,
+        );
+    },
+    limit: 10,
+);
+```
+
+The native picker owns selection UI and enforces a bounded limit between 1 and
+50. PAM copies each accepted item once into its sandbox, preserving the
+provider's display name and MIME type.
+
+## Display imported content
+
+```xml
+<Image
+    :source="$selectedImage"
+    resizeMode="cover"
+    fadeDuration="0"
+/>
+
+<MediaPlayer
+    :source="$selectedVideo"
+    controls="true"
+    cache="none"
+/>
+```
+
+Keep the returned URI in component state while the editor is mounted. This
+avoids reopening the provider, copying the file again, or decoding a new source
+on every render.
