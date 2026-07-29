@@ -28,6 +28,13 @@ application platform spanning persistent servers, Laravel production
 operations, real native mobile interfaces, secure desktop applications, and a
 Composer-first package ecosystem.
 
+## Source repositories
+
+- [PAM runtime](https://github.com/push-in/pam)
+- [PAM Native core](https://github.com/push-in/pam-native)
+- [PAM Native Nitro](https://github.com/push-in/pam-native-nitro)
+- [PAM Mobile UI](https://push-in.github.io/pam-docs/mobile-ui/overview/)
+
 This repository explains that platform without hiding the hard parts. The
 documentation records public APIs, architectural ownership, lifecycle,
 protocol limits, security boundaries, performance evidence, compatibility
