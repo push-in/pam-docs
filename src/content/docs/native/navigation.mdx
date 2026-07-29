@@ -78,13 +78,120 @@ Router::stack('home')
 
 ## Deep links
 
+Register every accepted path on the router:
+
 ```php
+$navigator = Router::stack('home')
+    ->route('home', fn () => $home)
+    ->route(
+        'profile',
+        fn (RouteContext $route) => new ProfileScreen(
+            username: $route->string('username'),
+        ),
+    )
+    ->deepLink('/u/{username}', 'profile')
+    ->deepLink('/profile/{username}', 'profile')
+    ->build();
+
 $navigator->open(
-    'pam://app/profiles/42?preview=1',
+    'pam://profile/david?preview=1',
 );
 ```
 
-Deep links decode path parameters and accept bounded scalar query values. Route parameters allow at most 64 safe keys and strings up to 16 KiB so untrusted URLs cannot inflate the retained tree without bounds.
+For HTTP and HTTPS URLs, matching uses the URL path. For a custom URI such as
+`pam://profile/david`, PAM first preserves the path-only behavior and then tries
+`host + path`, allowing `/profile/{username}` to match naturally.
+
+Deep links decode path parameters and accept bounded scalar query values. Route parameters allow at most 64 safe keys and strings up to 16 KiB so untrusted URLs cannot inflate the retained tree without bounds. Incoming URLs are limited to 8 KiB and the native pending queue retains at most 32 entries.
+
+### Receive links from Android and iOS
+
+PAM Native `0.5.31` adds the `linking` native module for both cold and warm
+application opens:
+
+```php
+use Pam\Native\System\Linking;
+
+Linking::initial(function (?string $url) use ($navigator): void {
+    if ($url !== null) {
+        $navigator->open($url);
+    }
+});
+
+$subscription = Linking::listen(
+    fn (string $url) => $navigator->open($url),
+);
+
+// When the application no longer needs the listener:
+Linking::unsubscribe($subscription);
+```
+
+For applications without an asynchronous launch gate, the convenience method
+handles both paths:
+
+```php
+$subscription = Linking::listenAndRoute(
+    $navigator,
+    function (string $url, bool $handled): void {
+        // Optional analytics or fallback behavior.
+    },
+);
+```
+
+Only one incoming-link listener can be active at a time. On Android,
+`PamActivity` captures the initial intent and delivers subsequent
+`onNewIntent()` URLs without restarting the PHP application. On iOS, the host
+passes launch and warm-open URLs through `PamLinking`.
+
+### Declare Android intent filters
+
+PAM CLI `0.1.38` generates the Android manifest filters from
+`pam-native.json`:
+
+```json
+{
+  "android": {
+    "minSdk": 26,
+    "targetSdk": 36,
+    "deepLinks": [
+      {
+        "scheme": "pushin"
+      },
+      {
+        "scheme": "https",
+        "host": "api.example.com",
+        "pathPrefix": "/reel/",
+        "autoVerify": true
+      }
+    ]
+  }
+}
+```
+
+Each entry produces an Android `VIEW` intent filter with `DEFAULT` and
+`BROWSABLE` categories. `autoVerify` is accepted only for HTTPS entries with a
+host. URI schemes, hosts and path prefixes are validated before Gradle starts,
+so invalid or unsafe manifest values fail during project preparation.
+
+For verified HTTPS links, the domain must also serve Android's
+`/.well-known/assetlinks.json` for the application ID and signing certificate.
+The custom scheme works without domain association.
+
+If session restoration is asynchronous, hold the initial URL until the launch
+screen finishes its `reset()`. This prevents the session route from replacing
+the destination that the user requested.
+
+### Route notification opens
+
+Push notifications use the same router contract:
+
+```php
+use Pam\Native\System\PushNotifications;
+
+PushNotifications::listenAndRoute($navigator);
+```
+
+The route is opened only for an `Opened` push event with a non-empty deep link.
 
 ## Persistence
 
@@ -117,4 +224,3 @@ Available integer-backed transitions include:
 - none.
 
 Transitions use transform and opacity on the UI thread, mirror horizontally in RTL layouts, respect Android's disabled-animation accessibility setting, and keep only the incoming screen reachable by TalkBack during and after the transition.
-
