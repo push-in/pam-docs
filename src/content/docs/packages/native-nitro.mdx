@@ -1,0 +1,191 @@
+---
+title: PAM Native Nitro
+description: Build model-driven, offline-first local data flows on PAM Native SQLite workers.
+---
+
+PAM Native Nitro is the high-performance local data engine for PAM Native. It
+keeps SQLite work outside rendering, selects only bounded rows needed by the
+current screen, and moves batches across the native bridge once.
+
+```bash
+composer require pushinbr/pam-native-nitro
+```
+
+Nitro 0.3.1 requires PHP 8.4 and PAM Native 0.5.13 or newer. It is a pure
+Composer package over PAM Native's database module; PAM Mobile UI is not
+required.
+
+## Define models
+
+Models use PHP attributes. Database column names can stay snake case while
+application properties remain idiomatic PHP.
+
+```php
+use Pam\Nitro\Attributes\Children;
+use Pam\Nitro\Attributes\Field;
+use Pam\Nitro\Attributes\PrimaryKey;
+use Pam\Nitro\Model;
+use Pam\Nitro\Relations\ChildrenRelation;
+
+enum MessageType: int
+{
+    case Text = 1;
+    case Image = 2;
+}
+
+final class Message extends Model
+{
+    #[PrimaryKey]
+    #[Field]
+    public string $id;
+
+    #[Field(name: 'chat_id', indexed: true)]
+    public string $chatId;
+
+    #[Field]
+    public string $body;
+
+    #[Field]
+    public MessageType $type = MessageType::Text;
+
+    #[Field(name: 'created_at', indexed: true)]
+    public int $createdAt;
+
+    public static function table(): string
+    {
+        return 'messages';
+    }
+}
+
+final class Chat extends Model
+{
+    #[PrimaryKey]
+    #[Field]
+    public string $id;
+
+    #[Children(Message::class, foreignKey: 'chat_id')]
+    public ChildrenRelation $messages;
+
+    public static function table(): string
+    {
+        return 'chats';
+    }
+}
+```
+
+Coded domain values use sequential integer-backed enums. Nitro stores the
+integer and restores the enum during hydration.
+
+## Prepare and query
+
+Boot once, then prepare every model before the first query. Preparation creates
+tables, reconciles additive columns, and creates declared indexes.
+
+```php
+use Pam\Nitro\Nitro;
+
+Nitro::boot('zechat.db');
+Nitro::prepare([Chat::class, Message::class], function () use ($chatId): void {
+    Message::query()
+        ->where('chat_id', $chatId)
+        ->latest()
+        ->limit(20)
+        ->get(function (array $messages): void {
+            $this->messages = array_reverse($messages);
+        });
+});
+```
+
+Queries are immutable builders. Identifiers must belong to the reflected
+schema, values are bound parameters, and result limits are clamped to 1–1,000
+rows. Relations stay lazy:
+
+```php
+$chat->messages->get(function (array $messages): void {
+    // Only this chat's rows cross the bridge.
+});
+```
+
+## Offline-first synchronization
+
+Prefer one native transaction for a remote snapshot or upload batch:
+
+```php
+Nitro::saveMany($messages, function (): void {
+    // One bridge call, one prepared upsert, one transaction.
+});
+
+Nitro::replaceMany(
+    Message::class,
+    $freshMessages,
+    ['chat_id' => $chatId],
+    function (): void {
+        // Delete and replacement commit atomically inside this chat only.
+    },
+);
+```
+
+`saveMany()` accepts up to 10,000 homogeneous models. `replaceMany()` accepts
+up to 9,999 replacement models and requires a non-empty scope. The existing
+snapshot remains visible until the transaction commits, avoiding an
+empty-cache frame.
+
+Delete one model through its primary key or use an explicit scope:
+
+```php
+$message->delete();
+
+Nitro::deleteWhere(
+    Message::class,
+    ['chat_id' => $chatId, 'pending' => false],
+);
+```
+
+An empty `deleteWhere()` or `replaceMany()` scope is rejected to prevent an
+accidental table-wide mutation.
+
+## Schema evolution
+
+Adding a field is non-destructive. `Nitro::prepare()` compares the model with
+`PRAGMA table_info`, adds missing columns sequentially, and preserves cached
+rows. Give new non-nullable properties a safe default:
+
+```php
+#[Field]
+public string $preview = '';
+```
+
+Nullable fields migrate to `NULL`. Integer-backed enums use their first
+sequential case when no explicit property default exists. Renames, removals,
+and type changes require an explicit application migration.
+
+## Execution model
+
+- SQLite runs on PAM Native's dedicated database worker, not the UI renderer.
+- WAL, `synchronous=NORMAL`, foreign keys, a busy timeout, and memory-backed
+  temporary storage are configured by the native database module.
+- Model schemas are reflected once per process and cached.
+- Bulk writes reuse a prepared statement inside one native transaction.
+- No JavaScript, JSI, proxy ORM, runtime code generation, or full-database JSON
+  hydration sits in the hot path.
+
+## Performance claims
+
+Nitro targets at least 10× the performance of full JSON-cache hydration for
+representative mobile workloads. That target is not a blanket claim against
+WatermelonDB. A cross-framework multiplier is published only after equivalent
+indexed schemas, durability, result sizes, physical devices, and release builds
+have been measured.
+
+Run the serialization baseline with:
+
+```bash
+composer benchmark
+```
+
+Device reports should include cold open, last-20 query, 1,000/10,000-row
+hydration, incremental sync, indexed pagination, optimistic update, memory at
+100,000 rows, median, p95, device, OS, build mode, dataset, and exact commit.
+
+See the [source repository](https://github.com/push-in/pam-native-nitro) for
+the benchmark protocol, architecture details, tests, and release history.

@@ -165,6 +165,7 @@ export default defineConfig({
             { label: 'pam/psr-bridge', slug: 'packages/psr-bridge' },
             { label: 'pam/testing', slug: 'packages/testing' },
             { label: 'pam/core-api', slug: 'packages/core-api' },
+            { label: 'PAM Native Nitro', slug: 'packages/native-nitro' },
           ],
         },
         {
