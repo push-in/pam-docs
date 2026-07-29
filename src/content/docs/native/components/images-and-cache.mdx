@@ -83,3 +83,38 @@ decoded size, error and load end.
 Cache files use atomic activation, bounded downloads, checksum validation,
 least-recently-used eviction and offline pin protection. Adaptive-stream
 offline downloads remain a separate platform manifest/license workflow.
+
+## Storage settings and diagnostics
+
+PAM Native `0.5.34` exposes typed, asynchronous cache metrics and cleanup for
+Android and iOS:
+
+```php
+use Pam\Native\CacheUsage;
+use Pam\Native\System\Caches;
+
+Caches::usage(static function (CacheUsage $usage): void {
+    printf(
+        "Images: %d, media: %d, temporary: %d bytes",
+        $usage->imageBytes,
+        $usage->mediaBytes,
+        $usage->temporaryBytes,
+    );
+});
+
+Caches::clear(
+    static function (CacheUsage $usage): void {
+        printf("Freed %d bytes", $usage->freedBytes);
+    },
+);
+```
+
+Cleanup preserves media marked with `pinOffline()` by default. A destructive
+“remove offline downloads” action can pass `preserveOffline: false`, preferably
+after explicit user confirmation:
+
+```php
+Caches::clear($onCleared, preserveOffline: false);
+```
+
+Counting and disk cleanup run away from the UI thread.
