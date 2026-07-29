@@ -181,6 +181,57 @@ If session restoration is asynchronous, hold the initial URL until the launch
 screen finishes its `reset()`. This prevents the session route from replacing
 the destination that the user requested.
 
+## Receive content shared by other Android apps
+
+PAM Native `0.5.33` and PAM CLI `0.1.40` add a typed share-target pipeline.
+Declare only the MIME types your application accepts:
+
+```json
+{
+  "android": {
+    "shareTargets": [
+      "image/*",
+      "video/*",
+      "text/plain"
+    ]
+  }
+}
+```
+
+The CLI generates `ACTION_SEND` and `ACTION_SEND_MULTIPLE` intent filters.
+Cold-start and warm-start payloads use the same PHP API:
+
+```php
+use Pam\Native\IncomingShare;
+use Pam\Native\System\IncomingShares;
+
+$openComposer = static function (IncomingShare $share): void {
+    foreach ($share->files as $file) {
+        // A normal FileReference, ready for Image or an upload.
+        $source = $file->uri();
+    }
+
+    $caption = $share->text;
+};
+
+IncomingShares::initial(
+    static function (?IncomingShare $share) use ($openComposer): void {
+        if ($share !== null) {
+            $openComposer($share);
+        }
+    },
+);
+
+$subscription = IncomingShares::listen($openComposer);
+```
+
+Android imports shared files into the private application cache before PHP is
+notified. The application therefore does not depend on a temporary
+`content://` grant after the source app closes. A payload is bounded to 10
+files and 64 KiB of text; the warm-start queue keeps at most 16 events.
+Call `IncomingShares::unsubscribe($subscription)` when a short-lived owner no
+longer needs the listener.
+
 ### Route notification opens
 
 Push notifications use the same router contract:
