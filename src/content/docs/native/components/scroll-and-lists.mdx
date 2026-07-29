@@ -28,6 +28,55 @@ $content = Scroll::make(
 combine `horizontal()`, `pagingEnabled()`, `snapToInterval()` and a bounded
 deceleration rate.
 
+### Imperative jumps
+
+PAM Native 0.5.29 adds tokenized scroll requests. A changed request number
+executes exactly once on the native UI thread. An empty target jumps to the
+content end; a `testId` targets a descendant without measuring row heights in
+PHP.
+
+```html
+<ScrollView
+    anchorToEnd="true"
+    maintainVisibleContentPosition="true"
+    :scrollTargetTestId="$scrollTarget"
+    :scrollRequest="$scrollRequest"
+>
+    <Column>
+        <Row testId="first-unread">
+            <Text>Unread messages</Text>
+        </Row>
+    </Column>
+</ScrollView>
+```
+
+```php
+public string $scrollTarget = '';
+public int $scrollRequest = 0;
+
+public function jumpToUnread(): void
+{
+    $this->scrollTarget = 'first-unread';
+    $this->scrollRequest++;
+}
+
+public function jumpToLatest(): void
+{
+    $this->scrollTarget = '';
+    $this->scrollRequest++;
+}
+```
+
+The fluent PHP equivalent is
+`$scroll->scrollRequest($request, $targetTestId)`. Keep the request value in
+component state. Do not alternate arbitrary offsets to force reconciliation:
+the request token is the supported command boundary.
+
+`anchorToEnd()` controls initial placement and following new content while the
+viewport is already near the end. `maintainVisibleContentPosition()` preserves
+the visible region when older content is prepended. Scroll requests are
+explicit user or application commands and take precedence when dispatched.
+
 ## FlatList
 
 `FlatList` is optimized for native text rows:
