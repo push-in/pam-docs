@@ -294,7 +294,8 @@ vendor/bin/pam-native-format --check src
 It discovers `*.pam.php` recursively, preserves the PHP block for the project's
 PHP formatter, indents templates and scoped CSS, and migrates deprecated
 `v-*` directives to `p-*`. Compile-time `@import` lines are normalized and
-preserved. The `--check` form is intended for CI.
+preserved, while empty `<style scoped>` blocks are removed. The `--check` form
+is intended for CI.
 
 ## Core component families
 
