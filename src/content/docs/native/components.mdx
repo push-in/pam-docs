@@ -200,7 +200,7 @@ Static `class` and dynamic `:class` use the same component-local rules.
 `:root` declares reusable `--variables`; `var(--name)` resolves at component
 compile time.
 
-PAM Native 0.5.54 automatically prepends the conventional `src/app.css` sheet
+PAM Native 0.5.54+ automatically prepends the conventional `src/app.css` sheet
 to every component. It is the application-wide home for fonts, tokens, tag
 defaults, and reusable semantic classes:
 
@@ -256,6 +256,11 @@ local tag rules, local classes, then inline PAM attributes.
         line-height: 19px;
     }
 
+    .profile-link {
+        color: #1B7A4E;
+        text-decoration: underline;
+    }
+
     .profile-bio {
         margin-top: 2px;
         font-size: 13.5px;
@@ -266,8 +271,10 @@ local tag rules, local classes, then inline PAM attributes.
 The subset covers native dimensions and percentages, min/max constraints,
 position edges, flex growth/shrink/direction, gap and alignment, padding and
 margin shorthands, borders and radii, backgrounds, opacity, elevation,
-overflow, and text/font properties. Plain numbers and `px`, `dp`, or `pt`
-represent PAM logical points.
+overflow, and text/font properties. PAM Native 0.5.55 adds familiar
+`text-decoration` values: `none`, `underline`, `line-through`, and
+`underline-line-through`. Plain numbers and `px`, `dp`, or `pt` represent PAM
+logical points.
 
 Only tag selectors, `.class` selectors, comma-separated selectors, and
 component-local `:root` variables are accepted. Packaged font aliases may be
