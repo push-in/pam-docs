@@ -6,6 +6,10 @@ description: Render, resize, draw over, progressively load, authenticate, and ca
 `Image` and `ImageBackground` use the native image pipeline. Requests,
 deduplication, disk I/O and cache-hit decoding run below the PHP component
 layer; recycled views reject late results from an older source generation.
+Since PAM Native `0.5.69`, Android also retries bounded transient failures
+while the image remains attached. A completed same-source request is reused
+only when it still owns a drawable, so a first-visible `VirtualizedList` image
+cannot remain blank until its cell is recycled.
 
 ## Production image
 
