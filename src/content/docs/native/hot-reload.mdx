@@ -48,6 +48,11 @@ On a valid change PAM:
 5. remounts the component and event tree; and
 6. commits the next native render.
 
+If an incremental patch and the retained native tree ever lose synchronization,
+PAM Native preserves PHP component identity and resends one complete tree
+automatically. The last valid UI remains mounted during recovery; a recoverable
+patch rejection is logged and does not open an error overlay.
+
 The reload does not promise to preserve form values, navigation history, or
 arbitrary PHP objects. It does promise not to leave buttons and other semantic
 events connected to a disposed runtime.
@@ -78,6 +83,12 @@ Typical causes are:
 
 Dependency changes may require rebuilding the APK or application bundle. A PHP
 source edit should not.
+
+With Firebase enabled, the debug build keeps the base application ID when the
+provided `google-services.json` has no `.debug` client. `pam mobile dev` and
+`pam mobile devtools` resolve and target that same package automatically.
+Without Firebase, the development package uses the conventional `.debug`
+suffix.
 
 ## Verify interactions after reload
 

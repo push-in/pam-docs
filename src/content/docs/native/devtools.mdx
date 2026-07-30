@@ -47,6 +47,10 @@ adb shell am broadcast \
   -p your.application.id.debug
 ```
 
+When Firebase is enabled with a production-only `google-services.json`, Gradle
+keeps the base application ID for debug builds. In that case, omit `.debug`.
+The `pam mobile devtools` command detects the correct package automatically.
+
 ## Profiling workflow
 
 ```bash

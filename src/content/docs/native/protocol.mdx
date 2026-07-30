@@ -19,7 +19,7 @@ Protocol identifiers are sequential integers beginning at `1`. Existing identifi
 
 New optional properties, node kinds, events, and operations may be appended. Changing an existing field's representation or meaning requires a new protocol version and an explicit compatibility adapter.
 
-Protocol version 1 currently defines properties through ID `284` and events through ID `34`.
+Protocol version 1 currently defines properties through ID `400` and events through ID `34`.
 
 ## Frame types
 
@@ -39,6 +39,19 @@ Decoders reject:
 - trailing bytes;
 - malformed lengths; and
 - payloads above the published bounds.
+
+## Transactional recovery
+
+Patch application is transactional. If the Rust engine rejects a `PNP1`
+incremental patch, the retained tree is rolled back to its last committed
+state. The PHP encoder keeps component and element identities, discards only
+its previous wire snapshot, and immediately retries with one complete `PNT1`
+tree.
+
+Android and iOS do not open an error overlay for this recoverable path. They
+write the precise engine failure to development logs through the stable
+`pam_native_engine_last_error` C API. A rejected complete tree remains a
+visible runtime error because it cannot be repaired safely.
 
 ## Patch operations
 
