@@ -155,3 +155,42 @@ when gallery access is denied or blocked.
 Keep the returned URI in component state while the editor is mounted. This
 avoids reopening the provider, copying the file again, or decoding a new source
 on every render.
+
+## Edit and resize images off the UI thread
+
+`ImageEditor::render()` performs crop, rotation, horizontal flip, filters,
+color adjustments, text/sticker composition, resize, and JPEG encoding on a
+dedicated native worker. The callback returns another sandboxed
+`FileReference`.
+
+```php
+use Pam\Native\FileReference;
+use Pam\Native\ImageCropRatio;
+use Pam\Native\ImageFilterType;
+use Pam\Native\System\ImageEditor;
+
+ImageEditor::render(
+    source: $selected,
+    cropRatio: ImageCropRatio::Square,
+    filter: ImageFilterType::Original,
+    quarterTurns: 0,
+    flipHorizontal: false,
+    overlayText: '',
+    callback: function (?FileReference $image, string $error): void {
+        if ($image instanceof FileReference) {
+            $this->uploadPath = $image->path;
+        }
+    },
+    maxWidth: 1080,
+    maxHeight: 1080,
+    outputQuality: 92,
+);
+```
+
+`maxWidth` and `maxHeight` default to `0`, which preserves the cropped
+dimensions. Positive values bound the output without upscaling it.
+`outputQuality` is clamped to the inclusive range 1–100 and defaults to 94.
+On Android, PAM reads source bounds and selects a decode sample before bitmap
+allocation, then applies one final filtered resize. Large camera photos
+therefore avoid a needless full-resolution decode when the destination is a
+thumbnail, avatar, or bounded attachment.
