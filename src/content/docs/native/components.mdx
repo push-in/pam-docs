@@ -276,6 +276,10 @@ overflow, and text/font properties. PAM Native 0.5.55 adds familiar
 `underline-line-through`. Plain numbers and `px`, `dp`, or `pt` represent PAM
 logical points.
 
+`border`, `border-top`, `border-right`, `border-bottom`, and `border-left`
+accept `<width> solid <color>`. Directional forms compile to native edge
+widths and the shared border color; no CSS parser runs on the device.
+
 Only tag selectors, `.class` selectors, comma-separated selectors, and
 component-local `:root` variables are accepted. Packaged font aliases may be
 declared with `@font-face`; PAM resolves their weight and italic variants to
