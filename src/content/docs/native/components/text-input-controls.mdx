@@ -60,6 +60,13 @@ Paths with traversal, empty segments, or unsupported extensions are rejected.
 A normal family name such as `sans-serif` continues to resolve through
 Android.
 
+Since 0.5.84, the Rust layout engine reads each selected TTF/OTF once and
+caches normalized glyph advances shared by every text node using that face.
+Intrinsic width, wrapping, accessibility font scaling, and flex centering use
+the same packaged font the platform renders before the first mount. This avoids
+clipped labels and font-specific centering drift without a UI-thread measure or
+post-render correction.
+
 An inline `fontFamily="asset://…"` attribute remains valid for a one-off
 element. A scoped `@font-face` and semantic class are preferable when a family
 is reused because paths stay out of the template structure. The alias compiles
@@ -75,11 +82,10 @@ PAM Native 0.5.43 converts that value to Android's font-relative `em` unit
 using the authored `fontSize`, so `letterSpacing="0.6"` remains a subtle
 tracking adjustment rather than 60% of a glyph width.
 
-PAM Native 0.5.83 calibrates Rust's intrinsic text widths against native
-sans-serif glyph advances and keeps only a sub-pixel wrapping tolerance. A
-centered `Row` containing `Text`, `gap`, and an icon therefore centers the
-visible control content instead of an inflated text frame, including when the
-Android font scale changes.
+Packaged fonts use their cached face metrics; installed and missing families
+fall back to PAM's allocation-free estimator. A centered `Row` containing
+`Text`, `gap`, and an icon therefore centers the visible control content,
+including when the Android font scale changes.
 
 ## Input
 

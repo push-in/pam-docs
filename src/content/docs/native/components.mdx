@@ -315,15 +315,16 @@ typed shadow directly, including colored hard shadows; comma-separated and
 inset shadows fail compilation because they have no equivalent lightweight
 native contract.
 
-Auto-width text is measured from calibrated native sans-serif glyph advances
-with a sub-pixel wrap tolerance. The platform renderer aligns visible glyphs
-from the relevant flex axis: `align-items`/`align-self` in columns and
-`justify-content` in rows. Since PAM Native `0.5.83`, this removes the inflated
-safety width that could shift centered text-and-icon controls while preserving
-custom-font overhang and stable wrapping. Explicitly sized or growing text
-keeps normal start alignment unless `text-align` is authored. Use the familiar
-CSS values `left`, `center`, and `right`, or the logical aliases `start` and
-`end`.
+Since PAM Native `0.5.84`, auto-width text declared with `@font-face` is
+measured from the selected TTF/OTF face's real glyph advances. Rust reads and
+caches those normalized metrics from the extracted application assets before
+the first native mount; there is no UI-thread measurement, second render, or
+visible correction. The platform renderer aligns visible glyphs from the
+relevant flex axis: `align-items`/`align-self` in columns and
+`justify-content` in rows. Missing, installed, or unsupported families retain
+the allocation-free generic estimator. Explicitly sized or growing text keeps
+normal start alignment unless `text-align` is authored. Use the familiar CSS
+values `left`, `center`, and `right`, or the logical aliases `start` and `end`.
 
 `border`, `border-top`, `border-right`, `border-bottom`, and `border-left`
 accept `<width> solid <color>`. Directional forms compile to native edge
