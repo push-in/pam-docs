@@ -142,6 +142,24 @@ Native modules receive an Android `Context` and compile against the stable `:plu
 
 Slow module work must leave the UI thread. Completion returns success or failure through the bounded callback contract.
 
+## Core or plugin?
+
+Put a capability in PAM Native core only when it is platform-generic, has a
+stable cross-application contract, and can be supported as part of the renderer
+compatibility matrix. Timers, files, HTTP, permissions, storage, lifecycle, and
+primitive media behavior meet that bar.
+
+Keep product protocols and optional heavy integrations in plugins. Examples
+include an application's signed-upload workflow, Pusher-compatible channel
+authentication, WebRTC signaling rules, custom camera pipelines, or a
+domain-specific background worker. A plugin may still be public and reusable;
+remaining outside the core prevents every PAM application from inheriting its
+dependencies and product assumptions.
+
+Before adding native code to a plugin, check the core system APIs. For example,
+delayed work should use `Pam\Native\System\Timers` rather than introducing a
+second Android `Handler` contract in a media or WebRTC package.
+
 ## Compatibility policy
 
 - Descriptor versions, protocols, statuses, and operation kinds are sequential integers.

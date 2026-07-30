@@ -48,6 +48,21 @@ The iOS renderer decodes protocol v1 mutation batches and maps the shared node s
 
 Performance-sensitive behavior stays native: input cursor and selection, press feedback, scrolling, image loading, modal interaction, refresh gestures, animations, and view mutation commits do not require a round trip through PHP.
 
+## Content-addressed application releases
+
+Android installs the packaged PHP application into a content-addressed
+directory under the app's private storage. A new bundle is written to a
+temporary directory, validated, and atomically promoted before the runtime
+starts it. The active directory is never mutated in place.
+
+PAM Native 0.5.41 also prunes obsolete application releases asynchronously
+after startup. It retains the active release and the newest inactive release as
+a local rollback candidate. Cleanup does not run on the render path and never
+deletes the active directory.
+
+This bounds private-storage growth during repeated development installs and
+production updates without adding work to the first native frame.
+
 ## Platform support
 
 | Requirement | Contract |
