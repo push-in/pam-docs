@@ -25,6 +25,25 @@ $title = Text::make('A long native title')
 data detection. Keep font scaling enabled unless a tightly constrained
 decorative label has an accessible alternative.
 
+### Packaged fonts on Android
+
+Place TTF or OTF files in the application source, for example
+`assets/fonts/Brand-Bold.ttf`, and reference the project asset explicitly:
+
+```xml
+<Text
+  fontFamily="asset://assets/fonts/Brand-Bold.ttf"
+  fontSize="20"
+>
+  Brand title
+</Text>
+```
+
+PAM Native 0.5.42 resolves this below the packaged `pam/` asset root and caches
+the decoded native `Typeface`. Paths with traversal, empty segments or
+unsupported extensions are rejected. A normal family name such as
+`sans-serif` continues to resolve through Android.
+
 ## Input
 
 ```php
