@@ -259,6 +259,7 @@ local tag rules, local classes, then inline PAM attributes.
         padding: 12px 16px;
         border: 1px solid #D8D7CF;
         border-radius: 12px;
+        box-shadow: 3px 3px 0 #FFD23F;
     }
 
     .profile-name {
@@ -282,7 +283,7 @@ local tag rules, local classes, then inline PAM attributes.
 The subset covers native dimensions and percentages, min/max constraints,
 position edges and `inset`, flex growth/shrink/direction/wrapping, gap and
 alignment, padding and margin shorthands, borders and radii, backgrounds,
-opacity, elevation, compositor transforms, overflow, images, and text/font
+opacity, `box-shadow`, elevation, compositor transforms, overflow, images, and text/font
 properties. Logical `padding-inline/block`, `margin-inline/block`, and
 `inset-inline/block` map to the native edges. `transform` supports
 `translateX/Y`, `scale/X/Y`, and `rotate`; `object-fit`, `visibility`,
@@ -296,6 +297,19 @@ root of 16 logical points.
 Absolute `left`, `top`, `right`, and `bottom` offsets also accept percentages.
 `border-radius` accepts the standard one-to-four circular-radius shorthand and
 compiles it to native per-corner radii; elliptical slash syntax is unsupported.
+
+`box-shadow` accepts one native shadow in familiar CSS order:
+`x-offset y-offset [blur-radius] [spread-radius] [color]`, or `none`.
+The color may appear before or after the lengths. Android and iOS draw the
+typed shadow directly, including colored hard shadows; comma-separated and
+inset shadows fail compilation because they have no equivalent lightweight
+native contract.
+
+Auto-width text keeps a conservative intrinsic frame to avoid clipping custom
+font glyphs. When its parent uses centered or trailing cross-axis alignment,
+the platform renderer applies the same alignment inside that frame. This keeps
+the visible glyphs aligned with adjacent icons while preserving safe text
+measurement.
 
 `border`, `border-top`, `border-right`, `border-bottom`, and `border-left`
 accept `<width> solid <color>`. Directional forms compile to native edge
