@@ -347,7 +347,13 @@ precedence: `+`, `-`, `*`, `/`, integer `%`, and parentheses. Expressions such
 as `:height="72 + $bottomSpacing"` stay inside PAM's restricted interpreter;
 they never use `eval`. PHP `.` concatenation is also supported for scalar,
 null, and `Stringable` operands, so expressions such as `'@'.$username` remain
-natural while array coercions fail explicitly.
+natural while array coercions fail explicitly. Since PAM Native `0.5.81`,
+right-associative PHP `??` safely falls back from null or a missing nested
+array/property path:
+
+```xml
+<Text>{{ $profile['bio'] ?? $profile['username'] ?? 'Sem bio' }}</Text>
+```
 
 Only tag selectors, `.class` selectors, comma-separated selectors, and
 component-local `:root` variables are accepted. Packaged font aliases may be
