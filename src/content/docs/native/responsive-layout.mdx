@@ -125,9 +125,34 @@ vertical list inside another vertical scroll container.
 `FlatList numColumns="2"` remains the specialized fast path for scalar string
 rows. It deliberately does not run a PHP render callback while scrolling.
 
+## Custom chrome and safe-area metrics
+
+`SafeAreaView` is the default for ordinary screen content. When a custom tab
+bar, player, or floating control must calculate its own geometry, read the
+platform insets through `DeviceInfo`:
+
+```php
+use Pam\Native\System\DeviceInfo;
+
+DeviceInfo::get(function (DeviceInfo $device): void {
+    $this->bottomSpacing = max($device->safeAreaBottom + 12.0, 20.0);
+});
+```
+
+`safeAreaTop`, `safeAreaRight`, `safeAreaBottom`, and `safeAreaLeft` are
+reported in logical points on Android and iOS. PAM reads the active window on
+the native UI thread, including system bars and display cutouts, so application
+code does not need model-specific status-bar or navigation-bar guesses.
+
+Keep a sensible initial value in component state because the native result is
+asynchronous. Let the custom chrome own the corresponding edge instead of also
+applying that edge through an ancestor `SafeAreaView`; otherwise the inset
+would be counted twice.
+
 ## Layout checklist
 
 - Wrap edge-to-edge screens in `SafeAreaView`.
+- Use `DeviceInfo` safe-area metrics when custom chrome owns an inset edge.
 - Use grid gutters or flex gaps instead of per-item negative margins.
 - Give images an intrinsic size or `aspectRatio`.
 - Allow text to wrap unless truncation is intentional.
