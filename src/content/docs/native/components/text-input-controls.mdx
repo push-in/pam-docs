@@ -36,26 +36,31 @@ Place TTF or OTF files in the application source, for example
 </template>
 
 <style scoped>
-    :root {
-        --brand-bold: asset://assets/fonts/Brand-Bold.ttf;
+    @font-face {
+        font-family: "Brand";
+        src: url("asset://assets/fonts/Brand-Bold.ttf");
+        font-weight: 700;
     }
 
     .brand-title {
-        font-family: var(--brand-bold);
+        font-family: "Brand";
+        font-weight: 700;
         font-size: 20px;
     }
 </style>
 ```
 
-PAM Native 0.5.42 resolves this below the packaged `pam/` asset root and caches
-the decoded native `Typeface`. Paths with traversal, empty segments or
-unsupported extensions are rejected. A normal family name such as
-`sans-serif` continues to resolve through Android.
+PAM Native 0.5.50 resolves `@font-face` aliases during component compilation
+and loads the selected file below the packaged `pam/` asset root. Add one face
+per numeric weight and optional italic variant; ordinary `font-family`,
+`font-weight`, and `font-style` declarations select the closest match. Paths
+with traversal, empty segments, or unsupported extensions are rejected. A
+normal family name such as `sans-serif` continues to resolve through Android.
 
 An inline `fontFamily="asset://…"` attribute remains valid for a one-off
-element. A scoped CSS variable and semantic class are preferable when a family
-is reused because the path stays out of the template structure. Scoped CSS is
-compiled to typed native properties and adds no runtime selector work.
+element. A scoped `@font-face` and semantic class are preferable when a family
+is reused because paths stay out of the template structure. The alias compiles
+to a typed native property and adds no font registry or runtime selector work.
 
 `letterSpacing` uses logical points, matching the rest of the text contract.
 PAM Native 0.5.43 converts that value to Android's font-relative `em` unit

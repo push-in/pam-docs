@@ -131,12 +131,18 @@ final class ProfileCard extends Component
 
 <style scoped>
     :root {
-        --font-bold: asset://assets/fonts/Brand-Bold.ttf;
         --muted: #5C5C55;
     }
 
+    @font-face {
+        font-family: "Brand";
+        src: url("asset://assets/fonts/Brand-Bold.ttf");
+        font-weight: 700;
+    }
+
     .profile-name {
-        font-family: var(--font-bold);
+        font-family: "Brand";
+        font-weight: 700;
         font-size: 15px;
     }
 
@@ -209,8 +215,10 @@ compile time.
 </template>
 
 <style scoped>
-    :root {
-        --font-bold: asset://assets/fonts/SpaceGrotesk-Bold.ttf;
+    @font-face {
+        font-family: "Space Grotesk";
+        src: url("asset://assets/fonts/SpaceGrotesk-Bold.ttf");
+        font-weight: 700;
     }
 
     .profile-card {
@@ -220,7 +228,8 @@ compile time.
     }
 
     .profile-name {
-        font-family: var(--font-bold);
+        font-family: "Space Grotesk";
+        font-weight: 700;
         font-size: 15px;
         line-height: 19px;
     }
@@ -239,9 +248,11 @@ overflow, and text/font properties. Plain numbers and `px`, `dp`, or `pt`
 represent PAM logical points.
 
 Only tag selectors, `.class` selectors, comma-separated selectors, and
-component-local `:root` variables are accepted. Descendant selectors, nested
-rules, media queries, and properties without a native protocol contract fail
-compilation instead of being silently ignored.
+component-local `:root` variables are accepted. Packaged font aliases may be
+declared with `@font-face`; PAM resolves their weight and italic variants to
+the native asset during compilation. Descendant selectors, nested rules, media
+queries, and properties without a native protocol contract fail compilation
+instead of being silently ignored.
 
 `overflow: hidden` clips descendants to the native border path, including
 rounded `View`, `Row`, `Column`, `Pressable`, and `ImageBackground`
