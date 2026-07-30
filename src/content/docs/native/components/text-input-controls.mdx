@@ -62,6 +62,18 @@ element. A scoped `@font-face` and semantic class are preferable when a family
 is reused because paths stay out of the template structure. The alias compiles
 to a typed native property and adds no font registry or runtime selector work.
 
+For an application-wide type system, declare the faces and `Text, Input` tag
+defaults once in a shared CSS file, then import it from each component:
+
+```php
+<style scoped>
+    @import "../../styles/brand.css";
+</style>
+```
+
+PAM Native 0.5.52 inlines the file while compiling the component. The import
+does not create a global runtime cascade, selector pass, or WebView.
+
 `letterSpacing` uses logical points, matching the rest of the text contract.
 PAM Native 0.5.43 converts that value to Android's font-relative `em` unit
 using the authored `fontSize`, so `letterSpacing="0.6"` remains a subtle

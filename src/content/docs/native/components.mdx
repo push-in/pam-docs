@@ -200,6 +200,34 @@ Static `class` and dynamic `:class` use the same component-local rules.
 `:root` declares reusable `--variables`; `var(--name)` resolves at component
 compile time.
 
+PAM Native 0.5.52 also expands relative CSS imports at compile time:
+
+```css
+/* src/styles/brand.css */
+@font-face {
+    font-family: "Space Grotesk";
+    src: url("asset://assets/fonts/SpaceGrotesk-Regular.ttf");
+    font-weight: 400;
+}
+
+Text,
+Input {
+    font-family: "Space Grotesk";
+}
+```
+
+```php
+<style scoped>
+    @import "../../styles/brand.css";
+</style>
+```
+
+Imports may be nested and remain scoped to the importing component. They must
+be relative `.css` files inside the nearest Composer project; network imports,
+cycles, traversal and oversized graphs fail compilation. Imported contents
+participate in component cache invalidation, and local rules after the import
+win through normal cascade order.
+
 ```php
 <template>
     <Column class="profile-card">
@@ -271,7 +299,8 @@ vendor/bin/pam-native-format --check src
 
 It discovers `*.pam.php` recursively, preserves the PHP block for the project's
 PHP formatter, indents templates and scoped CSS, and migrates deprecated
-`v-*` directives to `p-*`. The `--check` form is intended for CI.
+`v-*` directives to `p-*`. Compile-time `@import` lines are normalized and
+preserved. The `--check` form is intended for CI.
 
 ## Core component families
 
