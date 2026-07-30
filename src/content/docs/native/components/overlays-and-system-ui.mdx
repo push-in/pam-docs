@@ -100,6 +100,10 @@ mobile aliases:
 `light-content` selects light system icons; `dark-content` selects dark icons.
 The aliases compile to the same typed status-bar properties and are not passed
 through as inert view background styles.
+On Android, only the active retained stack route contributes status-bar
+configuration. Hidden screens cannot override the visible route when a stack
+is restored or when the user pushes, pops, replaces, or cancels an interactive
+back gesture.
 
 `DrawerLayoutAndroid` supports overlay, front, back and permanent/adaptive
 drawer presentations with open/close events. `InputAccessoryView` hosts native
