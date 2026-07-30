@@ -251,6 +251,11 @@ startup. The generated Android host synchronizes the client file through an
 incremental task, so `mobile prepare` remains safe with Gradle's configuration
 cache. Projects without the file do not package Firebase.
 
+PAM Native `0.5.70` and newer ship the Google Services plugin declaration,
+Firebase source set, and ProGuard rules inside the versioned Android renderer
+artifact. An SDK assembled from official release assets can therefore build a
+Firebase-enabled application without copying files from a PAM Native checkout.
+
 ## Persistence
 
 Persistence format version 2 stores route names and parameters. Legacy name-only stacks continue to restore.
