@@ -306,10 +306,11 @@ inset shadows fail compilation because they have no equivalent lightweight
 native contract.
 
 Auto-width text keeps a conservative intrinsic frame to avoid clipping custom
-font glyphs. When its parent uses centered or trailing cross-axis alignment,
-the platform renderer applies the same alignment inside that frame. This keeps
-the visible glyphs aligned with adjacent icons while preserving safe text
-measurement.
+font glyphs. The platform renderer aligns visible glyphs from the relevant
+flex axis: `align-items`/`align-self` in columns and `justify-content` in rows.
+This keeps centered text-and-icon controls optically centered while preserving
+safe text measurement. Explicitly sized or growing text keeps normal start
+alignment unless `text-align` is authored.
 
 `border`, `border-top`, `border-right`, `border-bottom`, and `border-left`
 accept `<width> solid <color>`. Directional forms compile to native edge
