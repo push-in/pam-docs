@@ -52,6 +52,12 @@ The reload does not promise to preserve form values, navigation history, or
 arbitrary PHP objects. It does promise not to leave buttons and other semantic
 events connected to a disposed runtime.
 
+Native asynchronous work is generation-scoped. When the PHP runtime reloads,
+PAM cancels stale long-poll waiters before the new tree mounts and ignores
+late completions from the previous generation. Deep-link, incoming-share, and
+push listeners can therefore re-arm immediately without duplicate-listener
+errors or obsolete callbacks reaching the new application instance.
+
 ## When a reload fails
 
 Keep the last valid UI visible and inspect:
