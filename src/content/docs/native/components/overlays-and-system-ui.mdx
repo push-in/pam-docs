@@ -85,6 +85,22 @@ $form = KeyboardAvoidingView::make(
 )->verticalOffset(12);
 ```
 
+Templates may use either PAM's `color`/`appearance` names or the familiar
+mobile aliases:
+
+```xml
+<StatusBar
+    backgroundColor="#F8FAFC"
+    barStyle="dark-content"
+    animated="true"
+    translucent="false"
+/>
+```
+
+`light-content` selects light system icons; `dark-content` selects dark icons.
+The aliases compile to the same typed status-bar properties and are not passed
+through as inert view background styles.
+
 `DrawerLayoutAndroid` supports overlay, front, back and permanent/adaptive
 drawer presentations with open/close events. `InputAccessoryView` hosts native
 keyboard accessory content. Their names are retained for platform clarity;
