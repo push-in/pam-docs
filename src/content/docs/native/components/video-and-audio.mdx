@@ -3,9 +3,11 @@ title: Video and audio
 description: Play native video and audio with controls, lifecycle events, streaming cache, offline pinning, and bounded downloads.
 ---
 
-`MediaPlayer` maps to the platform media player: `VideoView`/`MediaPlayer` on
-Android and `AVPlayerViewController` on iOS. Playback frames, controls and
-timing stay native.
+`MediaPlayer` maps to the platform media player: a texture-backed native
+`MediaPlayer` on Android and `AVPlayerViewController` on iOS. Android video
+therefore participates in ordinary clipping, rounded containers, transitions,
+and z-order instead of escaping into a detached surface. Playback frames,
+controls, and timing stay native.
 
 ## Video
 
