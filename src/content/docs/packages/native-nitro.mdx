@@ -147,9 +147,8 @@ accidental table-wide mutation.
 ### Durable mutation outbox
 
 For offline likes, messages, follows, votes, or uploads, persist the user's
-intent before requesting the network. A deterministic primary key derived from
-the signed-in user and a semantic dedupe key makes the newest intent replace
-an older unsent one:
+intent before requesting the network. The server idempotency key must identify
+one specific mutation and remain stable across retries:
 
 ```php
 enum SyncActionType: int
@@ -186,8 +185,9 @@ final class SyncAction extends Model
     }
 }
 
-$action->id = hash('sha256', $userId."\0post-like:".$postId);
-$action->dedupeKey = 'post-like:'.$postId;
+$mutationId = bin2hex(random_bytes(12));
+$action->dedupeKey = 'post-like:'.$postId.':'.$mutationId;
+$action->id = hash('sha256', $userId."\0".$action->dedupeKey);
 $action->payloadJson = json_encode(
     ['post_id' => $postId, 'liked' => $liked],
     JSON_THROW_ON_ERROR,
@@ -203,6 +203,12 @@ the dedupe key, delete acknowledged rows, and retain failures with exponential
 backoff. On process restart, reset any interrupted `sending` action and replay
 it with the same dedupe or idempotency key. This keeps rendering independent
 from network latency without duplicating mutations.
+
+Do not reuse one server dedupe key for opposite operations such as like and
+unlike: a valid receipt for the first operation may make the second look like
+a replay. If rapid local changes should collapse, store a separate semantic
+`coalesce_key`, replace only actions that have not started sending, and issue a
+new idempotency key whenever the payload changes.
 
 ## Schema evolution
 
