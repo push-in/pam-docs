@@ -339,7 +339,9 @@ hex, and CSS color functions.
 Template bindings support safe numeric arithmetic with conventional
 precedence: `+`, `-`, `*`, `/`, integer `%`, and parentheses. Expressions such
 as `:height="72 + $bottomSpacing"` stay inside PAM's restricted interpreter;
-they never use `eval`.
+they never use `eval`. PHP `.` concatenation is also supported for scalar,
+null, and `Stringable` operands, so expressions such as `'@'.$username` remain
+natural while array coercions fail explicitly.
 
 Only tag selectors, `.class` selectors, comma-separated selectors, and
 component-local `:root` variables are accepted. Packaged font aliases may be
