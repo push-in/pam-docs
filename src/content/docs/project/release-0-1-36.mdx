@@ -52,6 +52,11 @@ pam mobile benchmark .
 pam mobile profile .
 ```
 
+The benchmark module and application under test are distinct packages. Current
+PAM Native templates let Gradle install the minified target and instrumentation
+APK together; self-instrumenting mode is intentionally disabled so an existing
+`.debug` installation cannot mask a missing benchmark target.
+
 This closes the gap between having benchmark source in the repository and
 being able to run it against an ordinary generated PAM application.
 

@@ -57,6 +57,11 @@ pam mobile benchmark .
 
 DevTools shows live symptoms. The profile and benchmark commands produce repeatable evidence suitable for comparison and CI.
 
+On Android, `pam mobile benchmark` installs a separate, minified benchmark
+target together with its instrumentation APK. It does not measure the
+hot-reload `.debug` process that may already be open. A missing target fails
+the run instead of producing a misleading startup result.
+
 Watch the native buffer count after an update. It must return to zero after the frame finishes; a retained non-zero count indicates an ownership or release bug.
 
 When the development app redraws but buttons stop responding, or the reload
