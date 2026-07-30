@@ -69,6 +69,32 @@ $screen = Screen::make(
 - `Spacer` is an explicit fixed gap; prefer container `gap` for repeated
   sibling spacing.
 
+## Native flex wrapping
+
+PAM Native 0.5.63 implements `flex-wrap` inside the retained Rust layout
+engine. Wrapped rows and columns calculate their line breaks, gap,
+justification, alignment, and intrinsic cross-axis size before platform views
+receive final frames. PHP does not receive a callback per item or per frame.
+
+```xml
+<Row class="chip-list">
+    <View p-for="$chip in $chips" class="chip">
+        <Text>{{ $chip }}</Text>
+    </View>
+</Row>
+
+<style scoped>
+    .chip-list {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+</style>
+```
+
+Use `flex-wrap: nowrap` to make the no-wrap contract explicit. `Row` wraps
+horizontally and `Column` wraps vertically; content-sized containers include
+all generated lines in their intrinsic cross-axis extent.
+
 ## Rounded clipping
 
 Combine `border-radius` and `overflow: hidden` when child content must follow

@@ -269,9 +269,10 @@ local tag rules, local classes, then inline PAM attributes.
 ```
 
 The subset covers native dimensions and percentages, min/max constraints,
-position edges, flex growth/shrink/direction, gap and alignment, padding and
-margin shorthands, borders and radii, backgrounds, opacity, elevation,
-overflow, and text/font properties. PAM Native 0.5.55 adds familiar
+position edges and `inset`, flex growth/shrink/direction/wrapping, gap and
+alignment, padding and margin shorthands, borders and radii, backgrounds,
+opacity, elevation, compositor `translation-x/y`, overflow, and text/font
+properties. PAM Native 0.5.55 adds familiar
 `text-decoration` values: `none`, `underline`, `line-through`, and
 `underline-line-through`. Plain numbers and `px`, `dp`, or `pt` represent PAM
 logical points.
@@ -279,6 +280,8 @@ logical points.
 `border`, `border-top`, `border-right`, `border-bottom`, and `border-left`
 accept `<width> solid <color>`. Directional forms compile to native edge
 widths and the shared border color; no CSS parser runs on the device.
+Individual `border-*-color` declarations are also accepted and update that
+shared native color.
 
 Only tag selectors, `.class` selectors, comma-separated selectors, and
 component-local `:root` variables are accepted. Packaged font aliases may be
