@@ -11,6 +11,21 @@ while the image remains attached. A completed same-source request is reused
 only when it still owns a drawable, so a first-visible `VirtualizedList` image
 cannot remain blank until its cell is recycled.
 
+## Packaged assets
+
+`asset://` paths are relative to the PAM project root on Android and iOS:
+
+```xml
+<Image source="asset://assets/logos/brand.png" />
+```
+
+This loads the checked-in `assets/logos/brand.png`. The runtime owns the
+internal `pam/` bundle prefix, so do not include it in application code.
+The same rule applies to `Image`, `ImageBackground`, `defaultSource`,
+`loadingIndicatorSource`, and packaged `@font-face` files. Empty paths,
+directory traversal, queries, fragments, and malformed path segments are
+rejected before a platform file API is called.
+
 ## Production image
 
 ```php
