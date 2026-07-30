@@ -182,6 +182,9 @@ The compiler supports:
 Keep business rules in PHP methods rather than embedding them in markup.
 The former `v-if`, `v-else-if`, `v-else`, and `v-for` spellings remain
 deprecated migration aliases.
+A component root may itself use `p-if`. A false root becomes an inert invisible
+placeholder with no layout footprint, while multiple rendered roots remain an
+error.
 
 ## Scoped native CSS
 
