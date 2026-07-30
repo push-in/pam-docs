@@ -60,6 +60,82 @@ The native picker owns selection UI and enforces a bounded limit between 1 and
 50. PAM copies each accepted item once into its sandbox, preserving the
 provider's display name and MIME type.
 
+## Build a custom Android gallery
+
+PAM Native 0.5.57 adds a direct, typed Android gallery API. It queries
+MediaStore on a dedicated worker, returns bounded pages of metadata, and gives
+the renderer stable `content://` thumbnail sources. No thumbnail bytes cross
+the PHP bridge and no source file is copied while the user scrolls.
+
+```php
+use Pam\Native\FileReference;
+use Pam\Native\MediaAsset;
+use Pam\Native\MediaAssetPage;
+use Pam\Native\MediaPickerType;
+use Pam\Native\PermissionKind;
+use Pam\Native\System\Files;
+use Pam\Native\System\MediaLibrary;
+use Pam\Native\System\Permissions;
+
+Permissions::requestKind(PermissionKind::Photos, function ($decision): void {
+    if (!$decision->granted()) {
+        return;
+    }
+
+    MediaLibrary::assets(
+        MediaPickerType::Media,
+        function (MediaAssetPage $page): void {
+            $this->assets = array_map(
+                static fn (MediaAsset $asset): array => [
+                    'id' => $asset->id,
+                    'source' => $asset->uri,
+                    'width' => $asset->width,
+                    'height' => $asset->height,
+                    'durationMs' => $asset->durationMs,
+                    'video' => $asset->video(),
+                ],
+                $page->items,
+            );
+            $this->nextOffset = $page->nextOffset;
+            $this->hasMore = $page->hasMore;
+        },
+        limit: 80,
+        offset: $this->nextOffset,
+        albumId: $this->albumId ?: null,
+    );
+});
+
+MediaLibrary::albums(
+    MediaPickerType::Media,
+    fn (array $albums) => $this->albums = $albums,
+);
+```
+
+Android 13 distinguishes image and video access. Android 14 may grant only the
+photos selected by the user; PAM reports this as
+`PermissionStatus::Limited`, and `PermissionDecision::granted()` accepts it.
+The query naturally returns only assets visible to the application.
+
+Keep gallery cells pointed at `$asset->uri`. When the user confirms an item,
+materialize only that asset into app-owned storage:
+
+```php
+public function select(MediaAsset $asset): void
+{
+    Files::importUri(
+        $asset->uri,
+        function (FileReference $file): void {
+            $this->editorSource = $file->uri();
+            $this->uploadPath = $file->path;
+        },
+    );
+}
+```
+
+`MediaLibrary` is Android-only in 0.5.57. Keep `Files::pick()` or
+`Files::pickMany()` visible as the portable fallback and as an escape hatch
+when gallery access is denied or blocked.
+
 ## Display imported content
 
 ```xml
