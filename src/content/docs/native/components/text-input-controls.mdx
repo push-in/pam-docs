@@ -86,6 +86,10 @@ Packaged fonts use their cached face metrics; installed and missing families
 fall back to PAM's allocation-free estimator. A centered `Row` containing
 `Text`, `gap`, and an icon therefore centers the visible control content,
 including when the Android font scale changes.
+PAM Native 0.5.85 also rounds the absolute start and end edges of Android
+frames before deriving pixel extents. Text and icon children that share a
+logical center therefore retain the same physical center even on fractional
+density screens.
 
 ## Input
 

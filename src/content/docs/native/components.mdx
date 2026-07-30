@@ -245,6 +245,12 @@ oversized graphs fail compilation. The complete graph participates in
 component cache invalidation. The order is global tag rules, global classes,
 local tag rules, local classes, then inline PAM attributes.
 
+On Android, PAM Native 0.5.85+ snaps each retained frame's absolute start and
+end edges to the physical-pixel grid, then derives its native width and height
+from those shared edges. At fractional display densities this keeps centered
+text-and-icon controls on one physical center and prevents one-pixel seams or
+drift between adjacent flex siblings.
+
 ```php
 <template>
     <Column class="profile-card">
