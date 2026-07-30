@@ -50,12 +50,15 @@ Place TTF or OTF files in the application source, for example
 </template>
 ```
 
-PAM Native 0.5.50 resolves `@font-face` aliases during component compilation
-and loads the selected file below the packaged `pam/` asset root. Add one face
-per numeric weight and optional italic variant; ordinary `font-family`,
-`font-weight`, and `font-style` declarations select the closest match. Paths
-with traversal, empty segments, or unsupported extensions are rejected. A
-normal family name such as `sans-serif` continues to resolve through Android.
+PAM Native resolves `@font-face` aliases before the typed tree crosses into
+native code and loads the selected file below the packaged `pam/` asset root.
+Add one face per numeric weight and optional italic variant; ordinary
+`font-family`, `font-weight`, and `font-style` declarations select the closest
+match. Since 0.5.71, the logical family inherits through layout containers, so
+a descendant may change only its weight and still select the correct face.
+Paths with traversal, empty segments, or unsupported extensions are rejected.
+A normal family name such as `sans-serif` continues to resolve through
+Android.
 
 An inline `fontFamily="asset://…"` attribute remains valid for a one-off
 element. A scoped `@font-face` and semantic class are preferable when a family

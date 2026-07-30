@@ -196,12 +196,20 @@ WebView.
 The deterministic cascade is:
 
 1. native tag rule;
-2. `.class` rules from left to right; and
+2. matching `.class` rules in stylesheet source order; and
 3. inline PAM attributes.
 
 Static `class` and dynamic `:class` use the same component-local rules.
-`:root` declares reusable `--variables`; `var(--name)` resolves at component
-compile time.
+Reordering class names in markup does not change specificity. `:root` declares
+reusable `--variables`; nested references and
+`var(--name, var(--fallback, value))` resolve at component compile time.
+Cycles, missing values without a fallback, and excessive expansion depth fail
+with the component path.
+
+Text color, font family/size/weight/style, letter spacing, line height,
+alignment, and case inherit through native layout containers. Logical font
+families stay intact during inheritance, so a descendant that changes only its
+weight can select the corresponding packaged `@font-face`.
 
 PAM Native 0.5.54+ automatically prepends the conventional `src/app.css` sheet
 to every component. It is the application-wide home for fonts, tokens, tag
@@ -274,11 +282,17 @@ local tag rules, local classes, then inline PAM attributes.
 The subset covers native dimensions and percentages, min/max constraints,
 position edges and `inset`, flex growth/shrink/direction/wrapping, gap and
 alignment, padding and margin shorthands, borders and radii, backgrounds,
-opacity, elevation, compositor `translation-x/y`, overflow, and text/font
-properties. PAM Native 0.5.55 adds familiar
-`text-decoration` values: `none`, `underline`, `line-through`, and
-`underline-line-through`. Plain numbers and `px`, `dp`, or `pt` represent PAM
-logical points.
+opacity, elevation, compositor transforms, overflow, images, and text/font
+properties. Logical `padding-inline/block`, `margin-inline/block`, and
+`inset-inline/block` map to the native edges. `transform` supports
+`translateX/Y`, `scale/X/Y`, and `rotate`; `object-fit`, `visibility`,
+`box-sizing: border-box`, `aspect-ratio: 16 / 9`, percentage opacity,
+`border: none`, and `background: none` are also compiled.
+
+Text decoration accepts `none`, `underline`, `line-through`, and both the
+spaced and hyphenated underline-plus-line-through form. Plain numbers and
+`px`, `dp`, or `pt` represent PAM logical points; `rem` uses a stable native
+root of 16 logical points.
 Absolute `left`, `top`, `right`, and `bottom` offsets also accept percentages.
 `border-radius` accepts the standard one-to-four circular-radius shorthand and
 compiles it to native per-corner radii; elliptical slash syntax is unsupported.
@@ -289,6 +303,24 @@ widths and the shared border color; no CSS parser runs on the device.
 Individual `border-*-color` declarations are also accepted and update that
 shared native color.
 
+Stylesheet colors follow CSS syntax. PAM supports the complete named-color
+set, `transparent`, `#RGB`, `#RGBA`, `#RRGGBB`, CSS `#RRGGBBAA`,
+comma/space `rgb()` and `rgba()`, and `hsl()`/`hsla()` with alpha:
+
+```css
+.glass {
+    color: rgb(255 255 255 / 92%);
+    background-color: #FFFFFF29;
+    border: 1px solid hsl(140deg 45% 35% / 35%);
+}
+```
+
+The compiler immediately normalizes these values to the protocol's ARGB
+integer. For source compatibility, an eight-digit color written directly as a
+PAM attribute remains legacy `#AARRGGBB`. Prefer stylesheets for CSS
+`#RRGGBBAA`; direct attributes also accept named colors, `transparent`, short
+hex, and CSS color functions.
+
 Template bindings support safe numeric arithmetic with conventional
 precedence: `+`, `-`, `*`, `/`, integer `%`, and parentheses. Expressions such
 as `:height="72 + $bottomSpacing"` stay inside PAM's restricted interpreter;
@@ -296,8 +328,10 @@ they never use `eval`.
 
 Only tag selectors, `.class` selectors, comma-separated selectors, and
 component-local `:root` variables are accepted. Packaged font aliases may be
-declared with `@font-face`; PAM resolves their weight and italic variants to
-the native asset during compilation. Descendant selectors, nested rules, media
+declared with `@font-face`; each element resolves the closest weight and italic
+variant before the typed tree crosses into native code. Font-family stacks are
+accepted and their first family is the native preferred family. Descendant
+selectors, nested rules, media
 queries, and properties without a native protocol contract fail compilation
 instead of being silently ignored.
 
