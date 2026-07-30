@@ -243,6 +243,12 @@ component-local `:root` variables are accepted. Descendant selectors, nested
 rules, media queries, and properties without a native protocol contract fail
 compilation instead of being silently ignored.
 
+`overflow: hidden` clips descendants to the native border path, including
+rounded `View`, `Row`, `Column`, `Pressable`, and `ImageBackground`
+containers. PAM retains the rounded path between frames on Android and uses
+the UIKit layer mask on iOS; no WebView mask or application-side wrapper is
+created.
+
 ## Format single-file components
 
 The Composer package installs a deterministic formatter:

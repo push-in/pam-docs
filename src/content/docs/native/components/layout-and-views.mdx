@@ -69,5 +69,33 @@ $screen = Screen::make(
 - `Spacer` is an explicit fixed gap; prefer container `gap` for repeated
   sibling spacing.
 
+## Rounded clipping
+
+Combine `border-radius` and `overflow: hidden` when child content must follow
+the container shape:
+
+```xml
+<Pressable class="avatar">
+    <Image class="avatar-image" :source="$avatar" />
+</Pressable>
+
+<style scoped>
+    .avatar,
+    .avatar-image {
+        width: 38px;
+        height: 38px;
+    }
+
+    .avatar {
+        overflow: hidden;
+        border-radius: 19px;
+    }
+</style>
+```
+
+This is a native compositor clip on Android and iOS. The clip path is updated
+only when the bounds or radii change, and removing `overflow: hidden` restores
+visible overflow immediately.
+
 For breakpoints, spans, `VirtualGrid`, foldable posture and responsive
 examples, continue to [Responsive layout](../responsive-layout/).
