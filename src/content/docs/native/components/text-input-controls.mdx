@@ -28,14 +28,10 @@ decorative label has an accessible alternative.
 ### Packaged fonts on Android
 
 Place TTF or OTF files in the application source, for example
-`assets/fonts/Brand-Bold.ttf`, and reference the project asset explicitly:
+`assets/fonts/Brand-Bold.ttf`, and declare the application type system once:
 
-```php
-<template>
-    <Text class="brand-title">Brand title</Text>
-</template>
-
-<style scoped>
+```css
+/* src/app.css */
     @font-face {
         font-family: "Brand";
         src: url("asset://assets/fonts/Brand-Bold.ttf");
@@ -43,11 +39,15 @@ Place TTF or OTF files in the application source, for example
     }
 
     .brand-title {
-        font-family: "Brand";
         font-weight: 700;
         font-size: 20px;
     }
-</style>
+```
+
+```php
+<template>
+    <Text class="brand-title">Brand title</Text>
+</template>
 ```
 
 PAM Native 0.5.50 resolves `@font-face` aliases during component compilation
@@ -62,17 +62,10 @@ element. A scoped `@font-face` and semantic class are preferable when a family
 is reused because paths stay out of the template structure. The alias compiles
 to a typed native property and adds no font registry or runtime selector work.
 
-For an application-wide type system, declare the faces and `Text, Input` tag
-defaults once in a shared CSS file, then import it from each component:
-
-```php
-<style scoped>
-    @import "../../styles/brand.css";
-</style>
-```
-
-PAM Native 0.5.52 inlines the file while compiling the component. The import
-does not create a global runtime cascade, selector pass, or WebView.
+PAM Native 0.5.54 prepends `src/app.css` while compiling every component.
+Local `<style scoped>` rules may override it, and either sheet may split files
+with relative `@import`. Nothing creates a runtime CSS cascade, selector pass,
+or WebView.
 
 `letterSpacing` uses logical points, matching the rest of the text contract.
 PAM Native 0.5.43 converts that value to Android's font-relative `em` unit

@@ -200,10 +200,16 @@ Static `class` and dynamic `:class` use the same component-local rules.
 `:root` declares reusable `--variables`; `var(--name)` resolves at component
 compile time.
 
-PAM Native 0.5.52 also expands relative CSS imports at compile time:
+PAM Native 0.5.54 automatically prepends the conventional `src/app.css` sheet
+to every component. It is the application-wide home for fonts, tokens, tag
+defaults, and reusable semantic classes:
 
 ```css
-/* src/styles/brand.css */
+/* src/app.css */
+:root {
+    --ink-muted: #5C5C55;
+}
+
 @font-face {
     font-family: "Space Grotesk";
     src: url("asset://assets/fonts/SpaceGrotesk-Regular.ttf");
@@ -216,17 +222,12 @@ Input {
 }
 ```
 
-```php
-<style scoped>
-    @import "../../styles/brand.css";
-</style>
-```
-
-Imports may be nested and remain scoped to the importing component. They must
-be relative `.css` files inside the nearest Composer project; network imports,
-cycles, traversal and oversized graphs fail compilation. Imported contents
-participate in component cache invalidation, and local rules after the import
-win through normal cascade order.
+`src/app.css` and local component styles may use nested relative `@import`
+statements. Every import resolves from the file that declared it and must stay
+inside the nearest Composer project; network imports, cycles, traversal, and
+oversized graphs fail compilation. The complete graph participates in
+component cache invalidation. The order is global tag rules, global classes,
+local tag rules, local classes, then inline PAM attributes.
 
 ```php
 <template>
@@ -243,12 +244,6 @@ win through normal cascade order.
 </template>
 
 <style scoped>
-    @font-face {
-        font-family: "Space Grotesk";
-        src: url("asset://assets/fonts/SpaceGrotesk-Bold.ttf");
-        font-weight: 700;
-    }
-
     .profile-card {
         padding: 12px 16px;
         border: 1px solid #D8D7CF;
@@ -256,7 +251,6 @@ win through normal cascade order.
     }
 
     .profile-name {
-        font-family: "Space Grotesk";
         font-weight: 700;
         font-size: 15px;
         line-height: 19px;

@@ -243,6 +243,11 @@ PushNotifications::listenAndRoute($navigator);
 ```
 
 The route is opened only for an `Opened` push event with a non-empty deep link.
+On Android, add the Firebase client file at
+`.pam/google-services.json` (preferred) or `google-services.json` in the
+project root. PAM conditionally compiles Firebase Messaging, receives data and
+notification payloads, and persists up to 64 unconsumed events across process
+startup. Projects without the file do not package Firebase.
 
 ## Persistence
 
