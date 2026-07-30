@@ -99,6 +99,27 @@ Available policies are `none`, `memory`, `disk`, `memory-and-disk`,
 bytes and disk origin. Image lifecycle events include load start, progress,
 decoded size, error and load end.
 
+The compact `cachePolicy` compatibility property also accepts `default`,
+`reload`, `force-cache`, and `only-if-cached`. Since PAM Native `0.5.80`,
+`memory-disk` and `memoryDisk` are aliases for `force-cache`, so an Expo Image
+port can keep its familiar spelling while still using PAM's native
+memory-plus-disk pipeline:
+
+```xml
+<Image
+    :source="$avatarUrl"
+    cachePolicy="memory-disk"
+    fadeDuration="0"
+/>
+```
+
+Animated GIF and animated WebP sources use the same request coalescing and
+cache. On supported Android versions, PAM decodes them as a looping native
+drawable; no WebView, JavaScript animation loop, or Lottie dependency is
+required. Prefer animated WebP when the provider exposes both formats because
+it normally transfers fewer bytes. In long pickers and feeds, place animated
+images in a `VirtualizedList` so only visible rows are mounted.
+
 Cache files use atomic activation, bounded downloads, checksum validation,
 least-recently-used eviction and offline pin protection. Adaptive-stream
 offline downloads remain a separate platform manifest/license workflow.
