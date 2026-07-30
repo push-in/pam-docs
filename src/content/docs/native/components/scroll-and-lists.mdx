@@ -50,18 +50,20 @@ currently visible, while loops and conditions can safely produce multiple
 items. The imperative `Scroll::make($content)` API remains explicit and still
 accepts exactly one content element.
 
-### Imperative jumps
+### Imperative jumps and restoration
 
 PAM Native 0.5.29 adds tokenized scroll requests. A changed request number
-executes exactly once on the native UI thread. An empty target jumps to the
-content end; a `testId` targets a descendant without measuring row heights in
-PHP.
+executes exactly once on the native UI thread. PAM Native 0.5.60 also accepts
+a persisted logical offset on that request. A `testId` has first priority, a
+non-negative offset is second, and omitting both targets jumps to the content
+end.
 
 ```html
 <ScrollView
     anchorToEnd="true"
     maintainVisibleContentPosition="true"
     :scrollTargetTestId="$scrollTarget"
+    :scrollTargetOffset="$scrollTargetOffset"
     :scrollRequest="$scrollRequest"
 >
     <Column>
@@ -74,25 +76,37 @@ PHP.
 
 ```php
 public string $scrollTarget = '';
+public float $scrollTargetOffset = -1.0;
 public int $scrollRequest = 0;
 
 public function jumpToUnread(): void
 {
     $this->scrollTarget = 'first-unread';
+    $this->scrollTargetOffset = -1.0;
+    $this->scrollRequest++;
+}
+
+public function restoreReadingPosition(float $offset): void
+{
+    $this->scrollTarget = '';
+    $this->scrollTargetOffset = max(0.0, $offset);
     $this->scrollRequest++;
 }
 
 public function jumpToLatest(): void
 {
     $this->scrollTarget = '';
+    $this->scrollTargetOffset = -1.0;
     $this->scrollRequest++;
 }
 ```
 
 The fluent PHP equivalent is
-`$scroll->scrollRequest($request, $targetTestId)`. Keep the request value in
-component state. Do not alternate arbitrary offsets to force reconciliation:
-the request token is the supported command boundary.
+`$scroll->scrollRequest($request, $targetTestId, $targetOffset)`. Keep the
+request value in component state. The offset is expressed in logical points,
+not physical pixels. Because it is part of a one-shot request, it restores
+state without making the scroll continuously controlled or bouncing against
+the user's gesture.
 
 `anchorToEnd()` controls initial placement and following new content while the
 viewport is already near the end. `maintainVisibleContentPosition()` preserves
