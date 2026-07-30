@@ -28,6 +28,28 @@ $content = Scroll::make(
 combine `horizontal()`, `pagingEnabled()`, `snapToInterval()` and a bounded
 deceleration rate.
 
+In a `.pam.php` template, declarative `ScrollView` accepts one or many direct
+children. PAM Native 0.5.46 inserts a native `Row` for horizontal content and a
+native `Column` for vertical content:
+
+```html
+<ScrollView horizontal="true" showsHorizontalScrollIndicator="false">
+    <Pressable
+        p-for="$story in $stories"
+        :key="$story->id"
+        width="66"
+    >
+        <Image :source="$story->avatar" width="66" height="66" />
+        <Text>{{ $story->name }}</Text>
+    </Pressable>
+</ScrollView>
+```
+
+This keeps compact items at their authored width even when only one branch is
+currently visible, while loops and conditions can safely produce multiple
+items. The imperative `Scroll::make($content)` API remains explicit and still
+accepts exactly one content element.
+
 ### Imperative jumps
 
 PAM Native 0.5.29 adds tokenized scroll requests. A changed request number
