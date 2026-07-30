@@ -186,6 +186,29 @@ A component root may itself use `p-if`. A false root becomes an inert invisible
 placeholder with no layout footprint, while multiple rendered roots remain an
 error.
 
+### Expressões seguras
+
+As expressões preservam operadores familiares do PHP sem executar `eval`.
+Elas aceitam aritmética, concatenação com `.`, `??`, ternários, caminhos em
+arrays/objetos e métodos públicos do componente.
+
+Desde o PAM Native `0.5.87`, templates também podem compor um conjunto explícito
+de funções puras:
+
+```html
+<Text p-if="mb_strlen(trim($query)) < 2">
+    Digite pelo menos dois caracteres.
+</Text>
+<Text>{{ mb_strtoupper(mb_substr($displayName, 0, 1)) }}</Text>
+<Text>{{ count($selectedIds) }} selecionados</Text>
+```
+
+A allowlist contém `trim`, `ltrim`, `rtrim`, `strlen`, `mb_strlen`, `substr`,
+`mb_substr`, `strtolower`, `strtoupper`, `mb_strtolower`, `mb_strtoupper`,
+`count` e `in_array`. Funções de arquivo, processo, rede e qualquer outra
+função PHP não listada continuam indisponíveis no markup. Regras de negócio e
+efeitos colaterais devem permanecer em métodos públicos do componente.
+
 ## Scoped native CSS
 
 One optional `<style scoped>` block may follow `</template>`. PAM compiles its
