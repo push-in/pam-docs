@@ -286,6 +286,11 @@ widths and the shared border color; no CSS parser runs on the device.
 Individual `border-*-color` declarations are also accepted and update that
 shared native color.
 
+Template bindings support safe numeric arithmetic with conventional
+precedence: `+`, `-`, `*`, `/`, integer `%`, and parentheses. Expressions such
+as `:height="72 + $bottomSpacing"` stay inside PAM's restricted interpreter;
+they never use `eval`.
+
 Only tag selectors, `.class` selectors, comma-separated selectors, and
 component-local `:root` variables are accepted. Packaged font aliases may be
 declared with `@font-face`; PAM resolves their weight and italic variants to
