@@ -207,9 +207,14 @@ Cycles, missing values without a fallback, and excessive expansion depth fail
 with the component path.
 
 Text color, font family/size/weight/style, letter spacing, line height,
-alignment, and case inherit through native layout containers. Logical font
-families stay intact during inheritance, so a descendant that changes only its
-weight can select the corresponding packaged `@font-face`.
+alignment, and case inherit through native layout containers and nested
+`.pam.php` component templates. Since PAM Native `0.5.82`, inherited CSS uses
+private render context instead of public constructor props or component
+variants. A strict icon or control inside a colored container therefore
+receives only attributes authored on its own tag, while its internal text still
+inherits the cascade. Logical font families stay intact during inheritance, so
+a descendant that changes only its weight can select the corresponding
+packaged `@font-face`.
 
 PAM Native 0.5.54+ automatically prepends the conventional `src/app.css` sheet
 to every component. It is the application-wide home for fonts, tokens, tag
