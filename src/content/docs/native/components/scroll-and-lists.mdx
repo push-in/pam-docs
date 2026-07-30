@@ -168,6 +168,10 @@ exact native size. Scrolling does not synchronously measure PHP components on
 the UI thread. Horizontal rich lists use an explicit cell `width` the same
 way, while `rowHeight` remains a compatibility alias.
 
+The list viewport and each recycled holder are hard native paint boundaries.
+Media cannot draw over headers, neighboring rows, or tab bars while scrolling.
+Inside the cell, component-level `overflow` still controls descendant clipping.
+
 ## Pull to refresh
 
 ```php
