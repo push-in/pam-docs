@@ -75,6 +75,12 @@ PAM Native 0.5.43 converts that value to Android's font-relative `em` unit
 using the authored `fontSize`, so `letterSpacing="0.6"` remains a subtle
 tracking adjustment rather than 60% of a glyph width.
 
+PAM Native 0.5.83 calibrates Rust's intrinsic text widths against native
+sans-serif glyph advances and keeps only a sub-pixel wrapping tolerance. A
+centered `Row` containing `Text`, `gap`, and an icon therefore centers the
+visible control content instead of an inflated text frame, including when the
+Android font scale changes.
+
 ## Input
 
 ```php
