@@ -144,6 +144,66 @@ Nitro::deleteWhere(
 An empty `deleteWhere()` or `replaceMany()` scope is rejected to prevent an
 accidental table-wide mutation.
 
+### Durable mutation outbox
+
+For offline likes, messages, follows, votes, or uploads, persist the user's
+intent before requesting the network. A deterministic primary key derived from
+the signed-in user and a semantic dedupe key makes the newest intent replace
+an older unsent one:
+
+```php
+enum SyncActionType: int
+{
+    case SendMessage = 1;
+    case ToggleLike = 2;
+    case ToggleFollow = 3;
+}
+
+final class SyncAction extends Model
+{
+    #[PrimaryKey]
+    #[Field]
+    public string $id;
+
+    #[Field(indexed: true)]
+    public string $userId;
+
+    #[Field(indexed: true)]
+    public SyncActionType $type;
+
+    #[Field(indexed: true)]
+    public string $dedupeKey;
+
+    #[Field]
+    public string $payloadJson = '{}';
+
+    #[Field(indexed: true)]
+    public int $nextAttemptAt = 0;
+
+    public static function table(): string
+    {
+        return 'sync_actions';
+    }
+}
+
+$action->id = hash('sha256', $userId."\0post-like:".$postId);
+$action->dedupeKey = 'post-like:'.$postId;
+$action->payloadJson = json_encode(
+    ['post_id' => $postId, 'liked' => $liked],
+    JSON_THROW_ON_ERROR,
+);
+
+Nitro::save($action, function (): void {
+    // Dispatch a bounded batch after the local intent is durable.
+});
+```
+
+Update the visible model and cache optimistically, send a bounded batch with
+the dedupe key, delete acknowledged rows, and retain failures with exponential
+backoff. On process restart, reset any interrupted `sending` action and replay
+it with the same dedupe or idempotency key. This keeps rendering independent
+from network latency without duplicating mutations.
+
 ## Schema evolution
 
 Adding a field is non-destructive. `Nitro::prepare()` compares the model with
