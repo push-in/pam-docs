@@ -247,7 +247,9 @@ On Android, add the Firebase client file at
 `.pam/google-services.json` (preferred) or `google-services.json` in the
 project root. PAM conditionally compiles Firebase Messaging, receives data and
 notification payloads, and persists up to 64 unconsumed events across process
-startup. Projects without the file do not package Firebase.
+startup. The generated Android host synchronizes the client file through an
+incremental task, so `mobile prepare` remains safe with Gradle's configuration
+cache. Projects without the file do not package Firebase.
 
 ## Persistence
 
