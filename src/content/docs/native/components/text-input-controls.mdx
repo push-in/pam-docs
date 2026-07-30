@@ -44,6 +44,11 @@ the decoded native `Typeface`. Paths with traversal, empty segments or
 unsupported extensions are rejected. A normal family name such as
 `sans-serif` continues to resolve through Android.
 
+`letterSpacing` uses logical points, matching the rest of the text contract.
+PAM Native 0.5.43 converts that value to Android's font-relative `em` unit
+using the authored `fontSize`, so `letterSpacing="0.6"` remains a subtle
+tracking adjustment rather than 60% of a glyph width.
+
 ## Input
 
 ```php
