@@ -156,6 +156,34 @@ Keep the returned URI in component state while the editor is mounted. This
 avoids reopening the provider, copying the file again, or decoding a new source
 on every render.
 
+## Draw over images without pointer traffic
+
+`DrawingCanvas` places a native freehand surface over an aspect-fit image.
+Brush and eraser movement stays on the platform UI thread, including coalesced
+touch samples; PHP receives one compact drawing document only after a stroke
+finishes.
+
+```xml
+<DrawingCanvas
+    class="editor-canvas"
+    :source="$selectedImage"
+    :value="$drawing"
+    brushColor="#FFFFFFFF"
+    brushWidth="6"
+    drawingMode="brush"
+    :undoRequest="$undoRequest"
+    :clearRequest="$clearRequest"
+    on:change="updateDrawing"
+/>
+```
+
+Use `drawingMode="eraser"` to remove previously drawn pixels. Increment
+`undoRequest` or `clearRequest` to issue those commands; they are request
+tokens, not booleans. The versioned JSON value is bounded to 256 strokes and
+2,048 points per stroke. Coordinates and brush widths are normalized to the
+actual displayed image content, so letterboxing, device density, and export
+dimensions do not shift the drawing.
+
 ## Edit and resize images off the UI thread
 
 `ImageEditor::render()` performs crop, rotation, horizontal flip, filters,
@@ -184,6 +212,7 @@ ImageEditor::render(
     maxWidth: 1080,
     maxHeight: 1080,
     outputQuality: 92,
+    drawing: $drawing,
 );
 ```
 
@@ -194,3 +223,7 @@ On Android, PAM reads source bounds and selects a decode sample before bitmap
 allocation, then applies one final filtered resize. Large camera photos
 therefore avoid a needless full-resolution decode when the destination is a
 thumbnail, avatar, or bounded attachment.
+
+When `drawing` is provided, PAM flattens the native drawing document into the
+source before rotation, crop, filters, overlays, resize, and encoding. Android
+and iOS do this work outside the UI thread.

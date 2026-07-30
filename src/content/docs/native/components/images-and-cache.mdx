@@ -1,6 +1,6 @@
 ---
 title: Images and cache
-description: Render, resize, progressively load, authenticate, and cache native images with Image and ImageBackground.
+description: Render, resize, draw over, progressively load, authenticate, and cache native images.
 ---
 
 `Image` and `ImageBackground` use the native image pipeline. Requests,
@@ -118,3 +118,26 @@ Caches::clear($onCleared, preserveOffline: false);
 ```
 
 Counting and disk cleanup run away from the UI thread.
+
+## DrawingCanvas
+
+`DrawingCanvas` reuses the same source and cache pipeline, then places a
+platform-native drawing surface over the aspect-fit image. It supports brush
+and eraser modes, bounded coalesced points, tokenized undo/clear, and one
+`change` event per completed stroke:
+
+```xml
+<DrawingCanvas
+    :source="$photo"
+    :value="$drawing"
+    brushColor="#FFFFCC00"
+    brushWidth="8"
+    drawingMode="brush"
+    :undoRequest="$undoRequest"
+    :clearRequest="$clearRequest"
+    on:change="updateDrawing"
+/>
+```
+
+See [Files and media](../files-and-media/#draw-over-images-without-pointer-traffic)
+for export through the off-UI-thread image editor.
