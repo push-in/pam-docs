@@ -30,19 +30,32 @@ decorative label has an accessible alternative.
 Place TTF or OTF files in the application source, for example
 `assets/fonts/Brand-Bold.ttf`, and reference the project asset explicitly:
 
-```xml
-<Text
-  fontFamily="asset://assets/fonts/Brand-Bold.ttf"
-  fontSize="20"
->
-  Brand title
-</Text>
+```php
+<template>
+    <Text class="brand-title">Brand title</Text>
+</template>
+
+<style scoped>
+    :root {
+        --brand-bold: asset://assets/fonts/Brand-Bold.ttf;
+    }
+
+    .brand-title {
+        font-family: var(--brand-bold);
+        font-size: 20px;
+    }
+</style>
 ```
 
 PAM Native 0.5.42 resolves this below the packaged `pam/` asset root and caches
 the decoded native `Typeface`. Paths with traversal, empty segments or
 unsupported extensions are rejected. A normal family name such as
 `sans-serif` continues to resolve through Android.
+
+An inline `fontFamily="asset://…"` attribute remains valid for a one-off
+element. A scoped CSS variable and semantic class are preferable when a family
+is reused because the path stays out of the template structure. Scoped CSS is
+compiled to typed native properties and adds no runtime selector work.
 
 `letterSpacing` uses logical points, matching the rest of the text contract.
 PAM Native 0.5.43 converts that value to Android's font-relative `em` unit

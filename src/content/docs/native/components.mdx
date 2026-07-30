@@ -118,14 +118,34 @@ final class ProfileCard extends Component
 
 <template>
     <Column class="card p-4">
-        <Text>{{ $name }}</Text>
-        <Text v-if="$subtitle">{{ $subtitle }}</Text>
+        <Text class="profile-name">{{ $name }}</Text>
+        <Text p-if="$subtitle" class="profile-subtitle">
+            {{ $subtitle }}
+        </Text>
         <Button @press="toggleFollowing">
             {{ $following ? 'Following' : 'Follow' }}
         </Button>
         <Slot />
     </Column>
 </template>
+
+<style scoped>
+    :root {
+        --font-bold: asset://assets/fonts/Brand-Bold.ttf;
+        --muted: #5C5C55;
+    }
+
+    .profile-name {
+        font-family: var(--font-bold);
+        font-size: 15px;
+    }
+
+    .profile-subtitle {
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 13px;
+    }
+</style>
 ```
 
 Register component directories:
@@ -148,12 +168,93 @@ The compiler supports:
 - `@press="method"` native events;
 - `@event="method"` component events;
 - `bind:value` and `bind:checked`;
-- `v-if`, `v-else-if`, and `v-else`;
-- `v-for` over arrays, `Traversable`, or a positive integer;
+- `p-if`, `p-else-if`, and `p-else`;
+- `p-for` over arrays, `Traversable`, or a positive integer;
 - default and named slots; and
 - `key` for stable identity.
 
 Keep business rules in PHP methods rather than embedding them in markup.
+The former `v-if`, `v-else-if`, `v-else`, and `v-for` spellings remain
+deprecated migration aliases.
+
+## Scoped native CSS
+
+One optional `<style scoped>` block may follow `</template>`. PAM compiles its
+native-safe subset to the same typed properties used by inline attributes. The
+mobile application does not carry a browser CSS engine, selector runtime, or
+WebView.
+
+The deterministic cascade is:
+
+1. native tag rule;
+2. `.class` rules from left to right; and
+3. inline PAM attributes.
+
+Static `class` and dynamic `:class` use the same component-local rules.
+`:root` declares reusable `--variables`; `var(--name)` resolves at component
+compile time.
+
+```php
+<template>
+    <Column class="profile-card">
+        <Text class="profile-name">{{ $name }}</Text>
+        <Text
+            p-if="$bio !== ''"
+            class="profile-bio"
+            :textColor="$highlighted ? '#1B7A4E' : '#5C5C55'"
+        >
+            {{ $bio }}
+        </Text>
+    </Column>
+</template>
+
+<style scoped>
+    :root {
+        --font-bold: asset://assets/fonts/SpaceGrotesk-Bold.ttf;
+    }
+
+    .profile-card {
+        padding: 12px 16px;
+        border: 1px solid #D8D7CF;
+        border-radius: 12px;
+    }
+
+    .profile-name {
+        font-family: var(--font-bold);
+        font-size: 15px;
+        line-height: 19px;
+    }
+
+    .profile-bio {
+        margin-top: 2px;
+        font-size: 13.5px;
+    }
+</style>
+```
+
+The subset covers native dimensions and percentages, min/max constraints,
+position edges, flex growth/shrink/direction, gap and alignment, padding and
+margin shorthands, borders and radii, backgrounds, opacity, elevation,
+overflow, and text/font properties. Plain numbers and `px`, `dp`, or `pt`
+represent PAM logical points.
+
+Only tag selectors, `.class` selectors, comma-separated selectors, and
+component-local `:root` variables are accepted. Descendant selectors, nested
+rules, media queries, and properties without a native protocol contract fail
+compilation instead of being silently ignored.
+
+## Format single-file components
+
+The Composer package installs a deterministic formatter:
+
+```bash
+vendor/bin/pam-native-format src
+vendor/bin/pam-native-format --check src
+```
+
+It discovers `*.pam.php` recursively, preserves the PHP block for the project's
+PHP formatter, indents templates and scoped CSS, and migrates deprecated
+`v-*` directives to `p-*`. The `--check` form is intended for CI.
 
 ## Core component families
 
