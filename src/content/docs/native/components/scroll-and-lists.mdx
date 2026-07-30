@@ -130,7 +130,7 @@ $cards = VirtualizedList::make(
         $contacts,
     ),
 )
-    ->rowHeight(72)
+    ->estimatedRowHeight(72)
     ->prefetch(10)
     ->onEndReached(fn () => $this->loadMore());
 
@@ -142,6 +142,31 @@ $sections = SectionList::make([
 
 Use stable keys for composed rows. `VirtualGrid` applies the same recycled
 list contract to multi-column responsive cells.
+
+For rich cells, `estimatedRowHeight` is a prefetch estimate and the fallback
+when a cell has no authored main-axis size. Explicit cell heights remain
+authoritative:
+
+```html
+<VirtualizedList estimatedRowHeight="604" prefetch="4">
+    <Column
+        p-for="$post in $posts"
+        :key="$post['id']"
+        :height="$post['rowHeight']"
+    >
+        <Image
+            :source="$post['image']"
+            widthPercent="100"
+            :height="$post['mediaHeight']"
+        />
+    </Column>
+</VirtualizedList>
+```
+
+PAM computes these extents in Rust and gives each recycled Android holder its
+exact native size. Scrolling does not synchronously measure PHP components on
+the UI thread. Horizontal rich lists use an explicit cell `width` the same
+way, while `rowHeight` remains a compatibility alias.
 
 ## Pull to refresh
 
