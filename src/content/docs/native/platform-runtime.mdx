@@ -1,0 +1,104 @@
+---
+title: Platform runtime
+description: Typed bridge IDL, prioritized async work, worklets, virtualization, background jobs, offline sync, Canvas, and safe server-driven UI.
+---
+
+PAM Native 0.6 adds bounded platform primitives that share the retained runtime
+instead of building separate execution loops. Every coded kind, state, type,
+priority, and opcode is an integer-backed enum.
+
+## Typed bridge IDL
+
+`IdlCompiler` validates sequential module, method, and field IDs and generates
+fingerprinted PHP, Kotlin, Swift, and Rust contracts:
+
+```php
+$artifacts = IdlCompiler::compile(file_get_contents('bridge.pam-idl.json'));
+```
+
+Schemas are limited to 1 MiB, 256 modules, 256 methods per module, and 128
+fields per method.
+
+## Priority scheduler and Suspense
+
+```php
+$products = new AsyncResource(
+    fn (CancellationToken $token) => $repository->products($token),
+    key: 'products',
+);
+$products->load(TaskPriority::UserBlocking);
+
+return Suspense::make(
+    $products->value(),
+    content: fn (array $items) => ProductGrid::make($items),
+    fallback: ProductSkeleton::make(),
+);
+```
+
+Immediate, user-blocking, render, normal, background, and idle tasks run in
+priority order. Coalescing cancels obsolete work and draining respects a frame
+budget.
+
+## Worklet bytecode
+
+```php
+$opacity = Worklet::input()
+    ->interpolate(0, 200, 1, 0)
+    ->clamp(0, 1);
+```
+
+`PNW1` worklets are bounded numeric programs. They cannot call PHP, allocate
+objects, access global state, or perform I/O.
+
+## Virtualization
+
+`VirtualizedList`, `VirtualGrid`, and `SectionList` use Rust layout and native
+recycling. Heterogeneous cells, grids, inverted/horizontal layouts, stable
+keys, authored or estimated sizes, bounded prefetch, initial index, and
+end-reached events are supported without per-frame PHP traffic.
+
+## Background work and offline sync
+
+`BackgroundJobs` stores idempotent work in `OfflineMutationQueue`. Its snapshot
+can be persisted with PAM storage or Nitro and restored after process death.
+
+```php
+$jobs->dispatch(
+    'messages.sync',
+    uniqueKey: 'conversation:42',
+    payload: ['conversationId' => 42],
+);
+```
+
+The queue has typed queued, sending, applied, retry, conflict, and failed
+states, plus capped exponential backoff, 256 KiB payloads, and 10,000 entries.
+
+## Hardware-accelerated Canvas
+
+```php
+return Canvas::make()
+    ->roundedRectangle(8, 8, 120, 48, 12, 0xFF6750A4)
+    ->circle(180, 32, 24, 0xFFFFD23F)
+    ->line(8, 80, 220, 80, 4, 0xFF111111);
+```
+
+Android and UIKit render retained vector commands using platform-accelerated
+drawing. Geometry must be finite; command count and payload size are bounded.
+
+## Server-driven UI
+
+Server-driven documents are data, not downloadable PHP:
+
+```php
+$tree = ServerDrivenUi::render(
+    $document,
+    actions: fn (string $name): ?Closure => match ($name) {
+        'offer.open' => $this->openOffer(...),
+        default => null,
+    },
+);
+```
+
+Only allowlisted native nodes, numeric styles, and locally resolved actions are
+accepted. A document cannot name or call PHP classes or functions. Documents
+are limited to 1 MiB, 10,000 nodes, 64 levels, and 16 KiB text values.

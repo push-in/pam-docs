@@ -1,79 +1,77 @@
 ---
-title: Navigation
-description: Build typed native stacks with transitions, deep links, persistence, and Android back behavior.
+title: Named routes
+description: Declare Laravel-inspired native stacks and tabs by name, with typed screen parameters and no URL-shaped internal routes.
 ---
 
-`Navigator` is PAM Native's typed stack navigator. It keeps incoming and outgoing screens mounted while Android animates them on the UI thread.
+PAM Native uses route names as application identities. Internal routes are not
+URLs. Paths appear only when a screen accepts an external deep link.
 
 ## Create a stack
 
 ```php
-use Pam\Native\App;
-use Pam\Native\Navigation\NavigationTransition;
-use Pam\Native\Navigation\Navigator;
+use Pam\Native\Routing\Route;
 
-$navigator = new Navigator(
-    initialRoute: 'home',
-    routes: [
-        'home' => fn () => $homeScreen,
-        'details' => fn () => $detailsScreen,
-    ],
-    persistenceKey: 'main',
-    transition: NavigationTransition::PlatformDefault,
-    transitionDurationMs: 240,
+$navigator = Route::stack(
+    name: 'main',
+    initial: 'home',
+    routes: function (): void {
+        Route::screen('home', HomeScreen::class);
+        Route::screen('product', ProductScreen::class);
+        Route::modal('filters', FiltersScreen::class)->sheet();
+    },
 );
 
 App::run($navigator);
 ```
 
-Or build a stack fluently:
+Pass the resulting navigator directly to the application:
 
 ```php
-use Pam\Native\Navigation\Router;
-
-$navigator = Router::stack('home')
-    ->route('home', fn () => $homeScreen)
-    ->route('details', fn () => $detailsScreen)
-    ->transitions(
-        NavigationTransition::SlideFromRight,
-        240,
-    )
-    ->persistence('main')
-    ->build();
+App::run($navigator);
 ```
 
 ## Navigate
 
 ```php
-$navigator->push('details', ['id' => 42]);
-$navigator->pop();
-$navigator->replace('details', ['id' => 84]);
-$navigator->reset('home');
-$navigator->navigate('details', ['id' => 42]);
-$navigator->popTo('home');
-$navigator->popToTop();
+$this->pushRoute('product', productId: 42);
+$this->navigateRoute('home');
+$this->replaceRoute('login');
+$this->popRoute();
 ```
 
-`navigate()` returns to an existing stack entry when possible instead of adding a duplicate.
+`navigateRoute()` returns to an existing entry when possible instead of adding
+a duplicate. Components do not receive or pass a `Navigator` instance.
 
-## Typed route context
+## Typed screen parameters
 
-Route factories can accept an immutable `RouteContext`:
+Named arguments map directly to the screen constructor:
 
 ```php
-use Pam\Native\Navigation\RouteContext;
+final class ProductScreen extends Component
+{
+    public function __construct(
+        public readonly int $productId,
+        public readonly bool $preview = false,
+    ) {
+    }
+}
+```
 
-Router::stack('home')
-    ->route('home', fn () => $home)
-    ->route(
-        'profile',
-        fn (RouteContext $route) => new ProfileScreen(
-            userId: $route->integer('id'),
-            preview: $route->boolean('preview', false),
-        ),
-    )
-    ->deepLink('/profiles/{id}', 'profile')
-    ->build();
+Missing, unknown, and incompatible parameters fail before the screen mounts.
+
+## Named tabs
+
+```php
+$tabs = Route::tabs('main-tabs', initial: 'home', routes: function (): void {
+    Route::tab('home', HomeScreen::class, label: 'Home', icon: $homeIcon);
+    Route::tab('orders', OrdersScreen::class, label: 'Orders', badge: '3');
+});
+```
+
+The same navigation scope selects a tab:
+
+```php
+$this->navigateRoute('orders');
 ```
 
 ## Deep links

@@ -123,6 +123,7 @@ export default defineConfig({
               ],
             },
             { label: 'Navigation', slug: 'native/navigation' },
+            { label: 'Platform runtime', slug: 'native/platform-runtime' },
             { label: 'Files & media picker', slug: 'native/files-and-media' },
             { label: 'Hot reload', slug: 'native/hot-reload' },
             { label: 'Native views', slug: 'native/native-views' },
