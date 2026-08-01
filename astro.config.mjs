@@ -128,7 +128,6 @@ export default defineConfig({
             { label: 'Hot reload', slug: 'native/hot-reload' },
             { label: 'Native views', slug: 'native/native-views' },
             { label: 'Plugin SDK', slug: 'native/plugins' },
-            { label: 'Official packages', slug: 'native/ecosystem' },
             { label: 'DevTools', slug: 'native/devtools' },
             { label: 'Protocol & limits', slug: 'native/protocol' },
           ],
