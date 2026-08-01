@@ -33,7 +33,6 @@ Composer-first package ecosystem.
 - [PAM runtime](https://github.com/push-in/pam)
 - [PAM Native core](https://github.com/push-in/pam-native)
 - [PAM Native Nitro](https://github.com/push-in/pam-native-nitro)
-- [PAM Mobile UI](https://push-in.github.io/pam-docs/mobile-ui/overview/)
 
 This repository explains that platform without hiding the hard parts. The
 documentation records public APIs, architectural ownership, lifecycle,
@@ -49,7 +48,6 @@ unsupported claims are not.
 | [Server runtime](https://push-in.github.io/pam-docs/runtime/how-pam-works/) | Persistent PHP, Tokio, Fibers, HTTP, async I/O and production |
 | [Laravel](https://push-in.github.io/pam-docs/laravel/overview/) | Long-lived Laravel, isolation, workers, observability and deployment |
 | [PAM Native](https://push-in.github.io/pam-docs/native/overview/) | Android/iOS, components, lifecycle, global store, media and native APIs |
-| [PAM Mobile UI](https://push-in.github.io/pam-docs/mobile-ui/overview/) | Accessible retained Material Design 3 component system |
 | [PAM Desktop](https://push-in.github.io/pam-docs/desktop/overview/) | Servo host, capabilities, plugins, security and distribution |
 | [Packages](https://push-in.github.io/pam-docs/packages/overview/) | First-party Composer APIs and interoperability |
 

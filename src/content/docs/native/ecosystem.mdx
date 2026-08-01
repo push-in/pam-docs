@@ -1,0 +1,124 @@
+---
+title: Official packages
+description: Install focused PAM Native capabilities without growing the core runtime.
+---
+
+PAM Native keeps its runtime and bridge small. Application-level capabilities
+ship as ordinary Composer libraries with independent versions and release
+cycles. Every package in the first official wave requires PHP 8.4 or newer and
+`pushinbr/pam-native:^0.6.0`.
+
+| Package | Capability | Android | iOS |
+| --- | --- | :---: | :---: |
+| `pushinbr/pam-native-http` | Immutable requests and JSON client | ✓ | ✓ |
+| `pushinbr/pam-native-storage` | Namespaced string and JSON persistence | ✓ | ✓ |
+| `pushinbr/pam-native-database` | SQLite connections, transactions and migrations | ✓ | ✓ |
+| `pushinbr/pam-native-forms` | Typed forms, validation and field bindings | ✓ | ✓ |
+| `pushinbr/pam-native-notifications` | Permission, local scheduling and push events | ✓ | ✓ |
+| `pushinbr/pam-native-camera` | Photo and video capture | ✓ | ✓ |
+| `pushinbr/pam-native-location` | Bounded one-shot location requests | ✓ | ✓ |
+| `pushinbr/pam-native-animations` | Native transitions and numeric worklets | ✓ | ✓ |
+| `pushinbr/pam-native-sentry` | Bounded Sentry envelope delivery | ✓ | ✓ |
+
+Install only what the application uses:
+
+```bash
+composer require pushinbr/pam-native-http
+composer require pushinbr/pam-native-storage
+composer require pushinbr/pam-native-database
+```
+
+## HTTP
+
+```php
+$http = new Pam\Http\Client(['Authorization' => 'Bearer '.$token]);
+$http->json('POST', 'https://api.example.com/orders', ['sku' => 'pam'], function ($response) {
+    if ($response->successful()) {
+        echo $response->body;
+    }
+});
+```
+
+URLs must use HTTPS. The core transport bounds request bodies, headers and
+timeouts before crossing the bridge.
+
+## Storage and database
+
+```php
+$store = new Pam\Storage\Store('account');
+$store->setJson('profile', ['name' => 'Taylor']);
+
+$database = new Pam\Database\Connection('app.db');
+$database->execute(
+    'CREATE TABLE IF NOT EXISTS notes (id INTEGER PRIMARY KEY, body TEXT)',
+);
+```
+
+Storage keys are namespaced. Database calls use prepared statements and run
+outside rendering; use `transaction()` for atomic heterogeneous batches.
+
+## Forms
+
+```php
+final class LoginForm extends Pam\Forms\Form
+{
+    #[Pam\Native\Forms\Attributes\Required]
+    public string $email = '';
+}
+
+$form = new LoginForm();
+$email = new Pam\Forms\Field($form, 'email');
+($email->change())('dev@pam.dev');
+```
+
+## Device capabilities
+
+```php
+Pam\Notifications\Notifications::schedule(
+    new Pam\Notifications\Notification('welcome', 'Welcome', 'Ready to go.'),
+);
+
+Pam\Camera\Camera::photo(fn ($file) => upload($file->path));
+
+Pam\Location\Location::current(
+    fn ($position) => saveCoordinates($position),
+    new Pam\Location\LocationOptions(timeoutMs: 8_000),
+);
+```
+
+Applications remain responsible for permission copy, push-provider
+provisioning, privacy disclosures and handling a user denial.
+
+## Animations
+
+```php
+$content = Pam\Animations\Transitions::slideUp(
+    Pam\Native\UI\Text::make('Runs natively'),
+);
+
+$opacity = Pam\Animations\Worklets::progress(0, 1);
+```
+
+Presets compile to native keyframes. Numeric worklets are data-only: they
+cannot access files, perform network I/O or call arbitrary PHP functions.
+
+## Sentry
+
+```php
+$sentry = new Pam\Sentry\Sentry(
+    new Pam\Sentry\Dsn($_ENV['SENTRY_DSN']),
+    environment: 'production',
+);
+
+$sentry->captureException($error, ['screen' => 'checkout']);
+```
+
+The package does not force a third-party SDK into the app. It submits a bounded
+Sentry envelope over the native HTTP transport. Never attach credentials,
+access tokens or unnecessary personal information to event context.
+
+## Versioning
+
+Each package starts at `0.1.0` and follows SemVer independently. The package
+README and release notes state the compatible PAM Native range. Composer is
+the package manager; PAM does not introduce a second registry or lockfile.

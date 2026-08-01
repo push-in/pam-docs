@@ -10,7 +10,6 @@ PAM is public-facing software under active development. This page is intentional
 | Server runtime | Experimental | Linux x86_64/ARM64, PHP 8.4, HTTP 1.1/2/3, streams, async I/O | Broader platform and production adoption |
 | Laravel host | Experimental, tested | Laravel 12 and 13; OTLP, process supervisor, local/remote releases, autoscaling, MCP | One concurrent request per worker; app/package global state remains your responsibility |
 | PAM Native | Experimental | Android API 26–36; Swift/UIKit protocol peer and renderer | iOS host, packaging, device CI, accessibility, and measured parity |
-| PAM Mobile UI | Experimental per component | 61 catalog entries with individual Android parity evidence | Component maturity differs; iOS matrix is not yet part of the parity artifact |
 | PAM Desktop | Stable API 1 on Linux x86-64 | Servo host, native shell, plugins, signed updates, reproducible `.tar.gz`, optional `.deb` | Windows/macOS distribution and broader compositor/GPU certification |
 | First-party Composer packages | Experimental | API, socket, PSR bridge, testing, core contracts | Stable 1.0 API guarantees |
 
@@ -36,12 +35,6 @@ The iOS source includes protocol v1 decoding, runtime/batch ownership, UIKit nod
 :::caution[Do not confuse implementation with release support]
 iOS is now implemented at the renderer/runtime layer, but it is not a verified distribution target. A complete app host and packaging flow, simulator/device matrix, cross-platform golden tests, accessibility pass, and physical performance evidence remain open.
 :::
-
-## Mobile UI
-
-The component catalog contains 61 entries. Each entry records a sequential integer category, maturity level, implementation kind, examples, and ten verification gates. Some components are native primitives, some are composed PHP components, and some exist for compatibility or authoring structure.
-
-Use the parity record rather than the component name alone when deciding whether a component is ready for your application.
 
 ## Desktop
 

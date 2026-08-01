@@ -128,19 +128,9 @@ export default defineConfig({
             { label: 'Hot reload', slug: 'native/hot-reload' },
             { label: 'Native views', slug: 'native/native-views' },
             { label: 'Plugin SDK', slug: 'native/plugins' },
+            { label: 'Official packages', slug: 'native/ecosystem' },
             { label: 'DevTools', slug: 'native/devtools' },
             { label: 'Protocol & limits', slug: 'native/protocol' },
-          ],
-        },
-        {
-          label: 'Mobile UI',
-          items: [
-            { label: 'Overview', slug: 'mobile-ui/overview' },
-            { label: 'Authoring', slug: 'mobile-ui/authoring' },
-            { label: 'Component catalog', slug: 'mobile-ui/components' },
-            { label: 'Themes & utilities', slug: 'mobile-ui/themes' },
-            { label: 'Parity contract', slug: 'mobile-ui/parity' },
-            { label: 'Performance', slug: 'mobile-ui/performance' },
           ],
         },
         {
