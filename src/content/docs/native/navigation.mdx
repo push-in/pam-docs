@@ -237,8 +237,17 @@ Push notifications use the same router contract:
 ```php
 use Pam\Native\System\PushNotifications;
 
+PushNotifications::register(
+    fn ($token) => $this->sendTokenToServer($token),
+    fn (string $message) => $this->recordPushRegistrationFailure($message),
+);
 PushNotifications::listenAndRoute($navigator);
 ```
+
+Since PAM Native `0.6.40`, `register()` accepts an optional second callback for
+FCM/APNs provider or configuration failures. Handling that callback keeps an
+expected asynchronous registration failure in application control; omitting it
+preserves the earlier exception behavior.
 
 The route is opened only for an `Opened` push event with a non-empty deep link.
 On Android, add the Firebase client file at
