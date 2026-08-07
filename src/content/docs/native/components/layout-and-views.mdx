@@ -95,6 +95,18 @@ Use `flex-wrap: nowrap` to make the no-wrap contract explicit. `Row` wraps
 horizontally and `Column` wraps vertically; content-sized containers include
 all generated lines in their intrinsic cross-axis extent.
 
+Use `column-gap` and `row-gap` when the spacing between items and wrapped lines
+differs. PAM Native 0.6.41 preserves both CSS axes independently in normal and
+wrapped flex layout; `gap` remains the fallback for either omitted axis.
+
+```css
+.attachment-grid {
+    flex-wrap: wrap;
+    column-gap: 14px;
+    row-gap: 8px;
+}
+```
+
 ## Rounded clipping
 
 Combine `border-radius` and `overflow: hidden` when child content must follow
