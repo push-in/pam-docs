@@ -1,12 +1,12 @@
 ---
-title: pam/psr-bridge
+title: pushinbr/pam-psr-bridge
 description: Run PSR-7 requests, PSR-15 middleware and handlers, and PSR-17 factories on PAM.
 ---
 
-`pam/psr-bridge` provides PSR-7, PSR-15, and PSR-17 interoperability using the official PHP-FIG interfaces.
+`pushinbr/pam-psr-bridge` provides PSR-7, PSR-15, and PSR-17 interoperability using the official PHP-FIG interfaces.
 
 ```bash
-pam composer require pam/psr-bridge
+pam composer require pushinbr/pam-psr-bridge
 ```
 
 ## Use a PSR-15 handler
@@ -76,6 +76,5 @@ Check:
 Use the native PAM transport suite for protocol, timeout, disconnect, and streaming behavior. Unit tests that call a PSR handler directly do not cover that boundary.
 
 :::note[License]
-`pam/psr-bridge` uses the Business Source License 1.1. Applications built with PAM may be commercial or proprietary; competing PAM platforms require a commercial license.
+`pushinbr/pam-psr-bridge` uses the Apache License 2.0.
 :::
-

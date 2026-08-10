@@ -1,12 +1,12 @@
 ---
-title: pam/testing
-description: Test pam/api applications in memory with fluent response assertions.
+title: pushinbr/pam-testing
+description: Test pushinbr/pam-api applications in memory with fluent response assertions.
 ---
 
-`pam/testing` invokes a `pam/api` application pipeline without opening a network port.
+`pushinbr/pam-testing` invokes a `pushinbr/pam-api` application pipeline without opening a network port.
 
 ```bash
-pam composer require --dev pam/testing
+pam composer require --dev pushinbr/pam-testing
 ```
 
 ## Create a client
@@ -94,6 +94,5 @@ In-memory tests do not open a socket and therefore do not prove:
 Use PAM's Rust integration suite for the runtime boundary.
 
 :::note[License]
-`pam/testing` uses the Business Source License 1.1. Applications built with PAM may be commercial or proprietary; competing PAM platforms require a commercial license.
+`pushinbr/pam-testing` uses the Apache License 2.0.
 :::
-

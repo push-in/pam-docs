@@ -31,7 +31,7 @@ The `latest` URL follows the current public tag. Pin a release in CI or a
 reproducible image:
 
 ```text
-https://github.com/push-in/pam/releases/download/v1.0.0/install.sh
+https://github.com/push-in/pam/releases/download/v1.0.1/install.sh
 ```
 
 An official bundle includes:
@@ -51,7 +51,7 @@ You do **not** need a system PHP installation, global Composer, Rust, PHP develo
 | Linux server, x86_64 | Available; glibc 2.35+ |
 | Linux server, ARM64 | Available; glibc 2.35+ |
 | macOS CLI, Apple Silicon | Available; includes iOS runtimes |
-| macOS CLI, Intel | Available; includes iOS runtimes |
+| macOS CLI, Intel | Available; verified PHP 8.4/8.5 macOS runtime |
 | Android native | API 26–36 |
 | iOS native | Generated UIKit host; PHP 8.4/8.5 simulator certification; signed IPA tooling |
 | Linux desktop | Experimental bundle and Debian package |
@@ -70,5 +70,5 @@ cargo build --locked --release
 
 Use `PHP_CONFIG` and `PAM_PHP_LIB_DIR` when working with a custom build toolchain. These are build-time settings, not end-user requirements.
 
-See [release 1.0.0](../../project/release-1-0-0/) for the shipped production
+See [release 1.0](../../project/release-1-0-0/) for the shipped production
 operations, verification commands, and public package records.

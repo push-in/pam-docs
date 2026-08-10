@@ -1,12 +1,12 @@
 ---
-title: pam/api
+title: pushinbr/pam-api
 description: Routing, middleware, error boundaries, and package discovery for native PAM applications.
 ---
 
-`pam/api` is PAM's optional HTTP application layer. It provides static and parameterized routes, `404` and `405` handling, a compiled middleware pipeline, error boundaries, providers, and package discovery.
+`pushinbr/pam-api` is PAM's optional HTTP application layer. It provides static and parameterized routes, `404` and `405` handling, a compiled middleware pipeline, error boundaries, providers, and package discovery.
 
 ```bash
-pam composer require pam/api
+pam composer require pushinbr/pam-api
 ```
 
 ## Register routes
@@ -110,6 +110,5 @@ Composer package discovery can register providers from installed package metadat
 Routes, middleware, providers, error handlers, and PSR handlers cannot be changed after the application begins handling requests. PAM throws rather than silently mutating a live long-lived pipeline.
 
 :::note[License]
-`pam/api` uses the Business Source License 1.1. Applications built with PAM may be commercial or proprietary; competing PAM platforms require a commercial license.
+`pushinbr/pam-api` uses the Apache License 2.0.
 :::
-

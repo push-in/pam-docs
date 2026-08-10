@@ -12,7 +12,7 @@ native mobile, and desktop workflows.
 ```bash
 curl --proto '=https' --tlsv1.2 --fail --silent --show-error --location \
   --output pam-install.sh \
-  https://github.com/push-in/pam/releases/download/v1.0.0/install.sh
+  https://github.com/push-in/pam/releases/download/v1.0.1/install.sh
 sh pam-install.sh
 rm pam-install.sh
 
@@ -58,15 +58,18 @@ certificates/provisioning remain in the application team's environment.
 
 The GitHub release publishes checksum-paired archives for Linux x86_64,
 Linux ARM64, macOS Apple Silicon, and macOS Intel, plus the verified installer.
-The macOS archives include both supported iOS PHP/XCFramework runtimes.
+The Apple Silicon archive includes both supported iOS PHP/XCFramework runtimes;
+the Intel archive contains the verified PHP 8.4/8.5 macOS runtime.
 
 The six server Composer packages are split into immutable public repositories
-from the same `v1.0.0` source tag. PAM Native and its plugins keep their own
-release cadence and declare explicit compatible version ranges.
+and published on Packagist under the organization-owned `pushinbr/pam-*`
+namespace. `v1.0.1` is the recommended 1.0 patch because it completes this
+public package contract. PAM Native and its plugins keep their own release
+cadence and declare explicit compatible version ranges.
 
 ## Verification
 
-- [PAM 1.0 release](https://github.com/push-in/pam/releases/tag/v1.0.0)
+- [PAM 1.0.1 release](https://github.com/push-in/pam/releases/tag/v1.0.1)
 - [PAM CI](https://github.com/push-in/pam/actions/workflows/ci.yml)
 - [Android certification](https://github.com/push-in/pam/actions/workflows/ci.yml)
 - [iOS certification](https://github.com/push-in/pam/actions/workflows/ios-native.yml)

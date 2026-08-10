@@ -3,7 +3,7 @@ title: WebSockets
 description: Serve RFC 6455 connections, rooms, acknowledgements, and distributed adapters.
 ---
 
-PAM's WebSocket transport shares the native listener with HTTP. The optional `pam/socket` package adds event-oriented APIs, authentication, rooms, broadcasts, acknowledgements, adapters, and session resume support.
+PAM's WebSocket transport shares the native listener with HTTP. The optional `pushinbr/pam-socket` package adds event-oriented APIs, authentication, rooms, broadcasts, acknowledgements, adapters, and session resume support.
 
 ## Create a realtime project
 
@@ -16,7 +16,7 @@ pam dev index.php
 Or add the package to an existing project:
 
 ```bash
-pam composer require pam/socket
+pam composer require pushinbr/pam-socket
 ```
 
 ```php
@@ -70,4 +70,3 @@ During a generational reload, old connections drain or close with the old genera
 :::note[Laravel callbacks share the Laravel execution slot]
 In a Laravel host, Socket callbacks and HTTP requests share the enforced one-at-a-time worker slot. Increase the worker count for concurrency.
 :::
-

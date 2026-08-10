@@ -1,12 +1,12 @@
 ---
-title: pam/core-api
+title: pushinbr/pam-core-api
 description: Stable package contracts for HTTP applications, middleware, providers, and runtime capability checks.
 ---
 
-`pam/core-api` contains small versioned contracts for packages that extend PAM. It does not include a router, server, or application framework.
+`pushinbr/pam-core-api` contains small versioned contracts for packages that extend PAM. It does not include a router, server, or application framework.
 
 ```bash
-pam composer require pam/core-api
+pam composer require pushinbr/pam-core-api
 ```
 
 ## HTTP application contract
@@ -33,7 +33,7 @@ interface ApplicationInterface
 }
 ```
 
-Packages should depend on this contract when they need to register routes or middleware without requiring `pam/api` directly.
+Packages should depend on this contract when they need to register routes or middleware without requiring `pushinbr/pam-api` directly.
 
 ## Middleware contract
 
@@ -100,6 +100,5 @@ Application and package code should use enum cases instead of magic numbers.
 - Document the minimum PAM ABI and capabilities.
 
 :::note[License]
-`pam/core-api` uses the Business Source License 1.1. Applications built with PAM may be commercial or proprietary; competing PAM platforms require a commercial license.
+`pushinbr/pam-core-api` uses the Apache License 2.0.
 :::
-

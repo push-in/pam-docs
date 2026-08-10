@@ -9,7 +9,7 @@ PAM uses Composer without a package wrapper or alternate lockfile. It discovers 
 
 ```bash
 pam composer install
-pam composer require pam/api
+pam composer require pushinbr/pam-api
 pam composer update
 pam composer audit --locked
 ```
@@ -34,7 +34,7 @@ The system CLI is diagnostic context, not a runtime dependency. A difference in 
 | Category | Current contract |
 | --- | --- |
 | Pure PHP and PSR-4 packages | Loaded by the normal Composer autoloader |
-| PSR-7, PSR-15, PSR-17 | Available through `pam/psr-bridge` |
+| PSR-7, PSR-15, PSR-17 | Available through `pushinbr/pam-psr-bridge` |
 | PSR-3 | Consumed when `psr/log` is installed |
 | PHPUnit and Pest | Run inside Embed through `pam test` |
 | Amp, Revolt, ReactPHP | Exercised by compatibility smoke tests |
@@ -62,4 +62,3 @@ PAM resets runtime-owned request state. It cannot infer and reset arbitrary thir
 Add important dependencies to a locked smoke application and exercise the behavior that matters: multiple sequential requests, failures, cancellation, memory stability, package boot, and shutdown.
 
 Worker recycling remains a production boundary even after tests pass. A green matrix reduces known risk; it cannot prove that future package versions or application code contain no long-lived state.
-
