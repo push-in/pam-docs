@@ -1,56 +1,46 @@
 ---
 title: Licensing
-description: Understand PAM's Business Source License, application rights, competing use, change license, and Desktop exception.
+description: Understand the Apache 2.0 license used by PAM and its first-party ecosystem.
 ---
 
-PAM `0.1.1`, PAM Native, and the first-party server packages are source-available under the Business Source License 1.1 (`BUSL-1.1`).
+PAM, PAM Native, the first-party Composer packages, examples, and publication
+metadata are licensed under the **Apache License 2.0**. PAM Desktop keeps the
+license declared by its own repository.
 
-The complete `LICENSE` file in each repository controls. This page is an explanatory summary and is not legal advice.
+The complete `LICENSE`, `NOTICE`, and third-party notice files shipped by each
+repository and release control. This page is a practical summary, not legal
+advice.
 
-## Applications built with PAM
+## What Apache 2.0 permits
 
-The Additional Use Grant permits production use for purposes other than a competing use.
+Subject to the license terms, you may:
 
-You may use PAM without a PAM commercial license to:
+- use PAM for personal, internal, commercial, or public applications;
+- build and sell proprietary software with PAM;
+- modify and redistribute PAM;
+- create plugins, components, integrations, hosting, support, and training;
+- fork the project; and
+- include PAM in a larger product or service.
 
-- build, operate, market, and sell proprietary or open applications;
-- run internal systems and commercial SaaS products;
-- distribute mobile, desktop, and web applications built with PAM;
-- provide paid development, consulting, hosting, support, and training; and
-- create plugins, components, integrations, and tools that work with PAM without replacing it.
+There is no PAM revenue share, application royalty, company-size limit, or
+seat limit in Apache 2.0.
 
-There is no stated revenue, company-size, seat, or application royalty limit.
+## Your obligations
 
-Application code authored against PAM's public interfaces belongs to its author and may use other terms. The same application-output grant covers code emitted by PAM generators and application files copied from `pam/skeleton`.
+When you redistribute PAM or a derivative containing PAM code, preserve the
+license and required notices, mark significant modifications, and follow the
+Apache 2.0 patent and attribution terms. Third-party dependencies retain their
+own licenses.
 
-That grant does not apply to copied or modified portions of PAM's runtime, framework, developer platform, or UI engine.
+Application code authored against PAM's public APIs belongs to its author and
+may use different terms. Generated starter code should retain any notices that
+the generated files or their source package explicitly require.
 
-## Competing use
+## Older releases
 
-A commercial license is required for production use in a product or service whose primary purpose is to substitute for PAM as an application development framework, developer platform, runtime environment, or UI engine.
+Licenses are granted per released copy. A later license change does not revoke
+terms already received with an older release. Consult the `LICENSE` distributed
+with the exact version you use.
 
-A rebranded or repackaged standalone PAM distribution is included in this restriction.
-
-The BSL base terms still permit copying, modification, derivative works, redistribution, and non-production use, subject to the controlling license.
-
-## Change license
-
-For PAM `0.1.1`, the published Change Date is July 23, 2030. On the Change Date—or the fourth anniversary of the first public distribution of a specific version if earlier—that version changes to Apache License 2.0.
-
-The BSL applies separately to each version, so future releases must publish their own applicable Change Date.
-
-## PAM Desktop
-
-PAM Desktop and its `pam/desktop` Composer package are currently MIT licensed.
-
-Servo and every other third-party dependency retain their own license terms and notices.
-
-## Existing releases
-
-A later licensing change does not retroactively revoke rights already received for a copy released under another license.
-
-## Before public release
-
-The project documentation itself notes that Pushin should have the licensor identity, copyright ownership, contributor agreements, Additional Use Grant, trademark policy, and bundled third-party notices reviewed by qualified counsel before public release.
-
-For a use case near the competing-use boundary, rely on the controlling license and obtain legal advice or a commercial license clarification from Pushin.
+For unusual redistribution, trademark, or patent questions, rely on the
+controlling license text and obtain qualified legal advice.

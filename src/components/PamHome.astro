@@ -241,9 +241,10 @@ const path = (value: string) => `${base}${value}`;
     </div>
     <div>
       <p>
-        PAM is experimental. Android API 26–36 is the verified mobile target. A Swift/UIKit
-        renderer and protocol peer now exist for iOS, while application-host integration,
-        packaging, device testing, and measured parity remain in progress.
+        PAM 1.0 stabilizes the CLI and public runtime contracts. Android API 26–36 is
+        certified end to end. The generated Swift/UIKit host is compiled and launched in
+        real simulators with PHP 8.4 and 8.5; signing and physical-device qualification
+        remain explicit responsibilities of each application team.
       </p>
       <div class="pam-home-actions">
         <a class="pam-button pam-button-primary" href={path('/project/status/')}>View project status</a>

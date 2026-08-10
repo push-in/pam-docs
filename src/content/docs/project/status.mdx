@@ -1,65 +1,56 @@
 ---
 title: Project status
-description: An honest support matrix for every major PAM surface.
+description: The verified PAM 1.0 support boundary for every major product surface.
 ---
 
-PAM is public-facing software under active development. This page is intentionally conservative: “implemented” means code exists and the documented contract is exercised; it does not mean every workload or third-party package is production-safe.
+PAM 1.0 is a stable compatibility contract for the documented CLI, runtime,
+package, editor, and native-host interfaces. “Stable” does not mean that every
+third-party PHP package, device, or workload has been tested. The table below
+separates released evidence from application-owner responsibilities.
 
-| Surface | Status | Supported today | Important gaps |
-| --- | --- | --- | --- |
-| Server runtime | Experimental | Linux x86_64/ARM64, PHP 8.4, HTTP 1.1/2/3, streams, async I/O | Broader platform and production adoption |
-| Laravel host | Experimental, tested | Laravel 12 and 13; OTLP, process supervisor, local/remote releases, autoscaling, MCP | One concurrent request per worker; app/package global state remains your responsibility |
-| PAM Native | Experimental | Android API 26–36; Swift/UIKit protocol peer and renderer | iOS host, packaging, device CI, accessibility, and measured parity |
-| PAM Desktop | Stable API 1 on Linux x86-64 | Servo host, native shell, plugins, signed updates, reproducible `.tar.gz`, optional `.deb` | Windows/macOS distribution and broader compositor/GPU certification |
-| First-party Composer packages | Experimental | API, socket, PSR bridge, testing, core contracts | Stable 1.0 API guarantees |
+| Surface | PAM 1.0 contract | Application-owner boundary |
+| --- | --- | --- |
+| CLI and project lifecycle | Interactive launcher/init; contextual dev, generation, package, quality, doctor, build, and release commands | Project-specific scripts and credentials |
+| Server runtime | Linux x86_64/ARM64, PHP 8.4 Embed, HTTP 1.1/2/3, streams, async I/O, supervised workers | Workload soak tests and extension safety |
+| Laravel host | Laravel 12 and 13 executable matrix; Artisan and request isolation | Package globals and one active request per worker |
+| PAM Native Android | API 26–36, arm64-v8a/x86_64, PHP 8.4/8.5, signed APK/AAB tooling | Keystore, Play Console, and physical-device QA |
+| PAM Native iOS | iOS 15 baseline; iOS 18 extension matrix; PHP 8.4/8.5; generated UIKit host; simulator runtime; archive/IPA tooling | Apple team, certificates, profiles, App Store, and physical-device QA |
+| Editor tooling | `.pam` formatter/LSP plus managed VS Code, Neovim, and Helix setup | Editor-specific custom configuration |
+| First-party Composer packages | Versioned API, socket, PSR bridge, testing, core contracts, and skeleton splits | Third-party package compatibility |
+| PAM Desktop | Contextual CLI delegation and generated starter | Follow the independent PAM Desktop platform matrix |
 
 ## Server and Laravel
 
-The runtime persists PHP, schedules native I/O through Tokio, supports isolated request Fibers for native PAM applications, supervises workers, exposes health and Prometheus endpoints, and includes operational diagnostics.
+The runtime persists PHP, schedules native I/O through Tokio, supports isolated
+request Fibers, supervises workers, exposes health and Prometheus endpoints,
+and includes operational diagnostics.
 
-Laravel 12 and 13 are tested with Eloquent on SQLite, MySQL, and PostgreSQL; Redis; database queues; Artisan; scheduler discovery; Sanctum; Flysystem; Blade; Livewire; Inertia; Scout; Reverb; Telescope; and Pulse. Horizon and Socialite are exercised on Laravel 12 because their current stable Composer constraints do not accept Laravel 13.
-
-The production package adds W3C-compatible OTLP traces, Nightwatch process
-integration, managed processes, local atomic releases, PAM Cloud and Forge
-operations, autoscaling, and a mutation-gated MCP server. The compatibility
-registry tracks 44 packages through public certification artifacts.
-
-Laravel runs one request at a time per worker. Scale through supervised workers, and independently supervise queues, Horizon, and scheduler processes.
+Laravel 12 and 13 are tested with SQLite, MySQL, PostgreSQL, Redis, database
+queues, Artisan, Sanctum, Scout, Livewire, Inertia, Reverb, Telescope, and
+Pulse. Horizon and Socialite are exercised where their stable Composer
+constraints allow them. Laravel runs one request at a time per worker; scale
+through supervised workers.
 
 ## Native mobile
 
-PAM Native renders real Android Views and has a Swift/UIKit renderer for iOS. PHP owns state and composition, Rust validates, reconciles, diffs, and lays out the tree, while Kotlin or Swift commits native mutations on the platform UI thread.
+PHP owns state and composition, Rust validates and reconciles the retained tree,
+and Kotlin or Swift commits bounded mutation batches on the platform UI thread.
+Android certification builds and runs real generated hosts. iOS certification
+generates projects from scratch, resolves plugins through Composer after a
+dry-run, compiles every app-extension target, installs the app, launches it,
+and confirms the embedded PHP process remains alive in a real simulator.
 
-The iOS source includes protocol v1 decoding, runtime/batch ownership, UIKit node mapping, custom native views, storage/HTTP/system modules, advanced press/input/modal/image events, refresh, drawer, scroll, and end-reached behavior.
+The iOS extension matrix covers Share Extension, Health, Media, Widgets, App
+Intents, and Live Activities at compatible deployment targets. Physical-device
+and store validation cannot be universal because signing identities,
+provisioning, entitlements, and devices belong to each application team.
 
-:::caution[Do not confuse implementation with release support]
-iOS is now implemented at the renderer/runtime layer, but it is not a verified distribution target. A complete app host and packaging flow, simulator/device matrix, cross-platform golden tests, accessibility pass, and physical performance evidence remain open.
-:::
+## Compatibility discipline
 
-## Desktop
+Native protocol IDs and every coded status, type, state, kind, and variant use
+sequential integer enums beginning at `1`. Existing identifiers are not reused
+inside a protocol version. Project and package commands expose deterministic
+non-interactive forms and stable JSON where automation needs it.
 
-PAM Desktop 1.1.2 supports local HTML/CSS/JavaScript rendered by Servo; typed
-commands and events; reusable multiple windows; deadlines and cancellation;
-crash recovery; hot reload; capability-gated filesystem, dialogs, clipboard,
-notifications, and drag-and-drop; menus, tray behavior, global shortcuts,
-background jobs, PHP and supervised Rust plugins; signed Ed25519 updates with
-rollback; and reproducible self-contained Linux distribution.
-
-Public API 1, worker protocol 6, and Rust plugin protocol 1 are compatibility
-gated. Windows and macOS packaging remain experimental and unpublished; Linux
-graphics-stack variation still requires qualification on the target
-compositor, GPU driver, and oldest supported glibc baseline.
-
-See the [current release record](../release-0-1-36/) for exact artifacts and
-verification evidence.
-
-## Ways to help
-
-The highest-impact contribution areas are:
-
-1. completing the iOS host, packaging, device CI, and parity verification;
-2. component parity and accessibility verification;
-3. Windows and macOS desktop packaging;
-4. reproducible compatibility fixtures for real Composer packages;
-5. documentation examples and technical review; and
-6. benchmarks that follow the published protocol instead of marketing-only numbers.
+See the [PAM 1.0 release record](../release-1-0-0/) for exact artifacts and CI
+evidence.

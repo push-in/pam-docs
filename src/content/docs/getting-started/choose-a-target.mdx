@@ -12,10 +12,10 @@ not by fear that PHP can only live behind a request-response server.
 
 | You want to build | Start with | Current boundary |
 | --- | --- | --- |
-| API or web service | `pam init my-api --template api` | Experimental Linux runtime |
+| API or web service | `pam init my-api --template api` | PAM 1.0 on Linux x86_64/ARM64 |
 | Laravel application | `pam init my-app --template laravel` | Laravel 12 and 13 executable matrix |
 | Real-time server | Add `--socket` to API or Laravel | Native RFC 6455 transport |
-| Native application, low-level UI | `pam init my-app --template mobile` | Android API 26–36 verified; iOS host/distribution incomplete |
+| Native application, low-level UI | `pam init my-app --template mobile` | Android API 26–36; generated iOS host and simulator certification |
 | Desktop application | `pam init my-app --template desktop` | Linux experimental; macOS/Windows planned |
 
 ## Server runtime
@@ -32,12 +32,11 @@ Choose PAM Native when you want real platform controls while keeping
 application state and composition in PHP. It is not a WebView and does not
 include React's JavaScript runtime.
 
-:::note[iOS is not a released target]
-A Swift/UIKit protocol peer and renderer exist in source. The complete app
-host, package installation flow, simulator/device matrix, accessibility pass,
-and measured parity are still incomplete. Do not begin an iOS product assuming
-released compatibility. See [the iOS renderer](../../native/ios-renderer/) and
-[Contributing](../../community/contributing/).
+:::note[iOS signing belongs to the application]
+PAM generates, compiles, installs, and launches the UIKit host and can archive
+and export an IPA. App Store delivery still requires your Apple Developer team,
+certificates, provisioning profiles, entitlements, and physical-device QA. See
+[the iOS renderer](../../native/ios-renderer/) for the verified boundary.
 :::
 
 ## PAM Desktop

@@ -1,11 +1,17 @@
 ---
-title: iOS renderer
-description: The implemented Swift/UIKit runtime, component mapping, event lifecycle, performance model, and current release boundary.
+title: iOS runtime and host
+description: The Swift/UIKit runtime, generated Xcode host, extensions, packaging, and verified release boundary.
 ---
 
-PAM Native includes a protocol-v1 Swift peer and UIKit renderer. It consumes the same Rust mutation batches as Android and keeps frame-sensitive interaction in native code.
+PAM Native includes a protocol-v1 Swift peer, UIKit renderer, generated Xcode
+host, local Swift package graph, app-extension targets, and archive/export
+tooling. It consumes the same Rust mutation batches as Android and keeps
+frame-sensitive interaction in native code.
 
-This page describes source-level implementation. It does not claim that iOS is already a signed, packaged, device-verified production target.
+CI generates an isolated application, compiles it, installs it, launches it,
+and verifies that embedded PHP stays alive in a real simulator. PHP 8.4 is
+certified against the iOS 15 baseline; PHP 8.5 certifies the iOS 18 extension
+matrix.
 
 ## Runtime path
 
@@ -159,17 +165,26 @@ The renderer is designed around bounded native work:
 
 These mechanisms support 60–120 fps operation, but they are not a substitute for measured release-build evidence.
 
-## Remaining release gates
+## Generated host and extensions
 
-Before iOS becomes a supported production target, PAM still needs:
+`pam build`, `pam run`, `pam sign`, and `pam package` select the iOS
+implementation inside an iOS-only PAM Native project. The explicit
+`pam mobile ios:*` aliases remain available for CI.
 
-1. a complete application host and documented Xcode integration;
-2. simulator and physical-device CI;
-3. signed archive and distribution tooling;
-4. golden protocol tests and malformed-frame fuzzing on Swift;
-5. UIKit accessibility, Dynamic Type, safe-area, keyboard, and rotation verification;
-6. list recycling/virtualization parity;
-7. line-by-line component and controlled-state evidence for composed libraries; and
-8. release-build FPS, startup, memory, thermal, and energy benchmarks.
+The host uses local Swift Package Manager dependencies and does not require
+CocoaPods, Tuist, or XcodeGen. Plugin metadata generates source targets,
+framework links, usage descriptions, entitlements, and embedded extension
+targets. The certified extension set is Share Extension, Health, Media,
+Widgets, App Intents, and Live Activities.
 
-Until those gates pass, use “iOS renderer implemented” rather than “iOS production support.”
+## Distribution boundary
+
+PAM validates the Xcode toolchain, creates an archive, exports an IPA using the
+provided `ExportOptions.plist`, and writes a neighboring SHA-256 checksum. PAM
+does not store or invent Apple credentials. The application team must provide
+its development team, certificates, profiles, entitlements, App Store Connect
+authentication, physical-device matrix, and final store review.
+
+Simulator certification is strong evidence for the generated host and runtime;
+it is not a substitute for release-build startup, memory, thermal, energy,
+accessibility, and device testing on the exact products an application supports.

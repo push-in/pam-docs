@@ -32,7 +32,8 @@ request                              └─ request N ─┘
 
 ## What PAM is
 
-- A PHP 8.4 Embed runtime with a Rust and Tokio execution boundary.
+- A PHP Embed runtime with a Rust and Tokio execution boundary; official
+  server bundles use PHP 8.4 and PAM Native certifies PHP 8.4 and 8.5.
 - A server for HTTP, WebSockets, streaming, native asynchronous I/O, and supervised workers.
 - A host for unmodified Laravel applications with per-request sandboxing,
   native OTLP, managed processes, release operations, autoscaling, and bounded
@@ -110,12 +111,15 @@ It also does not make every synchronous PHP library asynchronous. A blocking ext
 
 ## Current maturity
 
-The server runtime is currently experimental at `0.1.x`. PAM Native's verified
-distribution is Android and uses protocol version `1`; a Swift/UIKit renderer
-exists, while its iOS host, packaging, and device verification remain
-incomplete. PAM Desktop targets controlled prototypes and product exploration
-while Servo and multi-platform distribution continue to mature.
+PAM 1.0 stabilizes the CLI, server runtime contracts, project generators,
+official Composer packages, editor tooling, Android distribution, and the
+generated iOS host. Android is certified on APIs 26 and 36. iOS is certified in
+real simulators with PHP 8.4 and 8.5, including Share Extension, Health, Media,
+Widgets, App Intents, and Live Activities. Signed device and store delivery
+still depend on the application owner's Apple credentials and provisioning.
 
-The [project status](../project/status/) page is the shortest accurate overview
-of what you can use today. The [0.1.36 release record](../project/release-0-1-36/)
-lists exact artifacts and verification evidence.
+“1.0” is a compatibility commitment for the documented public contracts, not a
+claim that every PHP extension, Composer package, device, or workload is
+automatically safe. The [project status](../project/status/) page defines each
+boundary and the [1.0 release record](../project/release-1-0-0/) links the
+executable evidence.

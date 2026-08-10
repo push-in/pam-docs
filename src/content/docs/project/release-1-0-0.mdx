@@ -1,0 +1,78 @@
+---
+title: PAM 1.0
+description: The verified PAM 1.0 release across CLI, server, Composer, Android, iOS, and editor tooling.
+---
+
+PAM 1.0 turns the ecosystem into one contextual developer experience. Install
+one CLI, create a project, and use the same short commands for server, Laravel,
+native mobile, and desktop workflows.
+
+## Install
+
+```bash
+curl --proto '=https' --tlsv1.2 --fail --silent --show-error --location \
+  --output pam-install.sh \
+  https://github.com/push-in/pam/releases/download/v1.0.0/install.sh
+sh pam-install.sh
+rm pam-install.sh
+
+pam --version
+pam doctor
+```
+
+The installer verifies checksums and installs under `~/.local` without root.
+Official archives carry the exact private PHP Embed runtime and isolated INI
+tree. Composer is signature-verified when first needed.
+
+## One CLI
+
+The 1.0 command contract includes:
+
+- interactive `pam` launcher and `pam init` presets;
+- contextual `doctor`, `dev`, `run`, `logs`, `devices`, `test`, and `build`;
+- `make:*` generators for Native and Laravel;
+- package discovery and preflight through `packages`, `add`, `remove`, and
+  `outdated`;
+- embedded `composer` and Laravel `artisan` execution;
+- formatting, linting, diagnostics, profiling, signing, packaging, and release
+  gates;
+- application and Composer-package command extension; and
+- `.pam` formatter/LSP setup for VS Code, Neovim, and Helix.
+
+## Native evidence
+
+Android is certified on APIs 26 and 36 with the real PHP Embed runtime,
+generated app, emulator execution, signed APK/AAB production artifacts, and
+checksums.
+
+iOS is certified by generating a clean Xcode host, resolving official plugins
+after Composer dry-runs, building every target, installing and launching the
+application in a real simulator, and proving the embedded PHP process remains
+alive. The matrix covers PHP 8.4/iOS 15 and PHP 8.5/iOS 18 with Share Extension,
+Health, Media, Widgets, App Intents, and Live Activities.
+
+Application signing secrets are never committed. Android keystores and Apple
+certificates/provisioning remain in the application team's environment.
+
+## Release artifacts
+
+The GitHub release publishes checksum-paired archives for Linux x86_64,
+Linux ARM64, macOS Apple Silicon, and macOS Intel, plus the verified installer.
+The macOS archives include both supported iOS PHP/XCFramework runtimes.
+
+The six server Composer packages are split into immutable public repositories
+from the same `v1.0.0` source tag. PAM Native and its plugins keep their own
+release cadence and declare explicit compatible version ranges.
+
+## Verification
+
+- [PAM 1.0 release](https://github.com/push-in/pam/releases/tag/v1.0.0)
+- [PAM CI](https://github.com/push-in/pam/actions/workflows/ci.yml)
+- [Android certification](https://github.com/push-in/pam/actions/workflows/ci.yml)
+- [iOS certification](https://github.com/push-in/pam/actions/workflows/ios-native.yml)
+- [Composer package publication](https://github.com/push-in/pam/actions/workflows/composer-packages.yml)
+- [PAM Native releases](https://github.com/push-in/pam-native/releases)
+
+The [compatibility guide](../../runtime/compatibility/) defines what these
+checks prove and what each application must still validate against its own
+packages, credentials, devices, data stores, and workloads.

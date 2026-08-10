@@ -1,14 +1,15 @@
 ---
-title: Installation
-description: Install the PAM runtime on a supported Linux system.
+title: Install PAM
+description: Install the single PAM CLI before creating server, Laravel, native, or desktop projects.
 ---
 
-PAM 0.1.36 ships prebuilt Linux releases for x86_64 and ARM64. Official
-archives target glibc 2.35 or newer.
+Every PAM product starts with the `pam` command. Install the CLI first; it then
+manages the private PHP runtime, verified Composer toolchain, project creation,
+development, diagnostics, generators, native hosts, and release builds.
 
-:::caution[Experimental release]
-Review the [project status](../../project/status/) and target-specific limitations before using PAM for production workloads.
-:::
+PAM 1.0 ships prebuilt Linux and macOS releases for x86_64 and ARM64. Linux
+archives target glibc 2.35 or newer. macOS archives also include the verified
+iOS PHP and engine XCFrameworks.
 
 ## Install a release
 
@@ -21,7 +22,7 @@ sh pam-install.sh
 rm pam-install.sh
 
 pam --version
-pam doctor .
+pam doctor
 ```
 
 The installer verifies the release SHA-256, rejects unsafe archive paths, and installs without root under `~/.local`.
@@ -30,7 +31,7 @@ The `latest` URL follows the current public tag. Pin a release in CI or a
 reproducible image:
 
 ```text
-https://github.com/push-in/pam/releases/download/v0.1.36/install.sh
+https://github.com/push-in/pam/releases/download/v1.0.0/install.sh
 ```
 
 An official bundle includes:
@@ -49,17 +50,18 @@ You do **not** need a system PHP installation, global Composer, Rust, PHP develo
 | --- | --- |
 | Linux server, x86_64 | Available; glibc 2.35+ |
 | Linux server, ARM64 | Available; glibc 2.35+ |
+| macOS CLI, Apple Silicon | Available; includes iOS runtimes |
+| macOS CLI, Intel | Available; includes iOS runtimes |
 | Android native | API 26–36 |
-| iOS native | Swift/UIKit renderer implemented; app host, packaging, and device verification incomplete |
+| iOS native | Generated UIKit host; PHP 8.4/8.5 simulator certification; signed IPA tooling |
 | Linux desktop | Experimental bundle and Debian package |
 | macOS desktop | Planned |
 | Windows desktop | Planned |
 
 ## Build the runtime from source
 
-Runtime contributors need Rust 1.94 or newer, a C toolchain, PHP 8.4 development
-headers, and the matching Embed library. Official release workflows use the
-pinned Rust 1.97.1 toolchain.
+Runtime contributors need Rust 1.88 or newer, a C toolchain, PHP 8.4 development
+headers, and the matching Embed library. End users do not need this toolchain.
 
 ```bash
 sudo apt-get install -y build-essential php8.4-dev libphp8.4-embed
@@ -68,5 +70,5 @@ cargo build --locked --release
 
 Use `PHP_CONFIG` and `PAM_PHP_LIB_DIR` when working with a custom build toolchain. These are build-time settings, not end-user requirements.
 
-See [release 0.1.36](../../project/release-0-1-36/) for the shipped production
+See [release 1.0.0](../../project/release-1-0-0/) for the shipped production
 operations, verification commands, and public package records.

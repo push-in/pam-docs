@@ -5,6 +5,11 @@ description: Create and run a persistent PHP API with PAM.
 
 Create an API project and start its development server:
 
+:::note[Install the CLI first]
+Every initializer and project command below depends on PAM. Complete
+[Install PAM](../installation/) once before running `pam init`.
+:::
+
 ```bash
 pam init hello-pam --template api
 cd hello-pam
@@ -50,4 +55,8 @@ pam init native-ui --template mobile-ui
 pam init my-desktop-app --template desktop
 ```
 
-Read [Choose a target](../choose-a-target/) before committing to native mobile or desktop: their platform support differs from the server runtime.
+Run `pam` without arguments for the guided launcher. Inside any generated
+project, prefer the contextual workflow: `pam doctor`, `pam dev`, `pam test`,
+`pam build`, and `pam package`.
+
+Read [Choose a target](../choose-a-target/) for the exact platform contracts.
