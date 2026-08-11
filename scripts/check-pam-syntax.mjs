@@ -4,6 +4,18 @@ import { extname, join, relative, resolve, sep } from 'node:path';
 const root = resolve(import.meta.dirname, '..');
 const content = join(root, 'src', 'content', 'docs');
 const failures = [];
+const explicitCurrentDirectory = /\bpam\b[^\n`]*\s+\.(?=\s*(?:\\|`|$)|\s+--)/;
+
+for (const example of [
+  'pam desktop doctor .',
+  'pam desktop dev .',
+  'pam desktop build .',
+  'pam dev . --host 0.0.0.0',
+]) {
+  if (!explicitCurrentDirectory.test(example)) {
+    throw new Error(`PAM syntax detector does not reject: ${example}`);
+  }
+}
 
 for (const file of walk(content).filter((path) => extname(path) === '.mdx')) {
   const source = readFileSync(file, 'utf8');
@@ -19,7 +31,7 @@ for (const file of walk(content).filter((path) => extname(path) === '.mdx')) {
       });
     }
 
-    if (/\bpam\b.*(?:^|\s)\.(?=\s*(?:\\|`|$)|\s+--)/.test(line)) {
+    if (explicitCurrentDirectory.test(line)) {
       failures.push({
         file,
         line: index + 1,

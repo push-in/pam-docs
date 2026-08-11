@@ -3,6 +3,7 @@ import starlight from '@astrojs/starlight';
 
 const site = process.env.SITE_URL ?? 'https://pam.dev';
 const base = process.env.BASE_PATH ?? '/';
+const socialImage = new URL(`${base.replace(/\/$/, '')}/og-pam.png`, site).href;
 
 export default defineConfig({
   site,
@@ -39,6 +40,12 @@ export default defineConfig({
             content: '#141411',
           },
         },
+        { tag: 'meta', attrs: { property: 'og:image', content: socialImage } },
+        { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
+        { tag: 'meta', attrs: { property: 'og:image:height', content: '630' } },
+        { tag: 'meta', attrs: { property: 'og:image:alt', content: 'PAM — one PHP runtime, every target' } },
+        { tag: 'meta', attrs: { name: 'twitter:image', content: socialImage } },
+        { tag: 'meta', attrs: { name: 'twitter:image:alt', content: 'PAM — one PHP runtime, every target' } },
       ],
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/push-in/pam' },

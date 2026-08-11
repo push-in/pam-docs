@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /pam-docs/
+
+Sitemap: https://push-in.github.io/pam-docs/sitemap-index.xml
