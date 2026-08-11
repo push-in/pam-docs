@@ -1,0 +1,69 @@
+---
+title: Composer supply-chain gate
+description: Produce a deterministic fail-closed PAM decision for Composer scripts, plugins, maintainers, licenses, provenance, advisories, and capabilities.
+---
+
+`pam supply-chain` evaluates the committed Composer manifest and lockfile,
+including code Composer may execute and package identity/provenance.
+
+```bash
+pam supply-chain \
+  --policy pam.supply-chain.json \
+  --capabilities pam.capabilities.json \
+  --output build/supply-chain.report.json
+```
+
+Online mode invokes `composer audit --locked` with plugins and scripts disabled.
+Invalid advisory JSON fails closed. `--offline` is available for isolated
+builds, but records advisory state `2` plus a warning; skipped never means
+checked.
+
+## Policy
+
+```json
+{
+  "schemaVersion": 1,
+  "denyScripts": false,
+  "allowedScriptPrefixes": ["@php", "php ", "composer "],
+  "allowedPlugins": ["pestphp/pest-plugin"],
+  "allowedMaintainers": ["security@example.com"],
+  "allowedLicenses": ["MIT", "BSD-3-Clause", "Apache-2.0"],
+  "requireDistReference": true,
+  "rejectAbandoned": true,
+  "allowedCapabilities": [1, 2, 5]
+}
+```
+
+An empty allowlist adds no PAM restriction for that field. Composer plugins are
+stricter: Composer's `config.allow-plugins` must enable them and the PAM
+allowlist must also accept them when configured. Downloader, shell, elevation,
+or removal patterns are critical even with an allowed prefix.
+
+## Integer report contract
+
+| Verdict | Meaning |
+| ---: | --- |
+| `1` | Pass |
+| `2` | Review |
+| `3` | Fail |
+
+Severity uses `1` information, `2` warning, `3` critical. Finding kinds are:
+
+| Value | Finding |
+| ---: | --- |
+| `1` | Composer script |
+| `2` | Composer plugin |
+| `3` | Maintainer |
+| `4` | License |
+| `5` | Immutable source/dist provenance |
+| `6` | Security advisory |
+| `7` | Capability |
+| `8` | Abandoned package |
+
+Advisory state is `1` checked and `2` explicitly skipped. Critical findings
+exit with status `1`; warnings retain the report but set verdict `2`. Invalid
+inputs, audit failures, and policy/schema errors are command errors.
+
+The report includes `composer.lock` SHA-256, package count, sorted capability
+kinds, and sorted findings. Attach it beside the CycloneDX SBOM, signed bundle
+manifest, and build provenance in CI.
