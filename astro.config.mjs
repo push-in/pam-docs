@@ -8,6 +8,9 @@ const socialImage = new URL(`${base.replace(/\/$/, '')}/og-pam.png`, site).href;
 export default defineConfig({
   site,
   base,
+  redirects: {
+    '/introduction/getting-started/choose-a-target': '/getting-started/choose-a-target',
+  },
   integrations: [
     starlight({
       title: 'PAM',
@@ -136,7 +139,7 @@ export default defineConfig({
                 { label: 'Global store', slug: 'native/global-store' },
               ],
             },
-            { label: 'Navigation', slug: 'native/navigation' },
+            { label: 'Navigation & shared elements', slug: 'native/navigation' },
             { label: 'Platform runtime', slug: 'native/platform-runtime' },
             { label: 'Platform capabilities', slug: 'native/capabilities' },
             { label: 'HTTP networking', slug: 'native/networking' },
