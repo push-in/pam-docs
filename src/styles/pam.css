@@ -1550,7 +1550,8 @@ select:focus-visible {
 .pam-catalog-browser nav a:hover { border-color: var(--pam-coral); background: var(--pam-coral); color: #fff; }
 
 .pam-catalog-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: 1px; margin-top: 3rem; padding: 1px; background: var(--pam-line); }
-.pam-catalog-card { min-width: 0; min-height: 20rem; display: flex; flex-direction: column; scroll-margin-top: 6rem; padding: 1.5rem; background: var(--pam-paper); transition: background-color 180ms ease; }
+.pam-catalog-card { min-width: 0; min-height: 20rem; display: flex; flex-direction: column; scroll-margin-top: 6rem; margin: 0; padding: 1.5rem; background: var(--pam-paper); transition: background-color 180ms ease; }
+.sl-markdown-content .pam-catalog-card + .pam-catalog-card { margin-top: 0; }
 .pam-catalog-card:target { background: color-mix(in srgb, var(--pam-coral) 8%, var(--pam-paper)); box-shadow: inset 0 0 0 2px var(--pam-coral); }
 .pam-catalog-card:hover { background: color-mix(in srgb, var(--pam-coral) 4%, var(--pam-paper)); }
 .pam-catalog-card > div:first-child > span { color: var(--pam-coral-dark); font-family: var(--sl-font-mono); font-size: 0.62rem; letter-spacing: 0.07em; text-transform: uppercase; }
