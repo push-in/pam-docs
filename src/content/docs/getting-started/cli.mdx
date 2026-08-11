@@ -1,0 +1,77 @@
+---
+title: CLI & project console
+description: Use PAM as the single contextual console for APIs, Laravel, Native, and Desktop projects.
+---
+
+PAM is the only global executable an application needs. It discovers the
+nearest `pam.json` and routes the same short command to the active target, much
+like Artisan is the console for a Laravel application.
+
+```bash
+pam doctor --fix
+pam dev
+pam make:component ProfileCard
+pam format
+pam lint
+pam test
+pam build
+pam package
+```
+
+Run `pam` without arguments for the guided launcher. Every command also has a
+stable non-interactive form for scripts and CI.
+
+## Command groups
+
+| Group | Commands |
+| --- | --- |
+| Project | `new`, `init`, `info`, `doctor` |
+| Develop | `dev`, `run`, `logs`, `devices`, `devtools`, `console`, `commands` |
+| Generate | `make:screen`, `make:component`, `make:native-view`, Laravel `make:*` |
+| Ecosystem | `packages`, `add`, `remove`, `outdated`, `composer`, `artisan` |
+| Quality | `format`, `lint`, `test`, `benchmark`, `profile` |
+| Ship | `build`, `sign`, `package`, `release` |
+| Runtime | `start`, `exec`, `inspect`, `routes`, `diagnostics`, `top` |
+| Tooling | `completion`, `editor:install`, `self-update`, `docs:generate` |
+
+Explicit namespaces such as `pam mobile ...` and `pam desktop ...` expose the
+same operations for cross-project automation.
+
+## Context changes the implementation
+
+| Command | API | Laravel | PAM Native | Desktop |
+| --- | --- | --- | --- | --- |
+| `pam dev` | PHP hot reload | Laravel host | device hot reload | desktop host |
+| `pam console` | app command | Tinker | app command | app command |
+| `pam make:*` | extension command | Artisan generator | screen/component/view | extension command |
+| `pam format` | installed PHP formatter | Pint | `.pam` formatter | installed PHP formatter |
+| `pam build` | production bundle | production bundle | APK | desktop build |
+| `pam package` | archive + SHA-256 | archive + SHA-256 | signed APK/AAB | platform package |
+
+## Composer, Artisan, and custom commands
+
+Composer and Artisan keep their normal arguments, streams, and exit codes:
+
+```bash
+pam composer require vendor/package
+pam artisan migrate
+pam make:model Post --migration
+```
+
+Applications and Composer packages can register their own bounded commands.
+Inspect the resolved surface with `pam commands`; built-in names cannot be
+shadowed.
+
+## Machine-readable contracts
+
+```bash
+pam info --json
+pam doctor --json
+pam packages --json
+pam commands --json
+```
+
+Automation must use the exit code and reject a JSON `schema` it does not
+understand. Generate shell completion with `pam completion bash`, `zsh`,
+`fish`, or `powershell`.
+

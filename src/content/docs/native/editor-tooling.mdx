@@ -1,0 +1,54 @@
+---
+title: Editor setup
+description: Format, diagnose, complete, hover, and navigate .pam components in VS Code, Neovim, Helix, and any LSP editor.
+---
+
+PAM Native ships a formatter, TextMate grammar, and language server with
+diagnostics, formatting, completion, hover, and go-to-definition. The language
+server comes from the project's locked `pushinbr/pam-native` package, so editor
+behavior follows the same version as the application.
+
+## Managed setup
+
+Run one command, then restart the editor:
+
+```bash
+pam editor:install vscode
+pam editor:install neovim
+pam editor:install helix
+```
+
+The VS Code installer places the bundled extension in the user's extension
+directory. Neovim receives a dedicated plugin file. Helix receives a marked
+block in `languages.toml`; existing user configuration is preserved. Re-run
+with `--force` only when intentionally refreshing PAM-managed content.
+
+The formatter can also be enforced independently of an editor:
+
+```bash
+pam format
+pam format --check
+pam lint
+```
+
+## Other LSP-capable editors
+
+Associate `.pam` and `.pam.php` with language ID `pam`, then start this command
+at the project root over standard input/output:
+
+```text
+vendor/bin/pam-native-language-server
+```
+
+The server uses standard `Content-Length` framed JSON-RPC and implements:
+
+- `textDocument/didOpen`, `didChange`, and `didClose`;
+- `textDocument/formatting`;
+- `textDocument/completion`;
+- `textDocument/hover`; and
+- `textDocument/definition` plus published diagnostics.
+
+Do not point an editor at a globally floating language server. Keeping the
+project's Composer binary makes syntax, diagnostics, and runtime capabilities
+move together under `composer.lock`.
+
