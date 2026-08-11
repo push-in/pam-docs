@@ -102,3 +102,133 @@ $tree = ServerDrivenUi::render(
 Only allowlisted native nodes, numeric styles, and locally resolved actions are
 accepted. A document cannot name or call PHP classes or functions. Documents
 are limited to 1 MiB, 10,000 nodes, 64 levels, and 16 KiB text values.
+
+## PAM-owned PHP runtime
+
+PAM owns, builds, checksums, and versions the PHP runtime used by a Native app.
+The project declares the supported series and release channel in
+`pam-native.json`; development, profiling, and release builds then resolve the
+same runtime lock.
+
+```json
+{
+  "runtime": {
+    "php": "8.5",
+    "channel": "stable"
+  }
+}
+```
+
+```bash
+pam mobile runtime:list
+pam mobile runtime:use 8.5
+pam mobile runtime:info
+pam mobile runtime:update
+```
+
+The resolved artifact is written to `.pam-native/runtime.lock.json`. Runtime
+IDs have the form `<php-version>-r<revision>`: a PHP security release changes
+the PHP version, while a PAM build or flag change increments the revision. Keep
+`pam-native.json` in version control and preserve the generated lock as a CI
+artifact. PAM Native consumes the runtime; it does not publish a separate PHP
+binary.
+
+## Development, production, and benchmark modes
+
+Set `PAM_NATIVE_MODE` before starting or building the application:
+
+| Value | Behavior |
+| --- | --- |
+| `development` | Runtime diagnostics and flexible compiler checks. |
+| `production` | Strict compilation with profiling removed from the hot path. |
+| `benchmark` | Strict compilation with performance measurements enabled. |
+
+`PAM_NATIVE_STRICT=1` enables production compiler checks during development.
+Strict compilation rejects dynamic component properties and runtime code
+evaluation that would prevent deterministic dependency analysis.
+
+## Why rendering remains bounded
+
+PAM treats performance as a set of cooperating contracts:
+
+- binary bridge batches, pooled ABI buffers, and append-only typed IDL avoid
+  per-command JSON and recycle native allocations;
+- retained node identity applies property and structure patches only where the
+  tree changed;
+- the scheduler uses the physical 60/90/120 Hz refresh rate as its deadline and
+  protects input work through priority, cancellation, and coalescing;
+- virtualized lists use stable keys, variable extents, velocity-biased overscan,
+  and logarithmic window lookup to keep 100,000-item data sets bounded;
+- every queue and cache has a limit, and platform memory-pressure signals can
+  reclaim retained resources.
+
+Component-local state and Store reads are recorded against the component being
+rendered. A write invalidates only its subscribers, so clean components keep
+their previous element subtree and descendant lifecycle state. Components that
+use untracked mutable public fields retain full-render behavior for
+compatibility.
+
+Incremental layout marks changed node IDs and their ancestor paths dirty. The
+Rust engine recalculates the affected container, prunes clean subtrees with the
+same retained frame, and removes stale geometry when visibility changes.
+Fixed-size text boxes can skip intrinsic measurement when their resolved
+geometry cannot change.
+
+## Compile the production fast path
+
+Compile every `.pam.php` component during the release build:
+
+```bash
+vendor/bin/pam-native-optimize src build/pam-cache
+```
+
+The optimizer emits versioned component metadata, a SHA-256 manifest, and a
+relocatable `pam-preload.php`. Loading the preload primes OPcache and generates
+constructor factories and prop schemas before the first application frame, so
+template parsing and component reflection leave the startup hot path. Cache
+format versions invalidate stale metadata safely.
+
+## Profiling and the performance observatory
+
+The bounded `Profiler` retains at most 512 spans for `php.render`, `php.encode`,
+and `scheduler.task`, including duration, timestamp, and integer priority.
+Android adds decode/mount trace sections, frame metrics, startup
+macrobenchmarks, and Baseline Profile journeys; iOS exposes renderer metrics to
+the runtime callback and Instruments.
+
+The Rust observatory reports frame deadline misses, retained bytes, buffer
+reuse, node counts, coalesced commands, and P95 decode, reconcile, layout, and
+encode latency through the stable C ABI. Both DevTools overlays consume those
+same counters.
+
+## Recovery and safe mode
+
+After a confirmed native commit, the runtime publishes a throttled atomic
+checkpoint. A rejected commit never replaces `lastFrame`, preserving the last
+known-good native hierarchy. Stable failure fingerprints track consecutive
+errors; three consecutive failures enter safe mode instead of creating a
+restart loop.
+
+When an incremental patch is invalid, the encoder preserves PHP component
+identity and cached subtrees, discards only the previous wire snapshot, and
+immediately emits one complete tree. This recoverable path does not open an
+error overlay. If the complete tree is also rejected, the error remains visible
+and the checkpoint does not advance.
+
+## Release gates
+
+The Native CI contract covers PHP SDK and lifecycle tests, deterministic
+1,000-frame tree fuzzing, a 1,001-node encoder budget, Rust release-mode gates,
+Android API 26/36 instrumentation and macrobenchmarks, iOS simulator coverage
+for a bounded 100,000-item window, and optimized release builds.
+
+Local thresholds can be overridden with `PAM_PERF_FIRST_FRAME_MS` and
+`PAM_PERF_STEADY_FRAME_MS`. Reproduce the native engine gate with:
+
+```bash
+cargo run --release -p pam-native-engine --example benchmark -- --check
+```
+
+Its full-tree and patch ceilings use `PAM_PERF_ENGINE_FULL_TREE_NS` and
+`PAM_PERF_ENGINE_PATCH_NS`. Device macrobenchmarks remain the source of truth
+for startup, frame timing, and memory.
