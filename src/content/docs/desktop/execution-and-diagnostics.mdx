@@ -1,0 +1,102 @@
+---
+title: Execution, diagnostics, and performance
+description: Choose PAM Desktop command lanes, inspect bounded runtime diagnostics, recover workers, and benchmark release builds reproducibly.
+---
+
+The primary PHP worker is stateful and deterministic. Commands that are
+explicitly independent can run in a supervised pool, while aggregate host
+diagnostics make worker recovery and latency visible.
+
+## Choose an execution lane
+
+```php
+use Pam\Desktop\CommandExecution;
+
+$app
+    ->parallelWorkers(4)
+    ->command('project.save', $save, CommandExecution::Stateful)
+    ->command('image.resize', $resize, CommandExecution::Parallel)
+    ->command('report.export', $export, CommandExecution::Background);
+```
+
+| Value | Enum case | Contract |
+| ---: | --- | --- |
+| `1` | `Stateful` | Serialized through the primary long-lived worker. |
+| `2` | `Parallel` | Distributed round-robin through the lazy pool. |
+| `3` | `Background` | Uses the isolated pool with promise and cancellation semantics. |
+
+No pool worker starts when every command is stateful. When a parallel or
+background command exists, PAM boots between one and sixteen workers. Every
+worker has independent PHP memory, so pooled handlers derive state from their
+payload, a database, or another explicit durable source.
+
+Timeout or cancellation terminates the affected worker and prepares a fresh
+generation for its next request. PAM does not retry automatically because the
+interrupted handler may already have performed side effects. Use idempotent
+domain operations where retry belongs in product logic.
+
+Events, native shell callbacks, scheduled jobs, and commands without explicit
+metadata always remain on the primary stateful worker.
+
+## Runtime diagnostics
+
+```js
+const runtime = await pam.diagnostics.snapshot();
+```
+
+The frozen namespace returns aggregate measurements only:
+
+- total, failed, and currently active PHP commands;
+- average host-observed command time in microseconds;
+- primary worker generation;
+- active parallel-worker count;
+- current event cursor.
+
+It never exposes command payloads, file paths, SQL, identity, secrets, or bridge
+credentials. A worker generation increments after timeout, cancellation,
+crash, or runtime hot reload, making recovery visible alongside failure counts.
+
+During `pam desktop dev`, open `/_pam/inspector` on the printed local gateway
+origin. The keyboard-accessible inspector refreshes once per second, has an
+explicit refresh action, announces connection state, respects reduced motion,
+and is not served by production builds.
+
+Production applications may expose the bounded aggregate snapshot in a support
+panel. Use the browser Performance API when development needs timings around an
+individual frontend call.
+
+## Measure performance honestly
+
+Compare release builds on the same hardware, Linux session, fixture, and
+measurement window. Record kernel, CPU governor, PAM/Servo versions, and cache
+state.
+
+| Metric | Definition |
+| --- | --- |
+| Cold start | Process spawn to first interactive bridge call. |
+| Warm start | The same measurement after filesystem cache warm-up. |
+| Idle RSS | Process-tree proportional resident memory after 30 idle seconds. |
+| Window RSS | Incremental memory for a second equivalent window. |
+| Bridge latency | p50/p95/p99 of 10,000 no-op commands. |
+| Parallel throughput | Independent commands completed per second. |
+| Database throughput | Prepared inserts and bounded reads per second. |
+| Bundle bytes | Compressed archive and installed directory sizes. |
+| Idle CPU | Process-tree CPU over 60 idle seconds. |
+
+Never compare a debug PAM binary to a packaged competitor. PAM release builds
+use thin LTO, one codegen unit, abort-on-panic, and symbol stripping. The
+parallel pool stays lazy, clipboard initializes on first use, and SQLite is
+compiled into the host.
+
+## Regression gates
+
+Store benchmark JSON as CI artifacts and compare to a rolling baseline. Useful
+initial investigation thresholds are 10% cold-start, 15% idle memory, 10%
+bridge p95, or 5% bundle-size regression. Confirm a failure with at least five
+samples before blocking a release.
+
+The checked-in `benchmarks/desktop/bridge.js` harness produces latency and
+throughput JSON with fixed warm-up/sample rules. Use release flamegraphs,
+`cargo bloat`, and allocator/procfs samples to explain a regression. An
+optimization is complete only when an observable metric and durable test or
+gate preserve it.

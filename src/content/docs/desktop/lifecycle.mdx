@@ -1,0 +1,63 @@
+---
+title: Application lifecycle
+description: Configure single-instance activation, deep-link schemes, file associations, and explicit Linux autostart in PAM Desktop.
+---
+
+PAM Desktop applications are single-instance by default. The primary process
+owns a per-user Unix-domain socket derived from the reverse-DNS application ID.
+A later launch forwards a bounded activation to the primary process and exits.
+
+## Declare desktop activation
+
+```php
+use Pam\Desktop\Lifecycle;
+
+$app->lifecycle(
+    Lifecycle::none()
+        ->schemes('myapp')
+        ->files('application/x-myapp-document')
+        ->autostart(),
+);
+```
+
+Enable only the integration the product needs. Autostart is never implicit.
+
+## Receive activation events
+
+Arguments from the initial desktop activation arrive as
+`pam.lifecycle.opened`. A second launch delivers
+`pam.lifecycle.second-instance` to the primary renderer.
+
+```js
+const offOpened = pam.on("pam.lifecycle.opened", ({ arguments: args }) => {
+  routeActivation(args);
+});
+
+const offSecond = pam.on(
+  "pam.lifecycle.second-instance",
+  ({ arguments: args }) => routeActivation(args),
+);
+
+window.addEventListener("beforeunload", () => {
+  offOpened();
+  offSecond();
+});
+```
+
+The forwarded envelope is limited to 64 KiB. Treat every URI and file path as
+untrusted application input and validate it before routing or opening content.
+
+## Linux package behavior
+
+The package emits normal MIME entries and `x-scheme-handler/<scheme>`, adds
+`%U` to its desktop command, and refreshes the desktop database during portable
+installation. It installs an autostart entry only when `autostart()` was
+declared, and uninstall removes that entry.
+
+The socket lives in `XDG_RUNTIME_DIR` when available, accepts only the bounded
+JSON activation envelope, and is removed by its owner. A stale socket is
+replaced only after PAM first proves that no live primary accepts a connection.
+
+Deep links, associated files, initial opens, and second instances therefore use
+one bounded forwarding channel while product-level validation remains in the
+application.

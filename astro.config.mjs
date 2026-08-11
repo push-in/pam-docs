@@ -171,6 +171,8 @@ export default defineConfig({
                 { label: 'Linux system integration', slug: 'desktop/system-integration' },
                 { label: 'Native shell', slug: 'desktop/native-shell' },
                 { label: 'Background jobs', slug: 'desktop/background-jobs' },
+                { label: 'Execution & diagnostics', slug: 'desktop/execution-and-diagnostics' },
+                { label: 'Application lifecycle', slug: 'desktop/lifecycle' },
                 { label: 'Plugins', slug: 'desktop/plugins' },
                 { label: 'Advanced API', slug: 'desktop/windows-and-commands' },
               ],
