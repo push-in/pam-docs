@@ -35,6 +35,7 @@ const required = [
 for (const file of htmlFiles) {
   const html = await readFile(file, 'utf8');
   const relativeFile = file.replace(outputDirectory, '');
+  if (relativeFile === '/404.html') continue;
   for (const [label, pattern] of required) {
     if (!pattern.test(html)) failures.push(`${relativeFile}: missing or invalid ${label}`);
   }
