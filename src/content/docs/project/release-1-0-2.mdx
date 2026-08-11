@@ -1,0 +1,71 @@
+---
+title: PAM 1.0.2
+description: Verified PAM 1.0 patch with quality-ready API starters and zero-Rust Android runtime installation.
+---
+
+PAM 1.0.2 is the recommended stable patch for the 1.0 ecosystem. It keeps the
+single contextual CLI, server/Laravel runtime, Native Android/iOS flow, Desktop
+tooling, Composer packages, formatter, LSP, and editor integrations introduced
+by 1.0 while closing the final fresh-install gaps.
+
+## Install
+
+```bash
+curl --proto '=https' --tlsv1.2 --fail --silent --show-error --location \
+  --output pam-install.sh \
+  https://github.com/push-in/pam/releases/download/v1.0.2/install.sh
+sh pam-install.sh
+rm pam-install.sh
+
+pam --version
+pam doctor
+```
+
+The installer verifies SHA-256, rejects unsafe archive paths, and installs the
+private PHP runtime without root.
+
+## What this patch closes
+
+- API projects install Pint and are formatter-clean at generation time.
+- Generated Composer manifests include complete application metadata.
+- A fresh API immediately passes `pam format --check`, `pam lint`, and
+  `pam test`.
+- Releases publish an attested Android bundle with PHP 8.4 and 8.5 for
+  `arm64-v8a` and `x86_64` plus both prebuilt PAM Native engines.
+- `pam doctor --fix` downloads that bundle, verifies its checksum, confines
+  extraction to approved roots, installs it, and regenerates native bindings.
+- Normal Android application builds no longer require a local Rust toolchain.
+
+## Public artifacts
+
+The immutable GitHub release contains checksum-paired PAM archives for Linux
+x86_64, Linux ARM64, macOS Apple Silicon, and macOS Intel; the verified
+installer; and `pam-android-runtime.tar.gz` with its checksum. The Android
+artifact has build-provenance attestation.
+
+All six server packages are tagged `v1.0.2` and available from Packagist under
+the organization-owned namespace:
+
+- `pushinbr/pam-core-api`;
+- `pushinbr/pam-api`;
+- `pushinbr/pam-socket`;
+- `pushinbr/pam-psr-bridge`;
+- `pushinbr/pam-testing`; and
+- `pushinbr/pam-skeleton`.
+
+PAM Native and Mobile UI keep independent compatible release lines.
+
+## Verification record
+
+- [PAM v1.0.2 release](https://github.com/push-in/pam/releases/tag/v1.0.2)
+- [Release workflow](https://github.com/push-in/pam/actions/workflows/release.yml)
+- [Runtime CI](https://github.com/push-in/pam/actions/workflows/ci.yml)
+- [Laravel 12/13 compatibility](https://github.com/push-in/pam/actions/workflows/laravel-compatibility.yml)
+- [iOS PHP 8.4/8.5 certification](https://github.com/push-in/pam/actions/workflows/ios-native.yml)
+- [Composer mirrors](https://github.com/push-in/pam/actions/workflows/composer-packages.yml)
+
+The broader [PAM 1.0 record](../release-1-0-0/) describes the complete stable
+surface. The [compatibility guide](../../runtime/compatibility/) defines what
+the automated evidence proves and what applications must still certify with
+their own credentials, devices, data stores, and workloads.
+

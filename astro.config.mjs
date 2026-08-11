@@ -60,7 +60,7 @@ export default defineConfig({
             { label: 'Choose a target', slug: 'getting-started/choose-a-target' },
             { label: 'CLI & project console', slug: 'getting-started/cli' },
             { label: 'Project status', slug: 'project/status' },
-            { label: 'Release 1.0', slug: 'project/release-1-0-0' },
+            { label: 'Release 1.0.2', slug: 'project/release-1-0-2' },
           ],
         },
         {
