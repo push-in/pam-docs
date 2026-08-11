@@ -1,0 +1,87 @@
+---
+title: PAM Desktop vs Electron
+description: An honest architectural comparison of runtime, language, rendering, native authority, ecosystem, portability, and product fit.
+---
+
+import { Aside, Card, CardGrid } from '@astrojs/starlight/components';
+
+PAM Desktop and Electron both let teams author desktop interfaces with web
+technologies. They make fundamentally different tradeoffs underneath that
+surface. Choose based on those tradeoffs—not a slogan.
+
+## The short version
+
+| Concern | PAM Desktop | Electron |
+| --- | --- | --- |
+| Application logic | Typed PHP in supervised PAM workers | JavaScript/TypeScript in Node processes |
+| Rendering engine | Servo | Chromium |
+| Native boundary | Rust host with deny-by-default capabilities | Node/Electron APIs plus application sandbox policy |
+| Application Node runtime | Not required | Core part of the stack |
+| Supported PAM target | Linux x86-64 | Broad desktop platform ecosystem |
+| Web compatibility | Verify required Servo features | Mature Chromium compatibility |
+| Packaging | PAM CLI, archive and Debian package | Mature third-party packaging ecosystem |
+| Extension model | PHP plugins or process-isolated Rust plugins | Node/native modules and Electron ecosystem |
+
+This table describes architecture and current support, not a universal winner.
+Binary size, startup, memory, and rendering performance depend on the actual
+application and build; measure your representative workload.
+
+## Choose PAM Desktop when
+
+<CardGrid>
+  <Card title="PHP is your product language" icon="seti:php">
+    You want domain code, DTOs, repositories, services, and tooling to stay in
+    modern typed PHP.
+  </Card>
+  <Card title="Native authority must be explicit" icon="padlock">
+    Named roots, fixed origins, declared processes, opaque grants, and bounded
+    bridge messages fit your security model.
+  </Card>
+  <Card title="Linux is the shipping target" icon="linux">
+    The current Linux x86-64 contract matches your users and deployment.
+  </Card>
+  <Card title="You want a smaller conceptual stack" icon="puzzle">
+    PHP owns decisions, Servo owns the document, and Rust owns native access.
+  </Card>
+</CardGrid>
+
+## Choose Electron when
+
+- Windows and macOS production support are mandatory today;
+- the interface depends on Chromium-specific APIs or exact Chrome behavior;
+- the team relies heavily on Electron, Node, or npm-native desktop packages;
+- mature cross-platform installers and integrations outweigh runtime choices; or
+- JavaScript/TypeScript is intentionally the language for both product logic
+  and the desktop host layer.
+
+## Security is a design comparison, not a checkbox
+
+PAM Desktop begins with no native capabilities. PHP declares bounded authority
+and Rust validates every bridge operation. Electron can also be hardened, but
+its security depends on correctly applying process isolation, context isolation,
+sandboxing, navigation policy, permission handlers, and careful IPC exposure.
+
+Neither architecture makes unsafe application code safe automatically. PAM's
+opinion is to make the narrow path the default and represent authority in a
+reviewable PHP manifest.
+
+## Compare with a spike, not a toy benchmark
+
+Build one representative screen and measure:
+
+1. cold and warm startup on target hardware;
+2. idle and active resident memory;
+3. the heaviest interface interaction at realistic data volume;
+4. package size and update size;
+5. required web-platform and operating-system integrations;
+6. crash recovery and offline behavior; and
+7. the work needed to reach your security policy.
+
+<Aside type="note" title="Our recommendation">
+  If Linux, PHP-first domain code, and explicit native authority are hard
+  requirements, prototype with PAM Desktop. If cross-platform Chromium parity
+  is the hard requirement, Electron currently has the broader fit.
+</Aside>
+
+Start the PAM side of that spike with the [five-minute tutorial](../quickstart/)
+and review the exact [stability and support contract](../stability/).

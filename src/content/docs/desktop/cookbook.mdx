@@ -1,0 +1,153 @@
+---
+title: Desktop cookbook
+description: Copy focused PAM Desktop patterns for commands, cancellation, windows, events, storage, files, menus, jobs, and packaging.
+---
+
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Recipes are deliberately small. Each one shows the shortest production-shaped
+path, then points to the guide that explains the full contract.
+
+## Call typed PHP from JavaScript
+
+```php
+#[Command('reports.generate')]
+public function generate(int $accountId, ReportService $reports): ReportResource
+{
+    return new ReportResource($reports->generate($accountId));
+}
+```
+
+```js
+const report = await window.pam.invoke("reports.generate", { accountId: 42 });
+```
+
+## Cancel work when the screen goes away
+
+```js
+const controller = new AbortController();
+
+const request = window.pam.invoke(
+  "reports.generate",
+  { accountId: 42 },
+  { timeout: 10_000, signal: controller.signal },
+);
+
+window.addEventListener("pagehide", () => controller.abort(), { once: true });
+const report = await request;
+```
+
+Cancellation is forwarded to the host. The interrupted command is never
+automatically replayed.
+
+## Emit a typed event
+
+```php
+final readonly class ExportCompleted
+{
+    public function __construct(
+        public int $exportId,
+        public string $filename,
+    ) {}
+}
+
+$events->emit(new ExportCompleted($export->id, $export->filename));
+```
+
+```js
+const off = window.pam.on("export.completed", ({ filename }) => {
+  console.log(`Ready: ${filename}`);
+});
+
+// Call off() when the listener is no longer needed.
+```
+
+## Open or target another window
+
+```php
+#[Window(id: 'settings', title: 'Settings', source: 'resources/settings.html')]
+final class SettingsWindow extends DesktopWindow {}
+
+#[Command]
+public function settings(SettingsWindow $settings): void
+{
+    $settings->show();
+    $settings->focus();
+}
+```
+
+## Work with authorized files
+
+<Tabs>
+  <TabItem label="Named app root">
+    ```php
+    $permissions->filesystem(
+        'documents',
+        __DIR__.'/../storage/documents',
+        read: true,
+        write: true,
+    );
+    ```
+
+    ```js
+    await window.pam.fs.writeText(
+      { root: "documents", path: "draft.md" },
+      "# Draft",
+    );
+    ```
+  </TabItem>
+  <TabItem label="User-selected file">
+    ```js
+    const selected = await window.pam.dialog.openFile({
+      filters: [{ name: "Markdown", extensions: ["md"] }],
+    });
+
+    if (selected) {
+      const source = await window.pam.fs.readText(selected);
+    }
+    ```
+
+    The dialog returns an opaque grant, not unrestricted filesystem access.
+  </TabItem>
+</Tabs>
+
+## Run periodic PHP work
+
+```php
+protected function jobs(): array
+{
+    return [SyncDocuments::class];
+}
+```
+
+Use background jobs for bounded periodic work that belongs to the application
+lifecycle. Use an isolated Rust plugin for native work that needs a separate
+process and versioned exports.
+
+## Build every supported artifact
+
+```bash
+pam desktop doctor
+pam desktop build --format all
+```
+
+The build validates the manifest and creates integrity metadata. Debian output
+requires `dpkg-deb`; the portable archive includes per-user install and
+uninstall scripts.
+
+<Aside type="tip" title="Prefer the smallest native capability">
+  A user-selected grant is narrower than a whole filesystem root. A fixed HTTPS
+  origin is narrower than arbitrary network access. Model product intent—not
+  implementation convenience.
+</Aside>
+
+## Find the complete contract
+
+| Need | Guide |
+| --- | --- |
+| DTOs, enums, command classes, return values | [Commands & DI](../commands-and-di/) |
+| Named windows, typed events, menus, tray | [Windows, events & menus](../windows-events-and-menus/) |
+| Files, SQLite, HTTP, dialogs, clipboard | [Native capabilities](../capabilities/) |
+| Periodic work and overlap policy | [Background jobs](../background-jobs/) |
+| PHP and process-isolated Rust extensions | [Plugins](../plugins/) |
+| Archives, Debian packages, integrity | [Distribution](../distribution/) |

@@ -1,0 +1,175 @@
+---
+title: Your first desktop app in 5 minutes
+description: Build a small Notes application end to end with a typed PHP command, frontend invocation, persistence, events, and a Linux package.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+This tutorial earns a complete first win: a native window calls typed PHP,
+writes through an injected repository, reacts to a PHP event, and becomes a
+portable Linux archive.
+
+## Before you start
+
+You need PAM with Desktop support and a Linux x86-64 development environment.
+Confirm the toolchain first:
+
+```bash
+pam --version
+pam desktop doctor
+```
+
+## Build the application
+
+<Steps>
+1. Scaffold and enter the project.
+
+   ```bash
+   pam init notes --template desktop
+   cd notes
+   ```
+
+2. Replace the generated application class with one command.
+
+   ```php title="app/NotesApp.php"
+   <?php
+
+   declare(strict_types=1);
+
+   namespace App;
+
+   use Pam\Desktop\App;
+   use Pam\Desktop\Attributes\Command;
+   use Pam\Desktop\Attributes\Desktop;
+   use Pam\Desktop\Events;
+   use Pam\Desktop\WindowHandle;
+
+   #[Desktop(id: 'com.example.notes', name: 'Notes')]
+   final class NotesApp extends App
+   {
+       #[Command]
+       public function save(
+           NoteData $note,
+           NoteRepository $notes,
+           WindowHandle $window,
+           Events $events,
+       ): array {
+           $saved = $notes->save($note);
+
+           $window->title("Saved · {$saved->title}");
+           $events->emit(new NoteSaved($saved->id, $saved->title));
+
+           return ['note' => $saved];
+       }
+
+       protected static function bindings(): array
+       {
+           return [NoteRepository::class => new InMemoryNoteRepository()];
+       }
+   }
+
+   final readonly class NoteData
+   {
+       public function __construct(
+           public int $id,
+           public string $title,
+           public string $body = '',
+       ) {}
+   }
+
+   final readonly class NoteSaved
+   {
+       public function __construct(
+           public int $id,
+           public string $title,
+       ) {}
+   }
+
+   interface NoteRepository
+   {
+       public function save(NoteData $note): NoteData;
+   }
+
+   final class InMemoryNoteRepository implements NoteRepository
+   {
+       /** @var array<int, NoteData> */
+       private array $notes = [];
+
+       public function save(NoteData $note): NoteData
+       {
+           return $this->notes[$note->id] = $note;
+       }
+   }
+   ```
+
+   `NoteData` comes from the payload. `NoteRepository` comes from the
+   container. `WindowHandle` and `Events` come from the current invocation.
+
+3. Invoke PHP from the trusted local frontend.
+
+   ```js title="resources/app.js"
+   const form = document.querySelector("#note-form");
+   const status = document.querySelector("#status");
+
+   window.pam.on("note.saved", ({ id, title }) => {
+     status.textContent = `Saved #${id}: ${title}`;
+   });
+
+   form.addEventListener("submit", async (event) => {
+     event.preventDefault();
+
+     const data = new FormData(form);
+     const result = await window.pam.invoke("save", {
+       note: {
+         id: Number(data.get("id")),
+         title: String(data.get("title")),
+         body: String(data.get("body")),
+       },
+     });
+
+     console.log(result.note);
+   });
+   ```
+
+4. Start development and exercise the flow.
+
+   ```bash
+   pam desktop doctor
+   pam desktop dev
+   ```
+
+   Submit the form. The PHP method receives a hydrated DTO, the repository is
+   injected, the window title changes, and `note.saved` reaches JavaScript.
+
+5. Build the distributable application.
+
+   ```bash
+   pam desktop build --format archive
+   ```
+
+   The archive contains the application, runtime, native host, installer,
+   uninstaller, manifest, and per-file SHA-256 integrity metadata.
+</Steps>
+
+<Aside type="tip" title="Keep the first run intentionally small">
+  The generated template already contains a working repository and interface.
+  The sample above focuses on the boundary that matters: typed input, injected
+  application services, native effects, and frontend events.
+</Aside>
+
+## What PAM did for you
+
+| You wrote | PAM performed |
+| --- | --- |
+| `#[Command]` | Registered a bounded frontend-callable command |
+| `NoteData $note` | Validated and hydrated the JSON object |
+| `NoteRepository $notes` | Resolved an application dependency |
+| `WindowHandle $window` | Targeted the source native window |
+| `Events $events` | Collected a typed client event |
+| `return ['note' => $saved]` | Normalized an ordinary PHP value into success |
+
+## Make it yours
+
+Continue with [commands and dependency injection](../commands-and-di/) to split
+the handler into a command class, then authorize real persistence with
+[native capabilities](../capabilities/).

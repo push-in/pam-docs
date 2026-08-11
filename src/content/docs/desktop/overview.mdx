@@ -1,18 +1,19 @@
 ---
 title: PAM Desktop
-description: Build secure Linux desktop applications with expressive PHP, Rust-enforced capabilities, and Servo.
+description: Build fast, secure Linux desktop applications with expressive PHP, Servo, and a Rust-enforced native boundary.
 ---
 
-import { Aside, Card, CardGrid, LinkCard, Steps } from '@astrojs/starlight/components';
+import { Aside, Card, CardGrid, LinkCard, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
 
-**Desktop software that feels like PHP.** PAM Desktop keeps your application
-alive in typed PHP, renders trusted local
-HTML and CSS directly with Servo, and puts Rust in charge of every native
-boundary. You get web-speed authoring without an Electron-sized Node runtime
-or ambient access to the machine.
+<p class="pam-kicker">PHP-FIRST · NATIVE LINUX · NO NODE RUNTIME</p>
 
-```php
-#[Desktop(id: 'com.example.notes', name: 'Notes')]
+**Desktop software that reads like your application—not like host plumbing.**
+PAM Desktop keeps product logic in typed PHP, renders trusted local HTML and
+CSS directly with Servo, and puts Rust in charge of every operating-system
+boundary.
+
+```php title="app/NotesApp.php"
+#[Desktop(id: 'com.acme.notes', name: 'Notes')]
 final class NotesApp extends App
 {
     #[Command]
@@ -29,40 +30,28 @@ final class NotesApp extends App
 }
 ```
 
-No payload plumbing. No hand-built response envelope. No effect tree in your
-use case. PHP types describe the command; PAM binds input, resolves services,
+No payload parsing. No hand-built response envelope. No effect tree in the use
+case. PHP types describe the command; PAM hydrates input, resolves services,
 collects native effects, and returns the result.
 
-<CardGrid>
-  <Card title="Convention first" icon="open-book">
-    `resources/index.html`, safe window defaults, method commands, constructor
-    injection, DTO hydration, and typed events give a new project a short path.
-  </Card>
-  <Card title="Rust at the boundary" icon="padlock">
-    Files, SQLite, HTTP, processes, secrets, portals, clipboard, notifications,
-    plugins, and updates remain capability-scoped and deny by default.
-  </Card>
-  <Card title="One runtime, two levels" icon="code-branch">
-    The elegant API compiles into the stable immutable builders. Reach for
-    `Application`, `Capabilities`, and `Shell` when you need exact host policy.
-  </Card>
-  <Card title="Built to ship" icon="rocket">
-    Reproducible Linux bundles, integrity metadata, supervised workers, signed
-    updates, rollback, diagnostics, and executable compatibility contracts.
-  </Card>
-</CardGrid>
+<div class="pam-proof-strip" aria-label="PAM Desktop release facts">
+  <div><strong>1.2.1</strong><span>current release</span></div>
+  <div><strong>API 1</strong><span>stable PHP contract</span></div>
+  <div><strong>Protocol 6</strong><span>versioned bridge</span></div>
+  <div><strong>Linux x86-64</strong><span>supported target</span></div>
+</div>
 
-## Start in three commands
+## From zero to a real window
 
 <Steps>
-1. Create the project.
+1. Create the application.
 
    ```bash
-   pam init hello-desktop --template desktop
-   cd hello-desktop
+   pam init notes --template desktop
+   cd notes
    ```
 
-2. Validate the host and project.
+2. Validate the machine and project contract.
 
    ```bash
    pam desktop doctor
@@ -75,73 +64,91 @@ collects native effects, and returns the result.
    ```
 </Steps>
 
-Edit PHP, HTML, CSS, or JavaScript and save. PAM replaces the development
-worker or rendering generation safely while preserving what can survive the
-change.
+Edit PHP, HTML, CSS, or JavaScript and save. PAM safely replaces the affected
+worker or rendering generation. You now have a native Linux window, hot reload,
+typed PHP commands, frontend events, and no application-level Node runtime.
 
-## The application model
+<LinkCard title="Build the Notes app in 5 minutes →" href="../quickstart/" description="Create, invoke, persist, react, and package one small application end to end." />
 
-The class-level `#[Desktop]` attribute describes stable product metadata and
-the main window. Methods marked `#[Command]` become frontend-callable use
-cases. Dependencies come from the application container; input comes from the
-command payload by parameter name.
+## Why it feels different
 
-```php
-#[Desktop(
-    id: 'com.pushin.my-app',
-    name: 'My desktop app',
-    version: '1.0.0',
-    description: 'A PHP-first native desktop application.',
-    category: ApplicationCategory::Development,
-    theme: WindowTheme::Dark,
-)]
-final class MyApp extends App
-{
-    #[Command]
-    public function greet(
-        WindowHandle $window,
-        Events $events,
-        string $name = 'world',
-    ): array {
-        $window->title("Hello, {$name}");
-        $events->emit(new GreetingCompleted($name));
+<CardGrid>
+  <Card title="PHP is the application" icon="seti:php">
+    Commands are ordinary typed methods or invokable classes. DTOs, enums,
+    services, return values, and exceptions retain familiar PHP semantics.
+  </Card>
+  <Card title="Rust owns authority" icon="padlock">
+    Files, SQLite, HTTP, processes, secrets, portals, clipboard, notifications,
+    plugins, and updates are capability-scoped and denied by default.
+  </Card>
+  <Card title="Servo owns the document" icon="window">
+    Your local HTML, CSS, and JavaScript render directly in an independent
+    native window. There is no bundled Chromium-plus-Node application runtime.
+  </Card>
+  <Card title="Production is part of the design" icon="rocket">
+    Reproducible bundles, integrity metadata, supervised workers, signed
+    updates, rollback, diagnostics, and compatibility fixtures ship together.
+  </Card>
+</CardGrid>
 
-        return ['message' => "Hello, {$name}!"];
-    }
-}
-```
+## One runtime, two authoring levels
 
-The entry point is deliberately boring:
+<Tabs>
+  <TabItem label="Convention first">
+    Use `App`, `#[Desktop]`, `#[Command]`, typed DTOs, injected services,
+    window classes, and event classes. This is the default for product code.
+  </TabItem>
+  <TabItem label="Advanced control">
+    Use immutable `Application`, `Capabilities`, `Shell`, `Window`, and
+    `CommandResult` builders when infrastructure or framework code needs exact
+    protocol-level policy.
+  </TabItem>
+</Tabs>
 
-```php
-App\MyApp::run();
-```
+Both APIs compile into the same versioned runtime contracts. The elegant layer
+is not a wrapper around a second engine, and the advanced layer is never taken
+away.
 
-<Aside type="note" title="Same mental model as PAM Native">
-  PAM Native uses classes, attributes, typed state, and injected platform
-  services. PAM Desktop follows that authoring philosophy while exposing
-  desktop-specific concepts: windows, tray, menus, files, processes, SQLite,
-  and secure host capabilities.
+## What you can build today
+
+- focused productivity tools, internal operations apps, launchers, editors,
+  dashboards, media utilities, and offline-first business software;
+- multi-window applications with menus, tray behavior, shortcuts, drag and
+  drop, clipboard, notifications, native dialogs, and background jobs;
+- data-heavy local tools using capability-scoped SQLite, filesystem roots,
+  binary streaming, native HTTP, secrets, authorized processes, and portals;
+- extensible products with composable PHP plugins or process-isolated Rust
+  plugins behind versioned exports; and
+- distributable Linux applications with portable archives, Debian packages,
+  per-file integrity, signed updates, atomic install, and rollback.
+
+<Aside type="caution" title="The current support boundary">
+  PAM Desktop 1.x supports Linux x86-64. Windows and macOS packaging code is
+  experimental and outside the release contract. Servo is evolving, so verify
+  the web-platform features your interface needs instead of assuming Chromium
+  parity.
 </Aside>
 
-## What ships today
+## Read by outcome
 
-- stable public PHP API 1, worker protocol 6, and Rust plugin protocol 1;
-- Linux x86-64 releases built on the Ubuntu 22.04 glibc baseline;
-- direct Servo rendering in independent native Winit windows;
-- typed commands, DTOs, events, listeners, effects, deadlines, and cancellation;
-- supervised stateful and parallel PHP workers with crash recovery;
-- named filesystem, SQLite, HTTPS, process, secret, and portal capabilities;
-- menus, tray, global shortcuts, background jobs, and lifecycle activation;
-- process-isolated Rust plugins and composable PHP plugins;
-- reproducible archives, per-file integrity, signed updates, and rollback; and
-- diagnostics and repeatable bridge benchmarks.
+<CardGrid>
+  <Card title="I want my first win" icon="rocket">
+    Follow the [five-minute tutorial](../quickstart/) from scaffold to package.
+  </Card>
+  <Card title="I want the mental model" icon="puzzle">
+    Understand [how PHP, Servo, Rust, and the bridge fit](../mental-model/).
+  </Card>
+  <Card title="I need working patterns" icon="open-book">
+    Copy focused solutions from the [desktop cookbook](../cookbook/).
+  </Card>
+  <Card title="I am evaluating the stack" icon="code-branch">
+    Read the honest [PAM Desktop vs Electron](../electron-comparison/) guide.
+  </Card>
+</CardGrid>
 
-Windows and macOS remain outside the current build and support contract.
+## Continue the journey
 
-## Choose the next guide
-
-<LinkCard title="Authoring model" href="../authoring/" description="Build the smallest app, configure permissions, and understand conventions." />
-<LinkCard title="Commands & DI" href="../commands-and-di/" description="Bind scalars, enums and DTOs; inject services; organize command classes." />
+<LinkCard title="Convention-first authoring" href="../authoring/" description="Configure only what changes and keep native authority explicit." />
+<LinkCard title="Commands & dependency injection" href="../commands-and-di/" description="Bind scalars, enums and DTOs; inject services; organize command classes." />
 <LinkCard title="Windows, events & menus" href="../windows-events-and-menus/" description="Model desktop surfaces and actions as types instead of loose identifiers." />
-<LinkCard title="Security model" href="../security/" description="See exactly where PHP, Servo, the gateway, and the Rust host trust each other." />
+<LinkCard title="Security model" href="../security/" description="See where PHP, Servo, the gateway, and the Rust host trust—or reject—each other." />

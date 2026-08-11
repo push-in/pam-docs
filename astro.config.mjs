@@ -138,19 +138,38 @@ export default defineConfig({
         {
           label: 'Desktop',
           items: [
-            { label: 'Overview', slug: 'desktop/overview' },
-            { label: 'Convention-first authoring', slug: 'desktop/authoring' },
-            { label: 'Commands & dependency injection', slug: 'desktop/commands-and-di' },
-            { label: 'Windows, events & menus', slug: 'desktop/windows-events-and-menus' },
-            { label: 'Advanced API', slug: 'desktop/windows-and-commands' },
-            { label: 'Native capabilities', slug: 'desktop/capabilities' },
-            { label: 'Native shell', slug: 'desktop/native-shell' },
-            { label: 'Background jobs', slug: 'desktop/background-jobs' },
-            { label: 'Plugins', slug: 'desktop/plugins' },
-            { label: 'Signed updates', slug: 'desktop/signed-updates' },
-            { label: 'Security model', slug: 'desktop/security' },
-            { label: 'Distribution', slug: 'desktop/distribution' },
-            { label: 'Stability & support', slug: 'desktop/stability' },
+            {
+              label: 'Start here',
+              items: [
+                { label: 'Overview', slug: 'desktop/overview' },
+                { label: '5-minute tutorial', slug: 'desktop/quickstart' },
+                { label: 'Mental model', slug: 'desktop/mental-model' },
+                { label: 'PAM Desktop vs Electron', slug: 'desktop/electron-comparison' },
+              ],
+            },
+            {
+              label: 'Build',
+              items: [
+                { label: 'Convention-first authoring', slug: 'desktop/authoring' },
+                { label: 'Commands & dependency injection', slug: 'desktop/commands-and-di' },
+                { label: 'Windows, events & menus', slug: 'desktop/windows-events-and-menus' },
+                { label: 'Desktop cookbook', slug: 'desktop/cookbook' },
+                { label: 'Native capabilities', slug: 'desktop/capabilities' },
+                { label: 'Native shell', slug: 'desktop/native-shell' },
+                { label: 'Background jobs', slug: 'desktop/background-jobs' },
+                { label: 'Plugins', slug: 'desktop/plugins' },
+                { label: 'Advanced API', slug: 'desktop/windows-and-commands' },
+              ],
+            },
+            {
+              label: 'Ship & trust',
+              items: [
+                { label: 'Distribution', slug: 'desktop/distribution' },
+                { label: 'Signed updates', slug: 'desktop/signed-updates' },
+                { label: 'Security model', slug: 'desktop/security' },
+                { label: 'Stability & support', slug: 'desktop/stability' },
+              ],
+            },
           ],
         },
         {

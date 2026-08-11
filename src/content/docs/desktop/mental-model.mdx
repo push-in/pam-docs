@@ -1,0 +1,94 @@
+---
+title: The desktop mental model
+description: Understand the PAM Desktop process model, command journey, capability boundary, and the responsibilities of PHP, Servo, Rust, and PAM.
+---
+
+import { Aside, Card, CardGrid, Steps } from '@astrojs/starlight/components';
+
+PAM Desktop becomes simple when every layer has one job. PHP owns application
+decisions. Servo owns the document. Rust owns native authority. PAM keeps the
+PHP worker alive and bounded.
+
+## Four responsibilities
+
+<CardGrid>
+  <Card title="Your PHP application" icon="seti:php">
+    Domain rules, commands, DTOs, repositories, events, policies, and product
+    composition.
+  </Card>
+  <Card title="The Servo document" icon="window">
+    Trusted local HTML, CSS, JavaScript, rendering, input, and calls through the
+    frozen `window.pam` bridge.
+  </Card>
+  <Card title="The Rust host" icon="padlock">
+    Windows, protocol validation, capabilities, operating-system handles,
+    plugins, lifecycle, and failure containment.
+  </Card>
+  <Card title="The PAM worker" icon="rocket">
+    Persistent PHP execution, deadlines, cancellation, crash recovery, hot
+    reload, and supervised concurrency.
+  </Card>
+</CardGrid>
+
+## One command, end to end
+
+<Steps>
+1. JavaScript calls `window.pam.invoke('documents.save', payload)`.
+2. The local gateway authenticates origin, token, protocol version, size, and deadline.
+3. The Rust host sends a bounded request to the supervised PHP worker.
+4. PAM hydrates typed payload parameters and resolves application services.
+5. Your command executes and records window effects or client events.
+6. PAM normalizes the return value into the versioned response contract.
+7. Rust applies validated native effects and sends the payload to the source window.
+</Steps>
+
+If the handler throws, partial effects are not published. If a deadline or
+cancellation compromises the worker, the host terminates it and prepares a
+fresh worker; it does not replay the interrupted command.
+
+## Authority is declared, never discovered
+
+Application classes and attributes may describe commands and windows, but code
+discovery cannot grant native authority. Filesystem roots, databases, remote
+origins, processes, secrets, dialogs, clipboard, notifications, and portals
+must appear in the capability manifest before the host starts.
+
+```php
+protected function configure(Desktop $desktop): void
+{
+    $desktop->permissions(static fn (Permissions $permissions) => $permissions
+        ->filesystem('documents', __DIR__.'/../storage', read: true, write: true)
+        ->database('app', 'storage/app.sqlite')
+        ->http('api', 'https://api.example.com/v1')
+    );
+}
+```
+
+JavaScript refers to `documents`, `app`, and `api`; it never receives ambient
+machine access merely because a PHP library can express an operation.
+
+<Aside type="note" title="The bridge is a contract, not a back door">
+  `window.pam` exposes only registered commands and enabled native capabilities.
+  The host validates every request even when it came from trusted local content.
+</Aside>
+
+## Where state belongs
+
+| State | Natural owner |
+| --- | --- |
+| Domain and persistence state | PHP services, repositories, SQLite |
+| Ephemeral interface state | Frontend JavaScript |
+| Window, tray, menu, and shortcut state | Rust host, changed through typed effects |
+| Invocation-specific window/event context | Scoped PAM services |
+| Long-running independent work | Supervised jobs or isolated plugins |
+
+## Failure is part of the architecture
+
+- malformed or oversized bridge messages are rejected at the gateway;
+- missing capabilities fail visibly instead of silently widening access;
+- PHP command deadlines and cancellation remain bounded;
+- native plugins run in supervised processes rather than inside Servo;
+- signed updates verify key, size, digest, and feed before atomic install; and
+- compatibility snapshots protect the public PHP API and protocol shapes.
+
+For the detailed threat boundary, continue with the [security model](../security/).

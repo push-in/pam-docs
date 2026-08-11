@@ -267,6 +267,65 @@ select:focus-visible {
   font-size: 0.9rem;
 }
 
+.pam-kicker {
+  margin-block: 0 1rem !important;
+  color: var(--pam-coral-dark) !important;
+  font-family: var(--sl-font-mono);
+  font-size: 0.72rem !important;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+}
+
+:root[data-theme='dark'] .pam-kicker {
+  color: #ff8a70 !important;
+}
+
+.pam-proof-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  margin-block: 2rem 2.5rem;
+  overflow: hidden;
+  border: 1px solid var(--pam-line);
+  border-radius: 0.5rem;
+  background: var(--pam-line);
+}
+
+.pam-proof-strip div {
+  min-width: 0;
+  padding: 1rem;
+  background: var(--pam-paper);
+}
+
+.pam-proof-strip strong,
+.pam-proof-strip span {
+  display: block;
+}
+
+.pam-proof-strip strong {
+  font-family: var(--sl-font-mono);
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.pam-proof-strip span {
+  margin-top: 0.3rem;
+  color: var(--pam-muted);
+  font-size: 0.75rem;
+}
+
+@media (max-width: 50rem) {
+  .pam-proof-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 28rem) {
+  .pam-proof-strip {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Marketing home */
 
 :root:has(.pam-home) {
