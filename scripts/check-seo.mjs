@@ -36,6 +36,16 @@ for (const file of htmlFiles) {
   const html = await readFile(file, 'utf8');
   const relativeFile = file.replace(outputDirectory, '');
   if (relativeFile === '/404.html') continue;
+  const redirect = html.match(/<meta\s+http-equiv="refresh"\s+content="\d+;url=([^\"]+)"/i);
+  if (redirect) {
+    if (!redirect[1].startsWith('/') || redirect[1].startsWith('//')) {
+      failures.push(`${relativeFile}: redirect target must be a local absolute path`);
+    }
+    if (!/<meta\s+name="robots"\s+content="noindex"/i.test(html)) {
+      failures.push(`${relativeFile}: redirect must be excluded from search indexes`);
+    }
+    continue;
+  }
   for (const [label, pattern] of required) {
     if (!pattern.test(html)) failures.push(`${relativeFile}: missing or invalid ${label}`);
   }
