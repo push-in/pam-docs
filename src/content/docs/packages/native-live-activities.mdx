@@ -1,0 +1,33 @@
+---
+title: PAM Native Live Activities
+description: Start, update, reconcile, and end ActivityKit Live Activities and Android ongoing notifications from bounded PHP state.
+---
+
+```bash
+pam add live-activities
+pam doctor
+```
+
+```php
+$activities = new LiveActivities();
+$content = new LiveActivityContent(
+    'Order on the way',
+    'Preparing',
+    0.15,
+    'myapp://orders/42',
+);
+
+$activities->start('order-42', $content, function (?string $id, ?string $error) use ($activities): void {
+    if ($id !== null) {
+        $activities->update($id, new LiveActivityContent('Order on the way', 'Courier assigned', 0.45));
+    }
+}, pushEnabled: true);
+```
+
+`LiveActivities` starts, updates, lists, and ends activities;
+`LiveActivityContent` bounds title, status, progress, and deep link. Persist the
+returned identifier and reconcile through `active()` after restart.
+
+iOS 16.2+ remote updates require authenticated APNs token delivery. Android
+13+ requires notification permission. Update only when displayed information
+materially changes; Live Activities are not a high-frequency data channel.

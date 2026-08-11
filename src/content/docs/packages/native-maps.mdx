@@ -1,0 +1,28 @@
+---
+title: PAM Native Maps
+description: Render declarative Google Maps and MapKit cameras, styles, user location, gestures, markers, overlays, and typed native events.
+---
+
+```bash
+pam add maps
+pam doctor
+```
+
+```php
+use Pam\Native\Maps\{Coordinate, MapMarker, MapView};
+
+return MapView::make(new Coordinate(-23.5505, -46.6333), 14)
+    ->markers([
+        new MapMarker('office', new Coordinate(-23.5505, -46.6333), 'Office'),
+    ])
+    ->showUserLocation();
+```
+
+`MapView` renders the native map and emits `MapEventKind`; `Coordinate`
+validates latitude/longitude; `MapMarker` carries stable identity; `MapStyle`
+normalizes platform styles. Up to 5,000 markers are supported.
+
+Provide `com.google.android.geo.API_KEY`, enable billing, and restrict the key
+by application/API. Request location permission before user location. Preserve
+marker IDs and batch changes to avoid unnecessary native recreation. PAM never
+stores or transmits the key.

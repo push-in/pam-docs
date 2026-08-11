@@ -1,0 +1,36 @@
+---
+title: PAM Native Media
+description: Probe sandboxed media, generate correctly oriented thumbnails, and embed lifecycle-aware native photo/video capture.
+---
+
+```bash
+pam add media
+pam doctor
+```
+
+```php
+$media = new Media();
+$media->probe('media/clip.mp4', fn (?MediaInfo $info, ?string $error) => null);
+$media->thumbnail('media/clip.mp4', 'thumbs/clip.jpg', 640, 360, fn (?string $path, ?string $error) => null);
+```
+
+`Media` probes and thumbnails without loading bytes into PHP; `MediaInfo`
+normalizes type, dimensions, duration, and orientation; `ThumbnailFormat`
+selects output. Paths are canonical sandbox-relative values. Images honor EXIF
+orientation and video thumbnails track transforms.
+
+## Embedded camera
+
+```php
+return CameraView::make()
+    ->facing(CameraFacing::Back)
+    ->mode(CameraMode::Photo)
+    ->flash(CameraFlashMode::Off)
+    ->captureRevision($photoRevision)
+    ->onEvent(fn (CameraEventKind $kind, ?CameraCapture $capture, string $message) => null);
+```
+
+Revision commands prevent declarative re-renders from repeating capture.
+Camera output combinations are mode-specific for device compatibility. Request
+camera/microphone permission, bound recording duration and storage, and handle
+returned paths through normal `FileReference` APIs.

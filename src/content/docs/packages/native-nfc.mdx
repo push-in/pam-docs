@@ -1,0 +1,24 @@
+---
+title: PAM Native NFC
+description: Read and write bounded NDEF tags with lifecycle-safe Android reader mode and the iOS system NFC session.
+---
+
+```bash
+pam add nfc
+pam doctor
+```
+
+```php
+$nfc->beginRead(fn (bool $ok, ?string $error) => null);
+$nfc->write(NdefRecord::uri('https://pam.dev'), fn (bool $ok, ?string $error) => null);
+$nfc->poll(fn (array $events) => handleNfcEvents($events));
+```
+
+`Nfc` begins/ends sessions, writes, and polls; `NdefRecord` builds URI, text,
+MIME, and external records; `NfcEvent`/`NfcEventKind` type events;
+`NfcAvailability` reports support.
+
+Only one session may run. The queue holds 128 events and PHP NDEF payloads stop
+at 1 MiB; physical tag capacity is checked on write. iOS requires capability
+and signed compatible hardware; Android requires a foreground Activity. End
+sessions when their screen leaves foreground and treat all tag data as untrusted.

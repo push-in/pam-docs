@@ -1,0 +1,23 @@
+---
+title: PAM Native Payments
+description: Present Stripe PaymentSheet with native wallets and SCA/3DS while keeping secret keys, PaymentIntent creation, and fulfillment server-side.
+---
+
+```bash
+pam add payments
+pam doctor
+```
+
+```php
+return PaymentSheet::make($publishableKey, $paymentIntentClientSecret, 'Acme')
+    ->returnUrl('acme://stripe-redirect')
+    ->onResult(fn (PaymentResult $result, string $message) => $this->handle($result));
+```
+
+`PaymentSheet` configures Stripe's native UI; `PaymentResult` distinguishes
+completed, cancelled, and failed. The PHP API rejects Stripe secret keys.
+
+Create PaymentIntents and short-lived client secrets on the server. Configure
+wallet merchant identities and return URLs. Never grant/fulfill an order from
+the client callback: verify Stripe webhooks server-side and derive durable
+entitlement there.

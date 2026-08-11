@@ -1,0 +1,29 @@
+---
+title: PAM Native Laravel Sync
+description: Build authenticated Laravel push/pull sync APIs with idempotency, signed cursors, conflicts, retention, and a PAM Native transport.
+---
+
+```bash
+pam add laravel-sync
+pam artisan vendor:publish --tag=pam-native-sync-config
+pam artisan migrate
+pam doctor
+```
+
+Register every synchronized collection explicitly:
+
+```php
+$registry->register('notes', new NotesSyncHandler());
+
+$engine = new SyncEngine($store, new LaravelSyncTransport($http, $baseUrl));
+$engine->synchronize(fn (SyncReport $report) => updateSyncStatus($report));
+```
+
+`SyncCollectionRegistry` maps collections to `SyncCollectionHandler` domain
+logic. `SyncService` orchestrates authenticated push/pull; `SyncRepository`
+persists idempotency and ordered changes; `CursorCodec` signs bounded cursors;
+`LaravelSyncTransport` connects the mobile engine.
+
+Protect routes with application auth. Keep the HMAC key stable across deploys,
+define authorization/validation/conflict/retention per collection, and never put
+secrets in signed-but-unencrypted cursor state. Laravel 12 and 13 are supported.

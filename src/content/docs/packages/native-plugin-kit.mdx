@@ -1,0 +1,25 @@
+---
+title: PAM Native Plugin Kit
+description: Scaffold cross-platform PAM Native packages, validate manifests, and compile one typed IDL into deterministic PHP, Kotlin, and Swift contracts.
+---
+
+```bash
+pam add plugin-kit
+pam doctor
+
+vendor/bin/pam-native-plugin new acme/pam-native-biometric ./pam-native-biometric
+vendor/bin/pam-native-plugin validate ./pam-native-biometric/pam-native.plugin.json
+vendor/bin/pam-native-plugin compile ./pam-native-biometric/pam-native.idl.json ./generated
+```
+
+`Scaffolder` creates a package plus CI; `ManifestValidator` verifies metadata,
+native sources, and contracts; `IdlCompiler` emits deterministic PHP/Kotlin/
+Swift; `Diagnostic` and `ValidationResult` expose typed findings.
+
+IDL coded variants are sequential integer enums beginning at `1`; gaps and
+string variants fail compilation. Commit generated output, regenerate into a
+temporary directory in CI, and require a clean diff. PAM records manifest and
+IDL digests in `.pam-native/plugins.lock.json`.
+
+The `vendor/bin` commands are package tooling after `pam add plugin-kit`; package
+installation itself remains a PAM workflow.
