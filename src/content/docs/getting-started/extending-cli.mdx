@@ -1,0 +1,74 @@
+---
+title: Extend the PAM CLI
+description: Register safe application and Composer-package commands in PAM without installing another global executable.
+---
+
+Applications and Composer packages can expose PHP commands through the same PAM
+Embed lifecycle. PAM validates names, canonicalizes scripts, rejects paths
+outside their owner and prevents built-in or duplicate command shadowing.
+
+## Application commands
+
+Add commands to `pam.json`:
+
+```json
+{
+  "$schema": "https://push-in.github.io/pam-docs/schemas/pam.schema.json",
+  "schema": 1,
+  "type": 1,
+  "name": "billing-api",
+  "commands": {
+    "billing:reconcile": {
+      "script": "bin/reconcile.php",
+      "description": "Reconcile pending invoices"
+    }
+  }
+}
+```
+
+```bash
+pam commands
+pam billing:reconcile --since=yesterday
+```
+
+Use a string when no custom description is needed:
+
+```json
+{"commands":{"app:warm":"bin/warm.php"}}
+```
+
+## Package commands
+
+A Composer package registers commands under `extra.pam.commands`. Paths are
+relative to the installed package root:
+
+```json
+{
+  "name": "vendor/pam-inspector",
+  "extra": {
+    "pam": {
+      "commands": {
+        "inspector:snapshot": {
+          "script": "bin/snapshot.php",
+          "description": "Capture an application snapshot"
+        }
+      }
+    }
+  }
+}
+```
+
+Command names contain lowercase ASCII letters, integers, `:`, `-`, or `_`,
+start with a letter/integer and contain at most 96 bytes. A package cannot
+shadow PAM or another registered command; `pam doctor` and discovery fail on a
+duplicate.
+
+## Machine-readable discovery
+
+```bash
+pam commands --json
+```
+
+Use this output for launchers and editor integrations. Do not parse decorated
+terminal output. The project manifest follows the public
+[`pam.schema.json`](/schemas/pam.schema.json) JSON Schema.

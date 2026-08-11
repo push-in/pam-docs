@@ -67,6 +67,7 @@ export default defineConfig({
             { label: 'Choose a target', slug: 'getting-started/choose-a-target' },
             { label: 'Capability catalog', slug: 'ecosystem' },
             { label: 'CLI & project console', slug: 'getting-started/cli' },
+            { label: 'Extend the CLI', slug: 'getting-started/extending-cli' },
             { label: 'Project status', slug: 'project/status' },
             { label: 'Public repository map', slug: 'project/repository-map' },
             { label: 'Release 1.0.2', slug: 'project/release-1-0-2' },
