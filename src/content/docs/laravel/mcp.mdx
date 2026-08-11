@@ -3,7 +3,7 @@ title: MCP automation
 description: Give AI and automation read-only PAM diagnostics while keeping deploy, rollback, and scale behind an explicit token.
 ---
 
-`pam mcp` exposes bounded Laravel and runtime operations over JSON-RPC using MCP
+`pam artisan pam:mcp` exposes bounded Laravel and runtime operations over JSON-RPC using MCP
 protocol `2025-06-18`.
 
 ## Configure a client
@@ -22,7 +22,7 @@ protocol `2025-06-18`.
 Start the server directly to inspect startup errors:
 
 ```bash
-pam mcp
+pam artisan pam:mcp
 ```
 
 The transport is stdio. Keep stdout reserved for protocol messages and route

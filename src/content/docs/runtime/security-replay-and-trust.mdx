@@ -1,95 +1,52 @@
 ---
-title: Sandbox, replay, and trusted bundles
-description: Isolate untrusted PHP with kernel capabilities, record redacted HTTP incidents, replay them, and verify signed PAM production bundles.
+title: Bundle integrity and release trust
+description: Package PAM 1.0 applications with deterministic manifests, checksums and explicit release gates.
 ---
 
-PAM treats package isolation, incident evidence, and release trust as separate
-security boundaries. One does not imply the others.
+PAM separates application packaging from transport security and host
+hardening. A bundle proves its recorded file integrity; it does not replace a
+trusted release channel, secret management or operating-system isolation.
 
-## Isolate untrusted PHP
-
-```bash
-pam sandbox pam.capabilities.json -- plugin.php
-```
-
-```json
-{
-  "schemaVersion": 1,
-  "capabilities": [
-    {"kind": 1, "resources": [".", "vendor/package"]},
-    {"kind": 2, "resources": ["storage/package"]},
-    {"kind": 5, "resources": ["APP_ENV", "PACKAGE_API_KEY"]}
-  ]
-}
-```
-
-| Kind | Capability | Resource meaning |
-| ---: | --- | --- |
-| `1` | Filesystem read | Paths relative to the manifest |
-| `2` | Filesystem write | Existing relative paths |
-| `3` | Network | `['*']` or absent |
-| `4` | Subprocess | `['*']` or absent |
-| `5` | Environment | Exact variable names |
-
-Linux filesystem policy uses Landlock. Seccomp applies network/process denials
-after PAM starts and before PHP boots. Unlisted environment variables are
-removed; PHP extension, certificate, and timezone support paths remain
-read-only.
-
-Selective domains and executable allowlists require the PAM broker. Until it is
-enabled, values other than `['*']` are rejected instead of widened silently.
-The sandbox fails closed without Landlock and seccomp. Loading an untrusted
-Composer package directly into the main application worker does not provide
-this isolation.
-
-## Record redacted incidents
+## Build and package
 
 ```bash
-pam record index.php --output .pam/incidents/checkout.jsonl
+pam build --entry public/index.php --output dist
+pam package --entry public/index.php --output artifacts
 ```
 
-Each JSONL entry contains schema version, integer event kind, sequence, request
-ID, method, target, headers, bounded request/response bodies, duration, and
-SHA-256 digests. Defaults are 64 KiB per body and 64 MiB per recording.
+`pam build` creates a relocatable directory containing the application,
+Composer dependencies, PAM runtime and matching private PHP runtime. Its
+manifest records sorted paths, sizes and SHA-256 digests. The launcher validates
+the bundle before application PHP starts.
 
-Authorization, cookies, API keys, password/token/secret fields, and sensitive
-query values become named placeholders before disk I/O. Binary bodies are
-base64. An exclusive file lock prevents workers from interleaving partial JSON.
+`pam package` creates a versioned platform/architecture `tar.gz` and neighboring
+`.sha256` file for server projects. It refuses to overwrite an existing archive.
+Native and Desktop projects delegate to their platform packagers.
 
-## Replay a candidate
+## Release gate
 
 ```bash
-export INCIDENT_AUTH='Bearer ...'
-export INCIDENT_TOKEN='...'
-
-pam replay .pam/incidents/checkout.jsonl \
-  --url http://127.0.0.1:3000 \
-  --secret-env authorization=INCIDENT_AUTH \
-  --secret-env token=INCIDENT_TOKEN
+pam release --check
+pam release
 ```
 
-Secrets come from the environment and are never printed. Replay stops on the
-first status or response-body digest divergence. Truncated request bodies are
-not replayed.
+`--check` runs `pam doctor --ci`, `pam lint`, and `pam test` without creating a
+distributable. A full release runs the same gates and then packages. Native
+releases also execute the signing check before packaging.
 
-The current recorder covers the native HTTP boundary. It does not virtualize
-database results, clocks, randomness, or every native operation and must not be
-described as full VM determinism.
+Publish checksums through a trusted channel and verify them before extraction.
+Keep signing keys outside the project and CI logs. A checksum downloaded from
+the same compromised location as an archive does not establish an independent
+trust root.
 
-## Sign and verify production bundles
+## Current security boundary
 
-```bash
-openssl genpkey -algorithm ED25519 -out release.key
-openssl pkey -in release.key -pubout -out release.pub
+PAM 1.0 does not expose the former experimental `pam sandbox`, `pam record`,
+`pam replay`, signed-bootstrap-snapshot, supply-chain-policy or WASI/RPC
+commands. Do not copy 0.1.x examples into 1.0 automation. Use container/host
+sandboxing, Composer audit through `pam composer audit`, and application-owned
+incident capture where those controls are required.
 
-pam build --output dist --signing-key release.key
-pam verify dist --public-key release.pub --require-signature
-```
-
-The bundle contains sorted SHA-256 records in `manifest.json`, an Ed25519
-`manifest.sig`, and deterministic CycloneDX 1.6 `sbom.cdx.json` inventory.
-Algorithm kind is integer `1`; key identity is the SHA-256 of public DER.
-
-Verification requires an external trusted public key. Missing, extra, modified,
-duplicate, symlinked, and path-escaping entries fail. An artifact cannot
-establish its own publisher identity by embedding a replacement key.
+For listener limits, TLS, trusted proxies, lifecycle and deployment guidance,
+continue with [production](/runtime/production/) and
+[compatibility](/runtime/compatibility/).

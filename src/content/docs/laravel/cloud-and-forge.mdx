@@ -35,21 +35,21 @@ authentication.
 ## Operate an environment
 
 ```bash
-pam deploy production
-pam status production
-pam logs production --lines=200
+pam artisan pam:deploy production
+pam artisan pam:remote status production
+pam artisan pam:remote logs production --lines=200
 pam top production
-pam workers production
-pam queues production
-pam scheduler production
-pam scale production --process=queue --instances=8
-pam rollback production
+pam artisan pam:remote workers production
+pam artisan pam:remote queues production
+pam artisan pam:remote scheduler production
+pam artisan pam:remote scale production --process=queue --instances=8
+pam artisan pam:remote rollback production
 ```
 
 The equivalent generic form is:
 
 ```bash
-pam remote <action> production
+pam artisan pam:remote <action> production
 ```
 
 Scale accepts `1..128` instances. Keep deploy and rollback authorization
@@ -67,7 +67,7 @@ PAM_FORGE_PRODUCTION_WEBHOOK=https://forge.laravel.com/servers/.../deploy/http
 Generate a zero-downtime deployment script:
 
 ```bash
-pam forge-script --output=deploy/forge-deploy.sh
+pam artisan pam:forge-script --output=deploy/forge-deploy.sh
 ```
 
 The generated script uses Forge's release creation and activation macros,
@@ -80,7 +80,7 @@ Review it with your migration and rollback policy before first use.
 For infrastructure without a remote provider:
 
 ```bash
-pam deploy /srv/app/releases/20260725-1900 --local
+pam artisan pam:deploy /srv/app/releases/20260725-1900 --local
 ```
 
 The active release changes atomically. PAM starts a fresh worker generation,

@@ -77,11 +77,11 @@ Restore the `current` symlink to the prior release and send `SIGHUP` again. Reta
 Use the built-in release operations when the environment is configured:
 
 ```bash
-pam deploy /srv/app/releases/20260725-1900 --local
-pam deploy production
-pam status production
-pam logs production --lines=200
-pam rollback production
+pam artisan pam:deploy /srv/app/releases/20260725-1900 --local
+pam artisan pam:deploy production
+pam artisan pam:remote status production
+pam artisan pam:remote logs production --lines=200
+pam artisan pam:remote rollback production
 ```
 
 The local path performs an atomic release. Remote operations target PAM Cloud

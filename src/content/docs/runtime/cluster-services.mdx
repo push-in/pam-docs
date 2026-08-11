@@ -1,118 +1,62 @@
 ---
-title: Distributed cluster services
-description: Coordinate multi-host PAM deployments with TLS Redis discovery, draining, fenced locks, rate limits, circuit breakers, queues, and presence.
+title: Worker supervision and control plane
+description: Run PAM's current multi-process supervisor with readiness, metrics, recycling, watchdogs and zero-downtime generations.
 ---
 
-The Rust supervisor owns workers and zero-downtime generations on one host.
-`Pam\Cluster\RedisCoordinator` supplies a shared coordination plane when an
-application spans hosts or regions.
+PAM 1.0 supervises isolated worker processes on one host. The master owns
+generation changes, restart policy and the native control plane; application
+PHP never serves the admin endpoints.
 
-## Connect securely
-
-```php
-use Pam\Cluster\RedisCoordinator;
-
-$cluster = new RedisCoordinator(
-    host: $_ENV['PAM_REDIS_HOST'],
-    port: 6380,
-    prefix: 'production:checkout:pam:',
-    username: $_ENV['PAM_REDIS_USERNAME'],
-    password: $_ENV['PAM_REDIS_PASSWORD'],
-    tls: true,
-    caFile: '/run/secrets/redis-ca.pem',
-    certificateFile: '/run/secrets/pam-node.pem',
-    privateKeyFile: '/run/secrets/pam-node-key.pem',
-);
+```bash
+pam start public/index.php \
+  --workers 8 \
+  --max-requests 1000000 \
+  --graceful-timeout 15000 \
+  --startup-timeout 10000 \
+  --restart-backoff 250 \
+  --watchdog-grace 250 \
+  --admin-address 127.0.0.1:3010
 ```
 
-TLS verifies peer name and certificate. A client certificate plus private key
-enables mTLS. Keep credentials in runtime secrets, never source or bundles.
+## Worker lifecycle
 
-## Discovery and draining
+Each worker publishes an atomically replaced, versioned record containing its
+integer lifecycle state, deadline and bounded metrics snapshot. The master:
 
-```php
-use Pam\Cluster\NodeState;
+- waits for the desired generation to become ready before serving it;
+- replaces crashed workers with exponential backoff;
+- recycles workers after `--max-requests`;
+- terminates work that remains busy past its deadline plus watchdog grace;
+- drains accepted connections on shutdown before forcing termination.
 
-$cluster->heartbeat(
-    nodeId: $_ENV['PAM_NODE_ID'],
-    endpoint: 'https://10.0.1.8:443',
-    state: NodeState::Ready,
-    metadata: ['region' => 'sa-east-1', 'generation' => 42],
-    ttlSeconds: 15,
-);
+On `SIGHUP`, the master starts a new generation, waits for every replacement to
+be ready, then signals the old generation. If the replacement fails startup,
+only the replacement is removed and the serving generation stays alive.
 
-$ready = array_filter(
-    $cluster->discover(),
-    static fn ($node): bool => $node->state === NodeState::Ready,
-);
+## Control plane
+
+The address selected by `--admin-address` exposes:
+
+| Path | Meaning |
+| --- | --- |
+| `/health` | Master process is alive |
+| `/ready` | Desired workers are ready/busy and within their deadlines |
+| `/metrics` | Aggregated worker counters plus PID, generation and lifecycle |
+
+Bind the admin listener to loopback or a protected operations network. Use:
+
+```bash
+pam top http://127.0.0.1:3010
 ```
 
-Publish heartbeats faster than their TTL. Before shutdown, advertise
-`NodeState::Draining`, stop accepting new work, drain active work, and let the
-heartbeat expire. All state-like values are sequential integer enums.
+## Scaling boundary
 
-## Fenced locks and singleton cron
+This supervisor coordinates one host. PAM 1.0 does not ship the former
+experimental `Pam\Cluster\RedisCoordinator`, distributed locks, shared queues,
+presence or cross-host circuit breakers. Use infrastructure-owned discovery
+and coordination for multi-host deployments.
 
-```php
-$lease = $cluster->acquire('invoice:42', ttlSeconds: 30);
-if ($lease === null) return;
-
-try {
-    updateInvoice(42, $lease->fencingToken);
-    $lease = $cluster->renew($lease, ttlSeconds: 30)
-        ?? throw new RuntimeException('Lost invoice lease.');
-} finally {
-    $cluster->release($lease);
-}
-
-if (($cron = $cluster->singleton('settlements', intervalSeconds: 60)) !== null) {
-    try {
-        settleInvoices();
-    } finally {
-        $cluster->release($cron);
-    }
-}
-```
-
-The random owner token prevents a different owner from renewing/releasing a
-lease. The monotonically increasing fencing token lets external storage reject
-a paused former owner after its lease expires.
-
-## Rate limits and circuit breakers
-
-```php
-$rate = $cluster->rateLimit("tenant:{$tenantId}", limit: 500, windowSeconds: 1);
-if (!$rate->allowed) throw new TooManyRequests($rate->resetsAt);
-
-$permit = $cluster->circuitPermit('payments', failureThreshold: 5, openSeconds: 30);
-if (!$permit->allowed) throw new ServiceUnavailable();
-
-try {
-    charge();
-    $cluster->circuitSuccess('payments');
-} catch (Throwable $error) {
-    $cluster->circuitFailure('payments', failureThreshold: 5, openSeconds: 30);
-    throw $error;
-}
-```
-
-Redis scripts make decisions atomic across nodes. Half-open admits exactly one
-probe until it reports success or failure.
-
-## Queue and presence limits
-
-```php
-$cluster->enqueue('mail', json_encode($job, JSON_THROW_ON_ERROR), capacity: 100_000);
-$payload = $cluster->dequeue('mail');
-
-$cluster->presenceJoin('room:orders', (string) $userId, ttlSeconds: 30);
-$members = $cluster->presenceMembers('room:orders');
-$cluster->presenceLeave('room:orders', (string) $userId);
-```
-
-The embedded queue is bounded FIFO. Use Laravel queues or a durable broker for
-acknowledgement, delayed delivery, and dead letters. Pair the coordinator with
-Redis Streams or the TLS NATS WebSocket adapter for multi-node broadcast.
-
-`InMemoryCoordinator` implements the same contract with an injectable clock for
-deterministic expiry, fencing, rate-window, and breaker tests.
+Laravel workers intentionally keep one active PHP request/callback per process
+because framework managers and facades can retain process-global state. Scale
+Laravel by increasing isolated workers, not by forcing unsafe in-process
+concurrency.

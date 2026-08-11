@@ -35,10 +35,10 @@ Publish and run a managed process manifest:
 
 ```bash
 pam artisan pam:install --preset=api
-pam up
-pam status
-pam restart queue
-pam stop
+pam artisan pam:process up
+pam artisan pam:process status
+pam artisan pam:process restart queue
+pam artisan pam:process stop
 ```
 
 `pam.processes.json` owns independent process instances. It does not replace

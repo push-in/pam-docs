@@ -35,23 +35,23 @@ independent supervised processes.
 
 | Task | Command |
 | --- | --- |
-| Readiness | `pam health` |
-| Production audit | `pam check-production` |
-| Memory and state leaks | `pam leaks` |
-| Capacity estimate | `pam capacity --memory-mb=2048 --worker-mb=110` |
-| Start managed processes | `pam up` |
-| Process status | `pam status` |
-| Restart one process | `pam restart queue` |
-| Stop managed processes | `pam stop` |
-| Local atomic release | `pam deploy /srv/app/releases/<id> --local` |
-| Remote deploy | `pam deploy production` |
-| Remote operation | `pam remote <action> production` |
-| Nightwatch verification | `pam nightwatch` |
-| Add Nightwatch role | `pam nightwatch --install-process` |
-| Package registry | `pam compatibility spatie/laravel-permission --refresh` |
-| Queue autoscaling | `pam autoscale queue --cpu=80 --p95=400` |
-| Forge script | `pam forge-script --output=deploy/forge-deploy.sh` |
-| MCP server | `pam mcp` |
+| Readiness | `pam artisan pam:health` |
+| Production audit | `pam artisan pam:check-production` |
+| Memory and state leaks | `pam artisan pam:leaks` |
+| Capacity estimate | `pam artisan pam:capacity --memory-mb=2048 --worker-mb=110` |
+| Start managed processes | `pam artisan pam:process up` |
+| Process status | `pam artisan pam:process status` |
+| Restart one process | `pam artisan pam:process restart queue` |
+| Stop managed processes | `pam artisan pam:process stop` |
+| Local atomic release | `pam artisan pam:deploy /srv/app/releases/<id> --local` |
+| Remote deploy | `pam artisan pam:deploy production` |
+| Remote operation | `pam artisan pam:remote <action> production` |
+| Nightwatch verification | `pam artisan pam:nightwatch` |
+| Add Nightwatch role | `pam artisan pam:nightwatch --install-process` |
+| Package registry | `pam artisan pam:compatibility spatie/laravel-permission --refresh` |
+| Queue autoscaling | `pam artisan pam:autoscale queue --cpu=80 --p95=400` |
+| Forge script | `pam artisan pam:forge-script --output=deploy/forge-deploy.sh` |
+| MCP server | `pam artisan pam:mcp` |
 
 Remote actions are `deploy`, `rollback`, `status`, `logs`, `top`, `workers`,
 `queues`, `scheduler`, and `scale`. Scale requires `--process` and
@@ -84,9 +84,9 @@ through the process manifest.
 
 ```bash
 pam doctor
-pam check-production
-pam leaks
-pam health
+pam artisan pam:check-production
+pam artisan pam:leaks
+pam artisan pam:health
 ```
 
 Lock the Composer dependency graph, exercise the real database, cache, queue,

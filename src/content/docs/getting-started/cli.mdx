@@ -88,11 +88,7 @@ The core executable always provides these runtime operations:
 | `pam artisan [args...]` | Run Laravel console work inside the Embed SAPI. |
 | `pam composer [args...]` | Run the embedded Composer toolchain. |
 | `pam test [path]` | Resolve and run Pest or PHPUnit inside PAM. |
-| `pam sandbox <manifest> -- <script.php>` | Run PHP under fail-closed Landlock/seccomp capabilities. |
-| `pam snapshot create\|verify\|run` | Create or execute integrity-checked PHP source snapshots. |
-| `pam supply-chain` | Audit Composer scripts, plugins, provenance, advisories, and capabilities. |
-| `pam wasi run <module.wasm>` | Execute a denied-by-default bounded WASI guest. |
-| `pam rpc validate\|generate\|wasi` | Validate/generate typed RPC or call an isolated WASI service. |
+| `pam <script.php> [args...]` | Execute a PHP entry directly; if it registers a server, start serving it. |
 
 ### Supervised production start
 
@@ -117,15 +113,12 @@ options.
 | `pam doctor [path]` | Validate PHP, Composer, extension, and runtime compatibility. |
 | `pam inspect [index.php]` | Print resolved runtime capabilities as JSON. |
 | `pam routes [index.php]` | Print registered routes as JSON. |
-| `pam contracts [index.php]` | Generate schemas, clients, mobile bindings, and documentation. |
 | `pam diagnostics [index.php]` | Print the complete bounded runtime snapshot. |
 | `pam heap` | Inspect heap and memory diagnostics. |
 | `pam fibers` | Inspect active fiber diagnostics. |
 | `pam connections` | Inspect runtime connection diagnostics. |
 | `pam profile` | Capture a runtime profiling report. |
 | `pam trace` | Capture trace diagnostics. |
-| `pam record [index.php]` | Record bounded and redacted HTTP interactions. |
-| `pam replay <recording>` | Replay HTTP evidence and fail on response divergence. |
 | `pam top [admin-url]` | Stream live metrics from the admin endpoint. |
 | `pam benchmark <url>` | Measure throughput and latency. |
 
@@ -134,45 +127,44 @@ Examples:
 ```bash
 pam diagnostics public/index.php
 pam top http://127.0.0.1:3010
-pam record public/index.php --output .pam/incidents/checkout.jsonl
-pam replay .pam/incidents/checkout.jsonl --url http://127.0.0.1:3000
 ```
 
-`record` accepts `--max-body-bytes` and `--max-bytes`. Put application arguments
-after `--`. Replay secrets use repeatable `--secret-env placeholder=VARIABLE`
-options so values never appear in command output.
+The focused diagnostics commands select one section of the same bounded
+snapshot. `profile` and `trace` enable their capture mode before booting the
+selected application entry.
 
 ## Laravel operations
 
-PAM's production Laravel package adds process-manifest and cloud operations:
+Core Laravel commands run through `pam artisan`. The optional
+`pushinbr/pam-laravel` package registers its production commands with Artisan:
 
-| Commands | Responsibility |
-| --- | --- |
-| `pam up`, `status`, `restart`, `stop` | Manage the local PAM Laravel process manifest. |
-| `pam check-production`, `health`, `leaks` | Run production-readiness and runtime diagnostics. |
-| `pam capacity`, `deploy`, `remote` | Plan capacity and operate local/remote releases. |
-| `pam rollback`, `logs`, `workers`, `queues`, `scheduler`, `scale` | Concise PAM Cloud operational aliases. |
-| `pam nightwatch`, `compatibility` | Observe and certify packages/application behavior. |
-| `pam autoscale` | Evaluate and apply the configured autoscaling policy. |
-| `pam mcp` | Expose explicitly allowed operational tools to AI/automation clients. |
+```bash
+pam artisan pam:check-production
+pam artisan pam:process status
+pam artisan pam:health
+pam artisan pam:deploy production
+```
 
-These commands are documented in the [Laravel production platform](../../laravel/production-platform/).
-They require a Laravel project/package configuration; the bare runtime does not
-pretend a missing application manifest exists.
+See the [Laravel command reference](../../laravel/api-reference/). PAM 1.0 does
+not create unnamespaced aliases such as `pam health` or `pam deploy`; scripts
+must use the explicit `pam artisan pam:*` form.
 
 ## Ship commands
 
 ```bash
 pam init hello-api --template api
-pam build --entry public/index.php --output dist --signing-key release.key
-pam verify dist --public-key release.pub --require-signature
+pam build --entry public/index.php --output dist
+pam release --check
+pam package --entry public/index.php --output artifacts
 ```
 
 | Command | Contract |
 | --- | --- |
 | `pam init [directory]` | Create `raw`, `api`, `laravel`, `desktop`, `mobile`, or `mobile-ui`. |
 | `pam build [directory]` | Produce a new self-contained bundle plus integrity manifest. |
-| `pam verify [bundle]` | Reject missing, extra, modified, duplicated, unsafe, or untrusted files. |
+| `pam package` | Create the target-specific distributable and checksum. |
+| `pam release [--check]` | Run doctor, lint and tests; package unless check-only. |
+| `pam sign` | Validate Native release-signing configuration. |
 | `pam desktop <command>` | Route development, diagnosis, plugins, and packaging to Desktop. |
 | `pam mobile <command>` | Route prepare/dev/run/build/profile/plugins/runtime operations to Native. |
 
@@ -183,10 +175,8 @@ trailing `.`. Use a directory argument only for another project.
 
 ```bash
 pam help start
-pam help snapshot
-pam help supply-chain
-pam help wasi
-pam help rpc
+pam help build
+pam help package
 pam --version
 ```
 

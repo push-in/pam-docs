@@ -16,7 +16,7 @@ work inside a request.
 ## Estimate initial capacity
 
 ```bash
-pam capacity --memory-mb=2048 --worker-mb=110
+pam artisan pam:capacity --memory-mb=2048 --worker-mb=110
 ```
 
 Treat the result as a starting estimate. Final capacity depends on p95/p99
@@ -26,7 +26,7 @@ and the blocking behavior of Composer packages.
 ## Reconcile a managed process
 
 ```bash
-pam autoscale queue --cpu=80 --p95=400
+pam artisan pam:autoscale queue --cpu=80 --p95=400
 ```
 
 Configure bounds and targets:
@@ -56,7 +56,7 @@ The response must contain numeric `cpuPercent` and `p95Milliseconds`. `--watch`
 is rejected without a live metrics endpoint:
 
 ```bash
-pam autoscale queue --watch
+pam artisan pam:autoscale queue --watch
 ```
 
 Authenticate the endpoint, keep the payload bounded, and make stale or invalid
@@ -67,8 +67,8 @@ metrics fail safely.
 Use PAM Cloud for the HTTP or remote process plane:
 
 ```bash
-pam scale production --process=http --instances=8
-pam scale production --process=queue --instances=12
+pam artisan pam:remote scale production --process=http --instances=8
+pam artisan pam:remote scale production --process=queue --instances=12
 ```
 
 Scale accepts `1..128` instances.

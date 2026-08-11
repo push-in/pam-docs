@@ -81,9 +81,9 @@ Nightwatch runs as a dedicated managed process, never inside an HTTP worker:
 ```bash
 pam composer require laravel/nightwatch
 export NIGHTWATCH_TOKEN=...
-pam nightwatch --install-process
-pam up
-pam nightwatch
+pam artisan pam:nightwatch --install-process
+pam artisan pam:process up
+pam artisan pam:nightwatch
 ```
 
 The diagnostic verifies package discovery, the `nightwatch:agent` command,
