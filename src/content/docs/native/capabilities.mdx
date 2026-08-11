@@ -360,6 +360,86 @@ motion/attitude. Device status contains battery, charging, low-power, network
 availability, and `NetworkType`. Observation uses a four-value native queue;
 when PHP is busy, old samples are discarded in favor of recent state.
 
+## Device interaction utilities
+
+### Clipboard
+
+```php
+use Pam\Native\System\Clipboard;
+
+Clipboard::setText('Invite code: PAM42', function (bool $copied): void {
+    $this->copied = $copied;
+});
+
+Clipboard::hasText(function (bool $available): void {
+    if ($available) {
+        Clipboard::getText(fn (?string $text) => $this->paste($text));
+    }
+});
+```
+
+Clipboard text is limited to 1 MiB. `getText()` returns `null` and `hasText()`
+returns `false` when the native operation fails.
+
+### Haptics and vibration
+
+```php
+use Pam\Native\HapticFeedback;
+use Pam\Native\System\Haptics;
+use Pam\Native\System\Vibration;
+
+Haptics::trigger(HapticFeedback::Success);
+Vibration::vibrate(80);
+```
+
+Semantic haptic cases are `Selection`, `Light`, `Medium`, `Heavy`, `Success`,
+`Warning`, and `Error`. Raw vibration duration is clamped between 1 and 10,000
+milliseconds. Prefer semantic haptics for product feedback and respect the
+device user's expectations; vibration is not a substitute for accessible
+visual or spoken feedback.
+
+### Alerts and keyboard
+
+```php
+use Pam\Native\System\Alert;
+use Pam\Native\System\Keyboard;
+
+Keyboard::dismiss();
+Alert::show(
+    'Draft saved',
+    'Your message is available offline.',
+    fn () => $this->afterDismiss(),
+);
+```
+
+`Alert::show()` invokes the optional closure after dismissal and promotes a
+native failure to a runtime exception. `Keyboard::dismiss()` is fire-and-forget.
+
+### SMS drafts
+
+```php
+use Pam\Native\System\Sms;
+
+Sms::isAvailable(
+    callback: function (bool $available): void {
+        if ($available) {
+            Sms::compose(
+                recipients: ['+5511999990000'],
+                body: 'Vem conhecer o PAM!',
+                failed: fn (string $message) => $this->showError($message),
+            );
+        }
+    },
+    failed: fn (string $message) => $this->showError($message),
+);
+```
+
+`Sms::compose()` only opens the platform composer; it never sends a message.
+It accepts 1 to 50 unique non-empty recipients, each at most 128 bytes, and a
+body up to 10,000 bytes. Android restricts the intent to `smsto:` and iOS uses
+`MFMessageComposeViewController`. Devices without a configured SMS service may
+legitimately report unavailable.
+
 ## Lifecycle and recovery
 
 Android pauses WebView timers and active media from `Activity.onPause()` and

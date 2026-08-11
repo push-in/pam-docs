@@ -1,0 +1,87 @@
+---
+title: HTTP networking
+description: Make bounded GET, POST, PUT, PATCH, DELETE, and JSON requests from PAM Native with typed responses and explicit transport failures.
+---
+
+PAM Native provides an asynchronous HTTP client that returns every result to a
+typed PHP callback. Requests run through the native module transport instead of
+blocking the PHP render path.
+
+## Send a JSON request
+
+```php
+use Pam\Native\Http\Http;
+use Pam\Native\Http\HttpResponse;
+
+Http::json(
+    method: 'POST',
+    url: 'https://api.example.com/session',
+    data: ['email' => $this->email, 'password' => $this->password],
+    callback: function (HttpResponse $response): void {
+        if ($response->transportFailed()) {
+            $this->error = $response->error;
+            return;
+        }
+        if (!$response->successful()) {
+            $this->error = "Request failed ({$response->statusCode}).";
+            return;
+        }
+        $payload = json_decode($response->body, true, flags: JSON_THROW_ON_ERROR);
+        $this->authenticated($payload['token']);
+    },
+    headers: ['X-Client-Version' => '1.0.0'],
+    timeoutMs: 45_000,
+);
+```
+
+`Http::json()` adds JSON accept/content headers, encodes the data with
+exceptions enabled, and then applies caller headers.
+
+## Request methods
+
+```php
+Http::get($url, $callback);
+Http::post($url, $callback, headers: [], body: $body, timeoutMs: 30_000);
+Http::put($url, $callback, headers: [], body: $body, timeoutMs: 30_000);
+Http::patch($url, $callback, headers: [], body: $body, timeoutMs: 30_000);
+Http::delete($url, $callback, headers: [], body: $body, timeoutMs: 30_000);
+```
+
+Use `Http::request()` when the verb is selected dynamically:
+
+```php
+Http::request(
+    method: 'PATCH',
+    url: "https://api.example.com/profile/{$id}",
+    callback: $callback,
+    headers: ['Authorization' => "Bearer {$token}"],
+    body: json_encode(['name' => $name], JSON_THROW_ON_ERROR),
+    timeoutMs: 20_000,
+);
+```
+
+The returned integer is the native request ID. The current public API reports
+completion through its callback; it does not expose an HTTP cancellation
+method.
+
+## Response contract
+
+`HttpResponse` exposes readonly `statusCode`, `body`, and `error` properties.
+`successful()` accepts 200 through 299. `transportFailed()` is true only when
+the status is `0` and `error` is not empty. A 404 or 500 is an HTTP response,
+not a transport failure.
+
+## Limits and validation
+
+- Methods are limited to `GET`, `POST`, `PUT`, `PATCH`, and `DELETE`.
+- A request body is limited to 1 MiB.
+- A request accepts at most 32 headers.
+- Header names contain only letters, digits, and hyphens and are limited to 64
+  bytes.
+- Header values are single-line strings no longer than 8,192 bytes.
+- Timeouts are clamped between 1,000 and 120,000 milliseconds.
+
+Unsupported methods and invalid bodies or headers fail synchronously before a
+native call. DNS, connectivity, TLS, and other transport failures arrive as a
+status-`0` response, keeping expected network failures out of the global
+runtime exception path.

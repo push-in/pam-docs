@@ -1,0 +1,120 @@
+---
+title: Forms and validation
+description: Model typed PAM Native forms with attribute validation, interaction state, server errors, submission states, and local drafts.
+---
+
+`NativeForm` keeps values, validation, server errors, dirty/touched state, and
+submission state in one typed PHP object. Public, non-static properties are the
+form fields.
+
+## Define a form
+
+```php
+use Pam\Native\Forms\Attributes\Email;
+use Pam\Native\Forms\Attributes\Matches;
+use Pam\Native\Forms\Attributes\MaxLength;
+use Pam\Native\Forms\Attributes\MinLength;
+use Pam\Native\Forms\Attributes\Required;
+use Pam\Native\Forms\NativeForm;
+
+final class RegistrationForm extends NativeForm
+{
+    #[Required]
+    #[Email]
+    public string $email = '';
+
+    #[Required]
+    #[MinLength(12)]
+    #[MaxLength(64)]
+    public string $password = '';
+
+    #[Matches('password')]
+    public string $passwordConfirmation = '';
+}
+```
+
+Built-in rules accept an optional custom message. `Required` rejects `null`, a
+blank string, and an empty array. Length rules support strings and arrays;
+`Email` ignores an empty optional value; `Matches` compares another form field.
+
+## Bind input and errors
+
+```php
+$form = new RegistrationForm();
+
+$email = Input::make($form->email)
+    ->onChange(fn (string $value) => $form->set('email', $value));
+
+$emailError = $form->error('email');
+```
+
+`set()` updates a field, marks it dirty and touched, switches to `Editing`, and
+clears that field's previous error. Pass `touch: false` for programmatic
+changes. `fill()` applies several fields through the same contract. Unknown,
+private, static, or readonly fields are rejected instead of silently written.
+
+## Validate and submit
+
+```php
+use Pam\Native\Http\Http;
+use Pam\Native\Http\HttpResponse;
+
+if (!$form->beginSubmit()) {
+    $this->focus($form->firstErrorField());
+    return;
+}
+
+Http::json(
+    'POST',
+    'https://api.example.com/register',
+    $form->values(),
+    function (HttpResponse $response) use ($form): void {
+        if ($response->successful()) {
+            $form->succeed();
+            $form->forgetDraft('registration');
+            return;
+        }
+        $payload = json_decode($response->body, true);
+        $form->fail($payload['errors'] ?? ['email' => 'Registration failed.']);
+    },
+);
+```
+
+`beginSubmit()` validates every field first. It returns `false` and enters
+`Failure` when validation fails; otherwise it enters `Submitting`. Call
+`succeed()` or `fail()` when the asynchronous operation finishes.
+
+`FormStatus` is an integer-backed enum with `Idle`, `Editing`, `Validating`,
+`Submitting`, `Success`, and `Failure`. Use enum cases instead of numeric values.
+
+## Validation APIs
+
+```php
+$form->validate();
+$form->validate('email');
+$form->errors();
+$form->error('email');
+$form->firstErrorField();
+$form->isDirty();
+$form->isDirty('email');
+$form->isTouched('email');
+```
+
+Map backend validation with `setServerErrors()` or `fail()`. Values may be one
+string or a list, and mapped fields become touched. For cross-field or domain
+checks, `validateWith()` returns an error map, an empty array, or `null`.
+
+Implement `ValidationRule` as a PHP attribute when a reusable rule belongs on
+a field. Its `validate()` method returns an error string or `null`.
+
+## Drafts and reset
+
+```php
+$form->saveDraft('registration');
+$restored = $form->restoreDraft('registration');
+$form->forgetDraft('registration');
+```
+
+Drafts use PAM State under `form-draft.<key>`. Restoring fills known fields,
+then resets dirty/touched state and returns to `Idle`. `resetInteraction()`
+clears errors and interaction state without replacing the current values.

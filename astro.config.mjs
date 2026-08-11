@@ -134,6 +134,8 @@ export default defineConfig({
             { label: 'Navigation', slug: 'native/navigation' },
             { label: 'Platform runtime', slug: 'native/platform-runtime' },
             { label: 'Platform capabilities', slug: 'native/capabilities' },
+            { label: 'HTTP networking', slug: 'native/networking' },
+            { label: 'Forms & validation', slug: 'native/forms' },
             { label: 'Files & media picker', slug: 'native/files-and-media' },
             { label: 'Hot reload', slug: 'native/hot-reload' },
             { label: 'Editor setup', slug: 'native/editor-tooling' },
