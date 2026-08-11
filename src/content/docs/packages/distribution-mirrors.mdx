@@ -1,0 +1,39 @@
+---
+title: PAM distribution mirrors
+description: Understand the canonical-source and generated-distribution roles of pam-native-php and pam-mobile-ui-php.
+---
+
+Two public repositories are intentionally distribution mirrors rather than
+independent PAM products:
+
+| Distribution repository | Canonical source | Public capability |
+| --- | --- | --- |
+| `push-in/pam-native-php` | `push-in/pam-native` | PAM Native PHP API, templates and protocol surface |
+| `push-in/pam-mobile-ui-php` | `push-in/pam-mobile-ui` | PAM Mobile UI PHP components, generated maps and resources |
+
+Application developers install the capability through PAM:
+
+```bash
+pam add native
+pam add mobile-ui
+pam doctor
+```
+
+Do not add both the canonical and mirror repositories, and do not treat a
+mirror as a fork with a separate compatibility policy. The generated project
+and package metadata select the correct distribution artifact.
+
+## Source of truth
+
+Issues, architectural changes, native implementations and contribution work
+belong in the canonical repositories. Mirrors expose the packaged PHP surface
+and may repeat generated documentation so an artifact remains understandable
+in isolation.
+
+When auditing a release, match its package version and commit provenance,
+validate the generated manifests, and compare the mirror API against the
+canonical source. A mirror that drifts from its source is a release failure—not
+a second supported API.
+
+Read [PAM Native](/native/overview/) and
+[PAM Mobile UI](/packages/mobile-ui/) for the actual product guides.

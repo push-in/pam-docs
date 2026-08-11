@@ -206,6 +206,8 @@ export default defineConfig({
             { label: 'pushinbr/pam-testing', slug: 'packages/testing' },
             { label: 'pushinbr/pam-core-api', slug: 'packages/core-api' },
             { label: 'PAM Native Nitro', slug: 'packages/native-nitro' },
+            { label: 'Application skeleton', slug: 'packages/skeleton' },
+            { label: 'Distribution mirrors', slug: 'packages/distribution-mirrors' },
             {
               label: 'Mobile UI',
               items: [

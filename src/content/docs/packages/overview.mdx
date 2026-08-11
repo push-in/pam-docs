@@ -33,7 +33,10 @@ custom lockfile, or proprietary package format is required.
 | `pushinbr/pam-core-api` | Small contracts for packages that extend PAM |
 | `pushinbr/pam-native` | PHP authoring and protocol surface for native Android applications |
 | [`pushinbr/pam-native-nitro`](/packages/native-nitro/) | Offline-first, model-driven local data engine on PAM Native SQLite workers |
+| [`pushinbr/pam-mobile-ui`](/packages/mobile-ui/) | Retained-native Material 3 component system for Android and iOS |
+| `pushinbr/pam-laravel` | Laravel bridge, Octane integration and framework lifecycle contracts |
 | `pam/desktop` | Typed PHP API and worker loop for PAM Desktop |
+| [`push-in/pam-skeleton`](/packages/skeleton/) | Versioned API starter consumed by `pam init` |
 
 ## PAM first. Composer remains Composer.
 
@@ -56,3 +59,11 @@ Compatibility with Composer does not guarantee compatibility with every package.
 Server packages can publish providers through the versioned core contracts. Native plugins may ship PHP providers, components, themes, Android resources, manifests, Maven dependencies, AARs, JNI libraries, native modules, and native view factories.
 
 Protocol and enum identifiers are sequential integers and append-only within a protocol version.
+
+## Distribution repositories
+
+`pam-native-php` and `pam-mobile-ui-php` are publication mirrors of their
+canonical source repositories. They exist so generated and packaged PHP
+artifacts can be distributed independently; they are not separate products or
+alternative installation paths. See the
+[distribution mirror contract](/packages/distribution-mirrors/).
