@@ -14,16 +14,16 @@ specific details remain in the linked guides.
 | Contacts | `System\Contacts` | This page |
 | Current location | `System\Location` | This page |
 | Voice recording | `System\AudioRecorder` | This page |
-| Files, camera, gallery | `System\Files`, `MediaCapture`, `MediaLibrary` | [Files and media](./files-and-media/) |
-| Incoming and outgoing links | `System\Linking` | [Navigation](./navigation/#deep-links) |
-| Shared content | `System\IncomingShares` | [Navigation](./navigation/#receive-content-shared-by-other-android-apps) |
+| Files, camera, gallery | `System\Files`, `MediaCapture`, `MediaLibrary` | [Files and media](../files-and-media/) |
+| Incoming and outgoing links | `System\Linking` | [Navigation](../navigation/#deep-links) |
+| Shared content | `System\IncomingShares` | [Navigation](../navigation/#receive-content-shared-by-other-android-apps) |
 | Local and push notifications | `System\Notifications`, `PushNotifications` | This page |
 | Finite background work | `System\BackgroundTasks` | This page |
-| Cache inspection and cleanup | `System\Caches` | [Images and cache](./components/images-and-cache/) |
+| Cache inspection and cleanup | `System\Caches` | [Images and cache](../components/images-and-cache/) |
 | SQLite | `Database\SQLite` | This page |
 | Sensors and device state | `System\Sensors`, `DeviceStatus` | This page |
-| Web and media | `UI\WebView`, `MediaPlayer` | [WebView](./components/webview/), [Video and audio](./components/video-and-audio/) |
-| Interaction and motion | `UI\GestureDetector`, `Animated`, `InteractionRegion` | [Interaction and motion](./components/interaction-and-motion/) |
+| Web and media | `UI\WebView`, `MediaPlayer` | [WebView](../components/webview/), [Video and audio](../components/video-and-audio/) |
+| Interaction and motion | `UI\GestureDetector`, `Animated`, `InteractionRegion` | [Interaction and motion](../components/interaction-and-motion/) |
 
 ## Permissions
 
@@ -174,7 +174,7 @@ Key guarantees:
 Android `MediaLibrary::assets()` and `albums()` query gallery metadata on a
 native worker without importing every asset. Import only the chosen URI.
 Portable applications keep the system document picker as their fallback. See
-[Files and media](./files-and-media/) for complete picker, gallery, editor, and
+[Files and media](../files-and-media/) for complete picker, gallery, editor, and
 download examples.
 
 ## Links
@@ -194,7 +194,7 @@ Linking::open(
 
 `canOpen()` and `initial()` expose the same optional final failure callback.
 Cold and warm incoming links, intent filters, URI limits, and routing are
-covered in [Navigation](./navigation/#deep-links).
+covered in [Navigation](../navigation/#deep-links).
 
 ## Incoming shares
 
@@ -383,5 +383,5 @@ product state rather than replayed blindly.
 - Runtime event payloads remain bounded to 1 MiB.
 - Continuous observers must be unsubscribed by their owning lifecycle.
 
-Use [DevTools](./devtools/) to inspect module latency, failures, lifecycle
+Use [DevTools](../devtools/) to inspect module latency, failures, lifecycle
 events, and runtime errors while exercising these APIs.
