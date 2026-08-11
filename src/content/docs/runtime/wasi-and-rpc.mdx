@@ -1,0 +1,139 @@
+---
+title: WASI sandbox and typed RPC
+description: Run bounded WASI guests, validate versioned RPC contracts from PHP DTOs, generate multi-language SDKs, and invoke isolated services.
+---
+
+PAM can run a WebAssembly guest without ambient host filesystem, network,
+environment, or arguments. The same boundary powers RPC whose request and
+response values are validated against PHP-generated contracts.
+
+## Run a bounded WASI guest
+
+```bash
+pam wasi run extension.wasm \
+  --fuel 100000000 \
+  --memory-bytes 67108864 \
+  --max-output-bytes 8388608 \
+  --timeout-ms 30000
+```
+
+| Capability | Default | Explicit grant / ceiling |
+| --- | --- | --- |
+| Environment | None | `--env NAME` copies that variable only |
+| Filesystem | None | `--read-dir HOST=GUEST`, `--write-dir HOST=GUEST` |
+| Network/DNS | None | Unavailable to Preview 1 guests |
+| stdin | Empty | `--stdin FILE`, up to 64 MiB |
+| Arguments | Module name | Values after `--` |
+| CPU | 100 million fuel | `--fuel N` |
+| Linear memory | 64 MiB | Up to 2 GiB |
+| stdout/stderr | 8 MiB each | Up to 64 MiB each |
+| Wall time | 30 seconds | Up to one hour |
+
+Cranelift canonicalizes NaNs. Wasmtime store limits bound memories, tables, and
+instances; fuel bounds compute; an epoch deadline interrupts wall-time excess.
+Filesystem grants resolve host paths before execution, with read/write mappings
+kept separate and guest traversal blocked.
+
+PAM currently accepts WASI Preview 1 command modules exporting `_start`.
+Component Model interfaces and guest networking are not emulated.
+
+## Define the RPC service
+
+First generate contracts as described in [Typed contracts](../typed-contracts/),
+then create `pam.rpc.json`:
+
+```json
+{
+  "schemaVersion": 1,
+  "service": "Orders",
+  "version": "1.0.0",
+  "methods": [
+    {
+      "kind": 1,
+      "name": "createOrder",
+      "input": "CreateOrder",
+      "output": "OrderCreated",
+      "timeoutMs": 2000,
+      "idempotent": true
+    }
+  ]
+}
+```
+
+Version 1 supports unary method kind `1`. Names are validated and unique,
+contracts must exist, and deadlines must be finite.
+
+```bash
+pam rpc validate pam.rpc.json \
+  --contracts generated/contracts/contracts.mobile.json
+```
+
+Validation rejects malformed catalogs, unsupported kinds, non-sequential enum
+values, duplicate fields/cases, missing array item types, unknown references,
+and unbounded deadlines.
+
+## Generate SDKs
+
+```bash
+pam rpc generate pam.rpc.json \
+  --contracts generated/contracts/contracts.mobile.json \
+  --output generated/rpc
+```
+
+The output directory must be empty.
+
+| File | Purpose |
+| --- | --- |
+| `pam-rpc.ts` | TypeScript DTOs, numeric enums, transport, client |
+| `pam_rpc.py` | Python `TypedDict`, `IntEnum`, async transport, client |
+| `pam_rpc.rs` | Rust Serde DTOs, numeric enums, transport trait, client |
+| `pam-rpc.manifest.json` | Canonical reviewed manifest |
+| `RPC.md` | Methods, contracts, deadlines, idempotency |
+
+Generated SDKs own no network policy. Applications inject HTTP, Unix socket,
+WebSocket, fake, or authenticated-broker transports without generated secrets.
+
+## Invoke a WASI RPC method
+
+```bash
+pam rpc wasi pam.rpc.json orders.wasm createOrder request.json \
+  --contracts generated/contracts/contracts.mobile.json \
+  --fuel 100000000 \
+  --memory-bytes 67108864
+```
+
+PAM validates the manifest, full catalog, and request recursively; constructs a
+bounded envelope; runs the guest without filesystem, environment, network, or
+DNS; applies the method deadline and resource limits; verifies response ID and
+integer kind; validates the result; and prints only result JSON.
+
+Use `--request-id ID` to preserve an upstream idempotency/correlation ID.
+Otherwise PAM generates a process-unique ID. Envelope kinds are request `1`,
+success `2`, and failure `3`; service error codes are documented positive
+integers.
+
+## Isolation boundary
+
+WASI is the hardened in-process guest boundary for Rust, C/C++, and other
+compatible command modules. Generated TypeScript/Python clients are host
+bindings only. A normal Node or Python interpreter remains an external process
+and needs container, VM, or broker isolation.
+
+## Production drift gate
+
+```bash
+temporary_contracts="$(mktemp -d)"
+temporary_rpc="$(mktemp -d)"
+
+pam contracts bootstrap/contracts.php --output "$temporary_contracts"
+pam rpc generate pam.rpc.json \
+  --contracts "$temporary_contracts/contracts.mobile.json" \
+  --output "$temporary_rpc"
+
+diff -ru generated/contracts "$temporary_contracts"
+diff -ru generated/rpc "$temporary_rpc"
+```
+
+Commit manifests, catalogs, and SDKs together. Use the lowest practical fuel,
+memory, output, and deadline limits. Treat stderr as guest-controlled data and
+redact it before central logging.

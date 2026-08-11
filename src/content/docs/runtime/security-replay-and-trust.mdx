@@ -1,0 +1,95 @@
+---
+title: Sandbox, replay, and trusted bundles
+description: Isolate untrusted PHP with kernel capabilities, record redacted HTTP incidents, replay them, and verify signed PAM production bundles.
+---
+
+PAM treats package isolation, incident evidence, and release trust as separate
+security boundaries. One does not imply the others.
+
+## Isolate untrusted PHP
+
+```bash
+pam sandbox pam.capabilities.json -- plugin.php
+```
+
+```json
+{
+  "schemaVersion": 1,
+  "capabilities": [
+    {"kind": 1, "resources": [".", "vendor/package"]},
+    {"kind": 2, "resources": ["storage/package"]},
+    {"kind": 5, "resources": ["APP_ENV", "PACKAGE_API_KEY"]}
+  ]
+}
+```
+
+| Kind | Capability | Resource meaning |
+| ---: | --- | --- |
+| `1` | Filesystem read | Paths relative to the manifest |
+| `2` | Filesystem write | Existing relative paths |
+| `3` | Network | `['*']` or absent |
+| `4` | Subprocess | `['*']` or absent |
+| `5` | Environment | Exact variable names |
+
+Linux filesystem policy uses Landlock. Seccomp applies network/process denials
+after PAM starts and before PHP boots. Unlisted environment variables are
+removed; PHP extension, certificate, and timezone support paths remain
+read-only.
+
+Selective domains and executable allowlists require the PAM broker. Until it is
+enabled, values other than `['*']` are rejected instead of widened silently.
+The sandbox fails closed without Landlock and seccomp. Loading an untrusted
+Composer package directly into the main application worker does not provide
+this isolation.
+
+## Record redacted incidents
+
+```bash
+pam record index.php --output .pam/incidents/checkout.jsonl
+```
+
+Each JSONL entry contains schema version, integer event kind, sequence, request
+ID, method, target, headers, bounded request/response bodies, duration, and
+SHA-256 digests. Defaults are 64 KiB per body and 64 MiB per recording.
+
+Authorization, cookies, API keys, password/token/secret fields, and sensitive
+query values become named placeholders before disk I/O. Binary bodies are
+base64. An exclusive file lock prevents workers from interleaving partial JSON.
+
+## Replay a candidate
+
+```bash
+export INCIDENT_AUTH='Bearer ...'
+export INCIDENT_TOKEN='...'
+
+pam replay .pam/incidents/checkout.jsonl \
+  --url http://127.0.0.1:3000 \
+  --secret-env authorization=INCIDENT_AUTH \
+  --secret-env token=INCIDENT_TOKEN
+```
+
+Secrets come from the environment and are never printed. Replay stops on the
+first status or response-body digest divergence. Truncated request bodies are
+not replayed.
+
+The current recorder covers the native HTTP boundary. It does not virtualize
+database results, clocks, randomness, or every native operation and must not be
+described as full VM determinism.
+
+## Sign and verify production bundles
+
+```bash
+openssl genpkey -algorithm ED25519 -out release.key
+openssl pkey -in release.key -pubout -out release.pub
+
+pam build --output dist --signing-key release.key
+pam verify dist --public-key release.pub --require-signature
+```
+
+The bundle contains sorted SHA-256 records in `manifest.json`, an Ed25519
+`manifest.sig`, and deterministic CycloneDX 1.6 `sbom.cdx.json` inventory.
+Algorithm kind is integer `1`; key identity is the SHA-256 of public DER.
+
+Verification requires an external trusted public key. Missing, extra, modified,
+duplicate, symlinked, and path-escaping entries fail. An artifact cannot
+establish its own publisher identity by embedding a replacement key.

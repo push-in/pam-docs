@@ -82,6 +82,8 @@ export default defineConfig({
             { label: 'Cluster services', slug: 'runtime/cluster-services' },
             { label: 'Typed contracts', slug: 'runtime/typed-contracts' },
             { label: 'Supply-chain gate', slug: 'runtime/supply-chain' },
+            { label: 'Sandbox, replay & trust', slug: 'runtime/security-replay-and-trust' },
+            { label: 'WASI & typed RPC', slug: 'runtime/wasi-and-rpc' },
             { label: 'WebSockets', slug: 'runtime/websockets' },
             { label: 'Composer', slug: 'runtime/composer' },
             { label: 'Production', slug: 'runtime/production' },
