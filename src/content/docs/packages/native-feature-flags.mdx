@@ -35,3 +35,11 @@ Rollouts hash `flag-key + NUL + bucketing-id` with SHA-256 and map the first
 unsigned 32 bits into 0–9999. Golden tests keep PHP/Kotlin/Swift assignments
 identical. Use a stable non-secret ID, emit exposure once per decision rather
 than render, and always retain an offline/malformed-config default.
+
+## Public model
+
+`Evaluator` produces an `Evaluation` with `EvaluationReason` and optional
+`Exposure`. `FlagValueKind` identifies the typed value representation.
+`JsonFlagProvider` loads bounded JSON definitions, while
+`InMemoryFlagProvider` is useful for embedded defaults and tests.
+`FeatureFlagsPluginProvider` is discovered automatically by PAM.

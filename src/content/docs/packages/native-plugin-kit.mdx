@@ -23,3 +23,8 @@ IDL digests in `.pam-native/plugins.lock.json`.
 
 The `vendor/bin` commands are package tooling after `pam add plugin-kit`; package
 installation itself remains a PAM workflow.
+
+Diagnostics use integer-backed `DiagnosticSeverity`; invalid IDL raises
+`IdlException`. Apple manifest requirements are modeled by
+`IosExtensionKind` and `SwiftPackageRequirementKind` rather than free-form
+strings.

@@ -27,3 +27,13 @@ persists idempotency and ordered changes; `CursorCodec` signs bounded cursors;
 Protect routes with application auth. Keep the HMAC key stable across deploys,
 define authorization/validation/conflict/retention per collection, and never put
 secrets in signed-but-unencrypted cursor state. Laravel 12 and 13 are supported.
+
+## Laravel HTTP contract
+
+`SyncController` validates a `SyncRequest`, passes its `SyncEnvelope` and
+`IncomingOperation` values to the service, and returns a
+`SyncEnvelopeResource`. Applied changes and push results serialize through
+`AppliedChangeResource` and `PushOutcomeResource`; their domain values are
+`AppliedChange`, `PushOutcome`, and integer-backed `OperationStatus`.
+`LaravelSyncServiceProvider` registers configuration, migrations, routes and
+bindings through Laravel package discovery.

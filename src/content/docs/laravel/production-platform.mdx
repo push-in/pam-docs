@@ -11,7 +11,7 @@ release operations.
 ## Bootstrap
 
 ```bash
-composer require pushinbr/pam-laravel
+pam composer require pushinbr/pam-laravel
 pam artisan pam:install --preset=api
 pam artisan pam:check-production
 pam start pam.php --workers "$(nproc)" --admin-address 127.0.0.1:3011

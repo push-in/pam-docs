@@ -27,3 +27,12 @@ Use stable idempotency IDs, monotonic server versions, transactional remote
 changes plus cursor advancement, explicit retry/tombstone policy, and a domain
 conflict strategy. HTTP, Realtime, and Laravel adapters remain separate
 packages—the engine is not a database wrapper or hidden transport.
+
+## Complete synchronization contracts
+
+`SyncStore` is the persistence interface; implementations are
+`SQLiteSyncStore` and `InMemorySyncStore`. `SyncOperation` represents queued
+intent, `RemoteChange` represents server state, and `SyncPushResult` /
+`SyncPullResult` are transport outcomes. Implement `ConflictResolver` for
+domain-specific resolution or use `PolicyConflictResolver` for a declared
+policy.

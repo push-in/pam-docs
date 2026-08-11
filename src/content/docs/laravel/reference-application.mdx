@@ -26,7 +26,7 @@ From the PAM repository:
 cd examples/laravel-saas-api
 cp .env.example .env
 touch database/database.sqlite
-composer install
+pam composer install
 pam artisan key:generate
 pam artisan migrate
 pam artisan pam:install --preset=api

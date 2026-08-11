@@ -5,6 +5,7 @@ const root = resolve(import.meta.dirname, '..');
 const content = join(root, 'src', 'content', 'docs');
 const failures = [];
 const explicitCurrentDirectory = /\bpam\b[^\n`]*\s+\.(?=\s*(?:\\|`|$)|\s+--)/;
+const directComposerCommand = /^\s*composer\s+(?:install|update|require|remove|audit|test|benchmark)\b/;
 
 for (const example of [
   'pam desktop doctor .',
@@ -14,6 +15,12 @@ for (const example of [
 ]) {
   if (!explicitCurrentDirectory.test(example)) {
     throw new Error(`PAM syntax detector does not reject: ${example}`);
+  }
+}
+
+for (const example of ['composer require vendor/package', 'composer install']) {
+  if (!directComposerCommand.test(example)) {
+    throw new Error(`Composer syntax detector does not reject: ${example}`);
   }
 }
 
@@ -36,6 +43,14 @@ for (const file of walk(content).filter((path) => extname(path) === '.mdx')) {
         file,
         line: index + 1,
         message: 'explicit current-directory argument; PAM uses it implicitly',
+      });
+    }
+
+    if (directComposerCommand.test(line)) {
+      failures.push({
+        file,
+        line: index + 1,
+        message: 'direct Composer command; execute it through pam composer',
       });
     }
   });

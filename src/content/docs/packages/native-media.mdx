@@ -34,3 +34,6 @@ Revision commands prevent declarative re-renders from repeating capture.
 Camera output combinations are mode-specific for device compatibility. Request
 camera/microphone permission, bound recording duration and storage, and handle
 returned paths through normal `FileReference` APIs.
+
+`MediaKind` classifies probed results. `MediaPluginProvider` registers the
+module and camera view automatically during PAM plugin discovery.
