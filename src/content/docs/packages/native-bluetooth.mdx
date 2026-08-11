@@ -1,0 +1,33 @@
+---
+title: PAM Native Bluetooth
+description: Scan, connect, discover, read, write, and subscribe to Bluetooth LE with opaque IDs and a bounded lifecycle-safe event queue.
+---
+
+```bash
+pam add bluetooth
+pam doctor
+```
+
+```php
+$bluetooth->scan(['180d'], fn (bool $ok, ?string $error) => null);
+$bluetooth->poll(function (array $events) use ($bluetooth): void {
+    foreach ($events as $event) {
+        if ($event->kind === BluetoothEventKind::DeviceFound) {
+            $bluetooth->connect($event->deviceId, fn () => null);
+        }
+    }
+});
+```
+
+`Bluetooth` owns scan, connection, discovery, characteristic reads/writes,
+subscriptions, and polling. `BluetoothEvent`, `BluetoothEventKind`, and
+`BluetoothState` normalize native lifecycle without exposing MAC-address
+assumptions.
+
+The queue holds 256 events and drops the oldest under sustained backpressure;
+poll regularly and stop scans promptly. Android 12+ requires Nearby Devices;
+older Android may require location for discovery. iOS uses the supplied
+Bluetooth purpose description. Protocol framing, authentication, bounded retry,
+and firmware validation remain application responsibilities.
+
+Support: PAM Native 0.6.x, Android API 26+, iOS 15+, physical BLE certification.

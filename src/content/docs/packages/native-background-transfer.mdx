@@ -1,0 +1,33 @@
+---
+title: PAM Native Background Transfer
+description: Run durable HTTPS uploads and downloads outside the PHP runtime with OS scheduling, constraints, progress, and relaunch recovery.
+---
+
+```bash
+pam add background-transfer
+pam doctor
+```
+
+```php
+$transfers = new Pam\Native\BackgroundTransfer\BackgroundTransfer();
+$transfers->download(
+    'https://cdn.example.com/movie.mp4',
+    'media/movie.mp4',
+    function (?string $id, ?string $error): void {
+        // Persist the ID and reconcile it after relaunch.
+    },
+);
+```
+
+`BackgroundTransfer` creates uploads/downloads and queries durable work;
+`TransferSnapshot` exposes progress, state, and errors. `NetworkRequirement`
+selects connected, unmetered, or not-roaming, while `TransferState` and
+`TransferKind` are integer-backed lifecycle enums.
+
+Transfers require HTTPS and sandbox-relative paths; native code rejects
+traversal. Android WorkManager retries transient failures up to three times;
+iOS uses a launch-event-enabled background `URLSession`. Persist IDs before the
+initiating screen disappears, reconcile them after launch/resume, and validate
+downloaded size, type, and checksum before trust.
+
+Support: PAM Native 0.6.x, Android API 26+, iOS 15+.

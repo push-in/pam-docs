@@ -1,0 +1,27 @@
+---
+title: PAM Native Intents
+description: Publish named PAM routes as Android Dynamic Shortcuts and Apple App Intents while preserving one deep-link navigation lifecycle.
+---
+
+```bash
+pam add intents
+pam doctor
+```
+
+```php
+$intents->register([
+    new IntentAction('inbox', 'Open inbox', 'myapp://inbox', 'Unread messages'),
+], $complete);
+```
+
+`Intents` publishes/removes actions; `IntentAction` defines stable identifier,
+title, route, and subtitle. Every action re-enters the normal named-route/deep
+link lifecycle instead of creating a second navigation system.
+
+iOS 18+ uses `group.<application-id>.pam-native`; Apple `OpenURLIntent`
+destinations must be associated HTTPS universal links. Android Dynamic
+Shortcuts may use custom schemes. Keep identifiers and titles stable because
+user automations can outlive an update, and test each link in the main router
+before native publication.
+
+Support: PAM Native 0.6.x, Android API 26+, iOS 18+ for App Intents behavior.

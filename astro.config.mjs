@@ -206,6 +206,19 @@ export default defineConfig({
             { label: 'pushinbr/pam-testing', slug: 'packages/testing' },
             { label: 'pushinbr/pam-core-api', slug: 'packages/core-api' },
             { label: 'PAM Native Nitro', slug: 'packages/native-nitro' },
+            {
+              label: 'Native integrations',
+              items: [
+                { label: 'Auth', slug: 'packages/native-auth' },
+                { label: 'Background Transfer', slug: 'packages/native-background-transfer' },
+                { label: 'Bluetooth', slug: 'packages/native-bluetooth' },
+                { label: 'DevTools package', slug: 'packages/native-devtools' },
+                { label: 'Feature Flags', slug: 'packages/native-feature-flags' },
+                { label: 'Firebase', slug: 'packages/native-firebase' },
+                { label: 'Health', slug: 'packages/native-health' },
+                { label: 'Intents', slug: 'packages/native-intents' },
+              ],
+            },
           ],
         },
         {

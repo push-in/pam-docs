@@ -1,0 +1,34 @@
+---
+title: PAM Native DevTools package
+description: Record bounded events, redacted snapshots, performance measures, errors, and full network transactions for deterministic diagnostics.
+---
+
+```bash
+pam add devtools
+pam doctor
+```
+
+```php
+$tools->snapshot('session', $session);
+$tools->mark('feed.start');
+$request = $tools->network('GET', $url, $headers);
+
+try {
+    $request->complete(200, $responseHeaders, $body);
+} catch (Throwable $error) {
+    $request->fail($error->getMessage());
+    throw $error;
+}
+
+$tools->measure('feed.load', 'feed.start');
+```
+
+`DevTools` records events, snapshots, marks/measures, errors, and network work.
+`NetworkTransaction` must always complete or fail. `Redactor` recursively
+bounds/redacts values; `RecordKind` and `NetworkState` type exported records.
+
+Depth, collection size, and strings are bounded; sensitive keys are redacted;
+oldest records are discarded under pressure. Keep it in development/diagnostic
+builds, add product-specific sensitive keys, and review exported JSON before
+attaching it to any issue. This package complements the native overlay and
+navigation timeline; it does not ship a visual production UI.

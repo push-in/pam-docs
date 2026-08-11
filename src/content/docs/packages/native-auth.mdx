@@ -1,0 +1,41 @@
+---
+title: PAM Native Auth
+description: Store encrypted mobile credentials and generate OAuth 2.1 PKCE material with Android Keystore and Apple Keychain.
+---
+
+```bash
+pam add auth
+pam doctor
+```
+
+`pam add auth` runs compatibility preflight, updates the project manifests, and
+refreshes native integration. Use `pam remove auth` to uninstall it.
+
+## Vault and PKCE
+
+```php
+use Pam\Native\Auth\AuthVault;
+use Pam\Native\Auth\Pkce;
+
+$pkce = Pkce::generate();
+
+(new AuthVault())->store(
+    'session.refresh-token',
+    $refreshToken,
+    function ($state, ?string $error): void {},
+);
+```
+
+`AuthVault` stores, retrieves, and deletes credentials. Android uses a
+non-exportable Keystore key with AES-256-GCM; Apple uses Keychain generic
+password items and defaults to `WhenUnlockedThisDeviceOnly`. `Pkce`/`PkcePair`
+produce cryptographically random OAuth 2.1 S256 verifier/challenge material.
+`CredentialAccessibility` selects native policy and `AuthOperationState`
+reports typed results.
+
+Store short-lived sessions or refresh tokens, never user passwords. Rotate
+server-side and delete locally on logout/revocation. Never log credentials,
+PKCE verifiers, authorization codes, or token responses.
+
+Support: PAM Native 0.6.x, Android API 26+, iOS 15+. Passkeys and interactive
+OAuth presentation are outside the vault contract.

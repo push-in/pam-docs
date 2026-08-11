@@ -1,0 +1,36 @@
+---
+title: PAM Native Health
+description: Request granular Health Connect and HealthKit access and read or write typed steps, heart rate, weight, calories, and sleep samples.
+---
+
+```bash
+pam add health
+pam doctor
+```
+
+```php
+$health = new Health();
+$types = [HealthDataType::Steps, HealthDataType::HeartRate];
+
+$health->requestAuthorization($types, [], function (bool $granted, ?string $error) use ($health): void {
+    if (!$granted) return;
+    $health->read(
+        HealthDataType::Steps,
+        (time() - 86400) * 1000,
+        time() * 1000,
+        fn (array $samples) => renderDailySteps($samples),
+    );
+});
+```
+
+`Health` checks availability, requests authorization, and reads/writes samples.
+`HealthDataType`, `HealthSample`, and `HealthAvailability` provide typed
+cross-platform contracts.
+
+HealthKit intentionally does not reveal denied read access, so
+`needsAuthorization()` avoids claiming permission is granted; empty reads may
+mean no data or no accessible data. Request only current-feature types, explain
+value before system UI, minimize retention, exclude samples from logs/analytics,
+and certify physical devices.
+
+Support: PAM Native 0.6.x, Android API 26+ with Health Connect 1.1, iOS 15+.

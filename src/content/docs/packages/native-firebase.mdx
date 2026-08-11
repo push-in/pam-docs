@@ -1,0 +1,32 @@
+---
+title: PAM Native Firebase
+description: Configure Firebase apps and use Analytics, Remote Config, Messaging tokens, Installations, Crashlytics, and feature-flag adapters.
+---
+
+```bash
+pam add firebase
+pam doctor
+```
+
+```php
+$firebase = new Firebase();
+$firebase->logEvent(
+    'checkout_completed',
+    ['order_id' => $order->id, 'amount' => $order->total],
+    fn (FirebaseOperationState $state, ?string $error) => null,
+);
+$firebase->fetchRemoteConfig(fn (RemoteFetchResult $result) => null);
+```
+
+`Firebase` exposes app configuration, Analytics, Remote Config, Messaging
+token lifecycle, Installations, and Crashlytics. `FirebaseAppOptions` defines
+named runtime apps; `RemoteFetchResult` distinguishes activation, fetch,
+throttle, and failure; `FirebaseFeatureFlagLoader` bridges Remote Config to the
+official flags package.
+
+Android reads `.pam/google-services.json` and uses pinned main Firebase modules,
+not discontinued KTX artifacts. Apple uses official Swift Package products.
+PAM Native retains notification presentation/routing; this package owns
+Firebase services and tokens. Never ship service-account/server credentials.
+
+Support: PAM Native 0.6.x, Android API 26+, iOS 15+, plus project credentials.
