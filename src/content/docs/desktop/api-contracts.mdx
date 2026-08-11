@@ -1,0 +1,138 @@
+---
+title: PHP API contracts
+description: Reference PAM Desktop container, identifiers, accelerators, access enums, effect protocol, error codes, and framework-owned invocation types.
+---
+
+This page completes the public PHP type inventory. Most applications interact
+with these contracts through declarative windows, commands, menus, and
+capabilities; use the lower-level types only when building infrastructure.
+
+## Dependency container
+
+`Container` supports explicit object/closure bindings and constructor
+autowiring:
+
+```php
+use Pam\Desktop\Container;
+
+$container = (new Container())
+    ->bind(
+        NotesRepository::class,
+        fn (Container $container) => new SqliteNotesRepository(
+            $container->get(DatabaseConnection::class),
+        ),
+    );
+
+$service = $container->get(NotesService::class);
+```
+
+`bind()` accepts a class/interface ID and either a compatible object or a
+factory closure. `get()` returns a binding or recursively autowires
+class-typed constructor parameters. Built-in constructor parameters require a
+default; interfaces and abstract classes require bindings. An incompatible
+factory result fails immediately.
+
+`contextual()` clones the container with request-scoped objects. The command
+runtime uses it internally to provide `CommandContext`, `EventContext`,
+`Invocation`, `Windows`, `WindowHandle`, `Events`, and `ApplicationControl`
+without mutating application-wide bindings.
+
+## Identifier grammar
+
+PAM identifiers begin with an ASCII letter, contain no more than 64 characters,
+and then accept letters, digits, dots, dashes, and underscores.
+
+```php
+use Pam\Desktop\Identifier;
+
+Identifier::assert('notes.export', 'Command name');
+```
+
+Declarative APIs call this validator for command, window, capability, job, and
+other names. Call it directly when a package introduces its own PAM-facing
+identifier.
+
+## Keyboard accelerators
+
+```php
+use Pam\Desktop\Accelerator;
+
+Accelerator::assert('CmdOrCtrl+Shift+P');
+```
+
+Accelerators contain 1–64 non-whitespace characters. Modifiers are `Alt`,
+`Ctrl`/`Control`, `Shift`, `Super`, `Cmd`/`Command`, and `CmdOrCtrl`; duplicates
+and empty segments are rejected. The final key is alphanumeric and limited to
+24 characters. Menu and global-shortcut declarations validate this contract
+automatically.
+
+## Capability access enums
+
+Every coded value is an integer-backed enum; application code uses cases, not
+magic numbers.
+
+| Enum | Cases |
+| --- | --- |
+| `FileAccess` | `Read = 1`, `Write = 2`, `ReadWrite = 3` |
+| `DatabaseAccess` | `Read = 1`, `ReadWrite = 2` |
+| `ProcessArgumentPolicy` | `Fixed = 1`, `Append = 2` |
+| `MenuItemKind` | `Command = 1`, `Checkbox = 2`, `Separator = 3`, `Submenu = 4` |
+
+Higher-level factories such as `FileSystemRoot::readWrite()`,
+`Database::read()`, and `ProcessCommand::allowArguments()` set these values for
+normal applications.
+
+## Effect protocol
+
+Commands and event handlers return domain data plus bounded effects. The host
+encodes `EffectKind` as:
+
+| Value | Effect |
+| ---: | --- |
+| `1` | Set window title |
+| `2` | Set window visibility |
+| `3` | Close window |
+| `4` | Focus window |
+| `5` | Enable or disable a menu item |
+| `6` | Check or uncheck a menu item |
+| `7` | Set tray visibility |
+| `8` | Set window fullscreen state |
+| `9` | Set window maximized state |
+| `10` | Set always-on-top state |
+
+Use `WindowHandle`, `Windows`, `Menu`, `Tray`, and `ApplicationControl` to
+produce effects. Constructing protocol arrays by hand bypasses validation and
+is unsupported.
+
+## Typed error codes
+
+Frontend PAM errors expose a stable integer `code` backed by the PHP
+`ErrorCode` enum:
+
+| Values | Cases |
+| --- | --- |
+| `1`–`4` | `InvalidMessage`, `UnsupportedProtocol`, `UnknownCommand`, `InvalidPayload` |
+| `5`–`8` | `HandlerFailed`, `WorkerUnavailable`, `Unauthorized`, `Internal` |
+| `9`–`12` | `UnknownEvent`, `RequestTimedOut`, `RequestCancelled`, `WorkerCrashed` |
+| `13`–`18` | `CapabilityDisabled`, `PermissionDenied`, `ResourceNotFound`, `ResourceTooLarge`, `NativeOperationFailed`, `InvalidGrant` |
+| `19`–`22` | `UpdateDisabled`, `UpdateUnavailable`, `UpdateIntegrityFailed`, `UpdateInstallFailed` |
+| `23`–`26` | `PluginUnavailable`, `PluginFailed`, `ShortcutUnavailable`, `BackgroundJobFailed` |
+
+Handle only errors the product can recover from. For example, offer retry for
+a timeout, request a new grant for `InvalidGrant`, or disable an optional
+feature for `CapabilityDisabled`. Log unexpected internal/protocol failures
+without exposing secrets or payloads.
+
+## Framework-owned invocation types
+
+`CommandInvoker` hydrates scalar parameters, backed enums, DTO constructors,
+and container services before calling a handler. It creates a contextual
+`Invocation`, normalizes the result into `CommandResult`, and collects window,
+menu, tray, event, and application effects. Applications normally never
+instantiate it.
+
+`MessageKind` (`Request = 1`, `Response = 2`) and `ResponseStatus`
+(`Success = 1`, `Failure = 2`) belong to the PHP worker protocol. They are
+public so host and compatibility tooling can share the contract, but product
+code should use `pam.call()`, command attributes, and typed results instead of
+constructing worker messages.

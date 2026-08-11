@@ -175,6 +175,7 @@ export default defineConfig({
                 { label: 'Application lifecycle', slug: 'desktop/lifecycle' },
                 { label: 'Plugins', slug: 'desktop/plugins' },
                 { label: 'Advanced API', slug: 'desktop/windows-and-commands' },
+                { label: 'PHP API contracts', slug: 'desktop/api-contracts' },
               ],
             },
             {
