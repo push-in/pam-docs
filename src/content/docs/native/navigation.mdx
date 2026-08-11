@@ -59,6 +59,117 @@ final class ProductScreen extends Component
 
 Missing, unknown, and incompatible parameters fail before the screen mounts.
 
+## Refactor-safe destinations
+
+String-backed enums keep route names safe during refactors. Integer-backed
+enums are rejected because route identity is persisted and linked as text.
+
+```php
+enum AppRoute: string
+{
+    case Home = 'home';
+    case Product = 'product';
+}
+
+Route::stack('main', AppRoute::Home, static function (): void {
+    Route::screen(AppRoute::Home, HomeScreen::class);
+    Route::screen(AppRoute::Product, ProductScreen::class);
+});
+
+Route::to(AppRoute::Product, productId: 42, preview: true)->push();
+
+$navigator->push(AppRoute::Product, ['productId' => 42]);
+$navigator->navigate(AppRoute::Home);
+$navigator->replace(AppRoute::Product);
+$navigator->reset(AppRoute::Home);
+$navigator->preload(AppRoute::Product);
+```
+
+`pushRoute()`, `navigateRoute()`, `replaceRoute()`, route declarations, tabs,
+drawers, `NavigationAction`, and lower-level `Navigator` operations accept the
+same enum cases. PAM normalizes the value before it enters persisted or native
+state.
+
+## Route groups and screen options
+
+Options resolve from stack defaults to outer and inner groups, then the route
+and finally options changed by the mounted screen. A sparse layer changes only
+the values it declares.
+
+```php
+use Pam\Native\Navigation\NavigationGestureDirection;
+use Pam\Native\Navigation\NavigationTransition;
+use Pam\Native\Navigation\ScreenOptions;
+use Pam\Native\Navigation\ScreenOptionsPatch;
+
+$editor = Route::preset(ScreenOptionsPatch::from([
+    'headerShown' => true,
+    'animation' => NavigationTransition::FadeFromBottom,
+]));
+
+$navigator = Route::stack(
+    name: 'main',
+    initial: 'home',
+    options: new ScreenOptions(headerShown: false),
+    routes: function () use ($editor): void {
+        Route::group($editor, routes: function (): void {
+            Route::screen('profile', ProfileScreen::class)
+                ->transition(NavigationTransition::SlideFromRight, 240)
+                ->gesture(
+                    direction: NavigationGestureDirection::Horizontal,
+                    fullScreen: true,
+                );
+        });
+
+        Route::modal('filters', FiltersScreen::class)
+            ->transition(NavigationTransition::SlideFromBottom, 260)
+            ->sheet(
+                detents: [0.4, 1.0],
+                grabber: true,
+                cornerRadius: 24.0,
+            );
+    },
+);
+```
+
+Transition durations are bounded from 0 through 2,000 ms. `gesture()` controls
+enablement, direction, and full-screen recognition. `presentation()`,
+`fullScreen()`, `sheet()`, presets, and `options()` compose without replacing
+unrelated values.
+
+Feature packages can implement `RouteModule` and register a graph with
+`Route::module(new ChatRoutes($dependencies))`. A module declares routes; it
+does not create a second native host.
+
+## Nested navigators
+
+Stacks, tabs, top tabs, and drawers can be route content. The outer navigator
+owns the application scope while Back is offered to the focused child first.
+
+```php
+$root = Route::stack('root', 'main', static function (): void {
+    Route::navigator(
+        'main',
+        Route::tabs('main-tabs', 'feed', static function (): void {
+            Route::tab(
+                'feed',
+                Route::stack('feed-stack', 'feed-index', static function (): void {
+                    Route::screen('feed-index', FeedScreen::class);
+                    Route::screen('post', PostScreen::class);
+                }),
+                label: 'Feed',
+            );
+            Route::tab('account', AccountScreen::class, label: 'Account');
+        }),
+    );
+
+    Route::modal('create', CreateScreen::class)->fullScreen();
+});
+```
+
+Each child preserves its own selected route and history. Back reaches the
+parent only when the focused child is already at its root.
+
 ## Named tabs
 
 ```php
@@ -73,6 +184,34 @@ The same navigation scope selects a tab:
 ```php
 $this->navigateRoute('orders');
 ```
+
+For one to five top-level destinations, PAM presents a bottom bar below 840 dp
+and a navigation rail at or above that width. Only the selected native screen
+is mounted; retained PHP component state survives tab changes. Selection uses
+native tab semantics and haptic feedback.
+
+### Top tabs and drawers
+
+```php
+$topTabs = Route::topTabs('profile-tabs', 'posts', function (): void {
+    Route::topTab('posts', PostsScreen::class, label: 'Posts');
+    Route::topTab('media', MediaScreen::class, label: 'Media');
+}, fn (TopTabRouter $tabs) => $tabs->behavior(scrollEnabled: true));
+
+$drawer = Route::drawer('workspace', 'inbox', function (): void {
+    Route::drawerScreen('inbox', InboxScreen::class, label: 'Inbox');
+    Route::drawerScreen(
+        'archive',
+        ArchiveScreen::class,
+        label: 'Archive',
+        group: 'Library',
+    );
+}, fn (DrawerRouter $drawer) => $drawer->responsive(720));
+```
+
+The final configurator exposes router-specific behavior without expanding the
+common `Route` API. Registrar scope is restored after each nested declaration,
+so modules can compose graphs without declaration-order coupling.
 
 ## Deep links
 
@@ -294,3 +433,119 @@ Available integer-backed transitions include:
 - none.
 
 Transitions use transform and opacity on the UI thread, mirror horizontally in RTL layouts, respect Android's disabled-animation accessibility setting, and keep only the incoming screen reachable by TalkBack during and after the transition.
+
+### Override one navigation action
+
+An action can override the route or stack animation without changing the
+destination's normal behavior:
+
+```php
+$navigator->navigate(
+    AppRoute::Home,
+    transition: NavigationTransition::None,
+    durationMs: 0,
+);
+```
+
+The override applies only to that operation. After the native transition
+settles, subsequent actions use the transition configured by the screen,
+group, or stack.
+
+## Shared element transitions
+
+Give the source and destination elements the same stable tag. PAM captures a
+bounded snapshot once and runs geometry, easing, clipping, corner interpolation,
+and crossfade entirely on the Android or iOS UI thread. PHP does not execute on
+animation frames.
+
+```php
+use Pam\Native\Navigation\SharedTransitionResizeMode;
+use Pam\Native\Navigation\SharedTransitionStyle;
+
+$style = SharedTransitionStyle::spring(
+    durationMs: 420,
+    damping: 0.76,
+    stiffness: 240,
+)->resize(SharedTransitionResizeMode::Clip)->crossFade();
+
+Image::make($thumbnail)
+    ->sharedTransition("post-media:{$postId}", $style);
+```
+
+Use the identical tag on the corresponding element in the next screen:
+
+```php
+Image::make($fullImage)
+    ->sharedTransition("post-media:{$postId}", $style);
+```
+
+Templates expose the same typed contract:
+
+```xml
+<Image
+    :source="$thumbnail"
+    :shared-transition="'post-media:'.$postId"
+    :shared-transition-style="$sharedStyle"
+/>
+```
+
+### Motion and resizing
+
+- `SharedTransitionStyle::timing()` uses native timed easing.
+- `SharedTransitionStyle::spring()` accepts bounded duration, damping,
+  stiffness, and mass.
+- Resize modes are `Scale`, `Clip`, and `None`.
+- `crossFade()` keeps separate source and destination snapshots, avoiding a
+  flash when the destination image resolves asynchronously.
+- Calling `sharedTransition($tag)` without a style remains valid and follows
+  the route transition duration.
+
+At most 16 matching elements participate in one transition. Tags must be
+stable, bounded identifiers and unique within a screen. Elements without a
+matching destination use the normal route transition.
+
+Reduced Motion or disabled platform animations bypass the shared movement.
+Completion, interruption, cancellation, and predictive Back restore the
+original views; Android snapshots release their bitmaps during cleanup.
+
+### Predictive Back
+
+On Android, shared elements track interactive predictive-Back progress instead
+of starting a second animation after the gesture. Cancelling restores the
+current route and both original views; completing the gesture commits the pop.
+The iOS host applies the same cleanup guarantees to interactive transitions.
+
+## Generate typed destinations
+
+Large applications can keep the route contract in JSON and generate a
+string-backed enum plus typed target helpers:
+
+```json
+{
+  "namespace": "App\\Navigation\\Generated",
+  "enum": "AppRoute",
+  "helper": "Routes",
+  "routes": [
+    { "name": "home" },
+    {
+      "name": "chat.thread",
+      "case": "ChatThread",
+      "method": "chatThread",
+      "params": [
+        { "name": "threadId", "type": "int" },
+        { "name": "preview", "type": "bool", "required": false, "default": false }
+      ]
+    }
+  ]
+}
+```
+
+```bash
+vendor/bin/pam-native-routes routes.json src/Navigation/Generated
+```
+
+The generated `Routes::chatThread(threadId: 42)->push()` call is checked by PHP
+and static analyzers. Supported wire types are `string`, `int`, `float`, and
+`bool`, including optional nullable parameters. Invalid identifiers, duplicate
+destinations, unsafe defaults, and required parameters placed after optional
+ones fail generation atomically.
