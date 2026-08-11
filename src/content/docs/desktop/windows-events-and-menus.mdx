@@ -61,6 +61,14 @@ Implement `Event` for an explicit stable name or serialized shape.
 
 Frontend events map back to typed methods:
 
+```js
+await window.pam.emit(
+  "editor.changed",
+  { documentId: "doc-42" },
+  { timeout: 5_000, signal: abortController.signal },
+);
+```
+
 ```php
 #[Listen('editor.changed')]
 public function editorChanged(
@@ -70,6 +78,11 @@ public function editorChanged(
     $window->title("Editing {$documentId}");
 }
 ```
+
+`pam.emit(name, payload, options)` rejects empty event names and preserves the
+same timeout, cancellation, worker-recovery, and typed-error behavior as
+`pam.invoke()`. Use `pam.on()` for PHP-to-frontend events; it returns an
+unsubscribe closure that the owning screen or window must call.
 
 ## Menus are actions
 

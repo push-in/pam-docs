@@ -70,6 +70,7 @@ experimental and outside the published support contract.
 ## Frontend lifecycle
 
 ```js
+const current = await window.pam.updater.status();
 const checked = await window.pam.updater.check();
 
 if (checked.state === 4) {
@@ -79,6 +80,10 @@ if (checked.state === 4) {
   }
 }
 ```
+
+`status()` reads the current state without starting a feed request. `check()`
+performs the signed feed check, `download()` fetches and verifies the selected
+artifact, and `install()` starts the detached atomic replacement flow.
 
 States are sequential integers: disabled `1`, idle `2`, checking `3`,
 available `4`, downloading `5`, ready `6`, applying `7`, up-to-date `8`, and
