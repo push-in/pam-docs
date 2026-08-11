@@ -107,6 +107,7 @@ export default defineConfig({
             { label: 'Benchmark laboratory', slug: 'laravel/benchmarks' },
             { label: 'Reference application', slug: 'laravel/reference-application' },
             { label: 'Deploy Laravel', slug: 'laravel/deployment' },
+            { label: 'Command & PHP API reference', slug: 'laravel/api-reference' },
           ],
         },
         {

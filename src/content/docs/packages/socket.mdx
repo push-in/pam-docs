@@ -83,6 +83,23 @@ For critical actions:
 - Keep internal exception details out of client events.
 - Configure a resume secret of at least 32 bytes through a secret manager.
 
+## Complete PHP surface
+
+`Pam\Socket\Server` is the package's public facade:
+
+| Method | Result |
+| --- | --- |
+| `Server::create()` | Wrap the PAM native WebSocket server after ABI/capability validation |
+| `adapter(Adapter $adapter)` | Select the cross-worker broadcast adapter; fluent `Server` |
+| `on(string $event, callable $handler)` | Register an event handler; fluent `Server` |
+| `auth(callable $authenticator)` | Register handshake authentication; fluent `Server` |
+| `emit(string $event, mixed $data = null)` | Broadcast through the native server; fluent `Server` |
+| `to(string $room)` | Return a native `RoomEmitter` scoped to one room |
+
+The public `$server` property exposes the underlying `Pam\Native\WebSocket\Server`
+for native operations not re-exposed by the facade. Code using that escape
+hatch is coupled to the runtime package and should pin/test its ABI.
+
 :::note[License]
 `pushinbr/pam-socket` uses the Apache License 2.0.
 :::

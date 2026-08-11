@@ -75,6 +75,27 @@ Check:
 
 Use the native PAM transport suite for protocol, timeout, disconnect, and streaming behavior. Unit tests that call a PSR handler directly do not cover that boundary.
 
+## Concrete implementations
+
+The `Pam\Http\Psr7` namespace provides the complete PSR implementation set:
+
+| Type | Interfaces/role |
+| --- | --- |
+| `Stream` | `StreamInterface`; string or resource-backed body |
+| `Uri` | `UriInterface`; immutable URI components and normalization |
+| `Message` | Shared abstract immutable headers, protocol and body behavior |
+| `Request` | `RequestInterface` |
+| `ServerRequest` | `ServerRequestInterface`; server, cookie, query, upload, parsed-body and attribute state |
+| `Response` | `ResponseInterface` |
+| `UploadedFile` | `UploadedFileInterface` |
+| `Factory` | Request, response, server-request, stream, uploaded-file and URI PSR-17 factories |
+| `Pipeline` | `RequestHandlerInterface`; executes PSR-15 middleware before the destination handler |
+
+These classes are declared only when the official PHP-FIG message interfaces
+are installed. Prefer the interfaces in application signatures. Streams may be
+detached or closed; immutable `with*()` operations clone messages rather than
+mutating the original.
+
 :::note[License]
 `pushinbr/pam-psr-bridge` uses the Apache License 2.0.
 :::

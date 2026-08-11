@@ -93,6 +93,18 @@ In-memory tests do not open a socket and therefore do not prove:
 
 Use PAM's Rust integration suite for the runtime boundary.
 
+## Complete PHP surface
+
+| Type | Public surface |
+| --- | --- |
+| `TestClient` | Constructor accepts `ApplicationInterface`; `request()`, `get()`, `postJson()` return `TestResponse` |
+| `TestResponse` | Readonly `status`, normalized `headers`, `body`, and streamed `chunks`; `header()`, `json()` and fluent assertions |
+
+`request()` accepts method, target, headers and string body. `header()` joins
+multiple values with `, ` and can return a supplied default. `json()` uses
+`JSON_THROW_ON_ERROR`; invalid JSON raises `JsonException`. All assertions throw
+`RuntimeException` on failure and return the same response on success.
+
 :::note[License]
 `pushinbr/pam-testing` uses the Apache License 2.0.
 :::

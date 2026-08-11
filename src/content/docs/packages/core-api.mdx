@@ -99,6 +99,21 @@ Application and package code should use enum cases instead of magic numbers.
 - Add only append-compatible integer identifiers within an ABI version.
 - Document the minimum PAM ABI and capabilities.
 
+## Complete public surface
+
+| Namespace | Type | Operations/data |
+| --- | --- | --- |
+| `Pam\Contracts\Http` | `ApplicationInterface` | `route()`, `middleware()`, `onError()`, `handle()` |
+| `Pam\Contracts\Http` | `MiddlewareInterface` | `process(request, response, next)` |
+| `Pam\Contracts\Http` | `RequestHandlerInterface` | `handle(request, response)` |
+| `Pam\Contracts\Package` | `ServiceProviderInterface` | `register(application)`, `boot(application)` |
+| `Pam\Contracts\Runtime` | `RuntimeCompatibility` | Readonly `abiVersion`, capability integer list, `discover()`, `assert()` |
+| `Pam\Contracts\Runtime` | `Stability` | `Experimental=1`, `Stable=2`, `Deprecated=3` |
+
+`RuntimeCompatibility::discover()` requires the PAM runtime and reads its ABI
+and capabilities. `assert()` checks exact ABI equality and every requested
+`Capability` enum; it throws on absence or mismatch.
+
 :::note[License]
 `pushinbr/pam-core-api` uses the Apache License 2.0.
 :::

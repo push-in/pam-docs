@@ -1,0 +1,159 @@
+---
+title: PAM Laravel command and PHP API reference
+description: Complete reference for PAM Laravel Artisan commands, services, middleware, contracts, value objects and integer-backed enums.
+---
+
+This reference tracks the public surface of `pushinbr/pam-laravel`. Install it
+through PAM and let Laravel package discovery register `PamServiceProvider`:
+
+```bash
+pam composer require pushinbr/pam-laravel
+pam artisan pam:install --preset=api
+pam artisan pam:check-production
+```
+
+Supported package constraints are PHP 8.4+ and Laravel 12 or 13.
+
+## Artisan commands
+
+| Command | Contract |
+| --- | --- |
+| `pam:install {--preset=api} {--force}` | Publish configuration and production manifests. Presets: `api`, `livewire`, `inertia`, `realtime`. |
+| `pam:check-production {--json}` | Run production-readiness checks; JSON mode is suitable for CI. |
+| `pam:health` | Print health and bounded runtime telemetry; exits non-zero when unhealthy. |
+| `pam:leaks {--json}` | Inspect persistent-state violations and retained memory. |
+| `pam:capacity {--memory-mb=512} {--worker-mb=96} {--reserve-percent=20}` | Estimate a conservative worker count. |
+| `pam:process {action} {name?} {value?}` | `up`, `status`, `restart`, `stop`, `scale`, or `logs` for the process manifest. |
+| `pam:deploy {destination=production} {--rollback} {--local} {--release=}` | Deploy locally, to PAM Cloud, or through Forge; supports rollback. |
+| `pam:remote {action} {target=production}` | Remote `deploy`, `rollback`, `status`, `logs`, `top`, `workers`, `queues`, `scheduler`, or `scale`. |
+| `pam:autoscale {process=queue}` | Reconcile worker capacity from `--cpu`, `--p95`, `--metrics-url`, `--watch`, and `--interval`. |
+| `pam:compatibility {package?} {--refresh} {--json}` | Query the executable package compatibility registry. |
+| `pam:migrate-from-octane {--json}` | Audit an Octane project for PAM migration work. |
+| `pam:forge-script {--output=}` | Print or save a production Forge deployment script. |
+| `pam:nightwatch {--install-process} {--json}` | Validate Nightwatch and optionally add its managed process. |
+| `pam:mcp` | Serve controlled diagnostics and operations over MCP stdio. |
+
+Invoke every command through `pam artisan`, for example:
+
+```bash
+pam artisan pam:process status
+pam artisan pam:compatibility --json
+pam artisan pam:migrate-from-octane --json
+```
+
+## Lifecycle and state safety
+
+| Type | Public operations |
+| --- | --- |
+| `LifecycleHook` | `beforeRequest(Request)` and `afterRequest(Request, Response, durationNanoseconds)` |
+| `LifecycleManager` | `register()`, `before()`, `after()`, and `failed()` |
+| `StateGuard` | `begin()` snapshots process state; `restore()` cleans it and returns violations |
+| `GuardPersistentState` | Laravel middleware wrapping request execution with the state guard |
+| `ObserveRequest` | Laravel middleware recording request telemetry and trace lifecycle |
+
+Register application cleanup through the manager rather than process-global
+callbacks:
+
+```php
+use Pam\Laravel\Contracts\LifecycleHook;
+use Pam\Laravel\Services\LifecycleManager;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+app(LifecycleManager::class)->register(
+    new class implements LifecycleHook {
+        public function beforeRequest(Request $request): void {}
+
+        public function afterRequest(
+            Request $request,
+            Response $response,
+            int $durationNanoseconds,
+        ): void
+        {
+            // Reset application-owned request state.
+        }
+    },
+);
+```
+
+## Operations services
+
+| Service | Public API |
+| --- | --- |
+| `ProductionChecker` | `run(): array<CheckResult>` |
+| `HealthReporter` | `report(): array` |
+| `ProcessSupervisor` | `manifest()`, `status()`, `start()`, `stop()`, `restart()`, `scale()`, `logPath()` |
+| `AtomicDeployer` | `prepare()`, `activate()`, `ready()`, `rollback()` |
+| `RemoteControlClient` | `execute(RemoteAction, target, parameters)` |
+| `AutoscaleMetricsClient` | `read(url)` |
+| `Autoscaler` | `reconcile(process, cpuPercent, p95Milliseconds): int` |
+| `NightwatchIntegration` | `inspect(): array` |
+| `McpServer` | `run(): int` |
+
+`ProcessSupervisor` consumes `pam.processes.json`, whose commands are argument
+arrays rather than shell strings. `AtomicDeployer` prepares immutable releases,
+switches an atomic symlink, records the prior target, and refuses activation
+until readiness succeeds.
+
+## Observability API
+
+| Type | Public operations |
+| --- | --- |
+| `ObservabilityRegistry` | `beginRequest()`, `request()`, `query()`, `job()`, `stateViolation()`, `snapshot()` and bounded counters |
+| `TelemetryManager` | `startRoot()`, `child()`, `finishRoot()`, `traceparent()`, `flush()`, `reset()` |
+| `TelemetryExporter` | `export(array $spans): void` |
+| `OtlpHttpExporter` | OTLP-over-HTTP implementation of `TelemetryExporter` |
+| `TelemetrySpan` | Immutable trace/span IDs, timing, kind, status, attributes and message |
+
+Registry helpers include `memoryBytes()`, `peakMemoryBytes()`,
+`stateViolationCount()`, `slowQueryCount()` and `hasStateViolations()`. Route,
+query and violation collections are bounded so observability cannot grow
+without limit.
+
+Implement an exporter when OTLP HTTP is not the desired sink:
+
+```php
+use Pam\Laravel\Contracts\TelemetryExporter;
+
+final class QueueTelemetryExporter implements TelemetryExporter
+{
+    public function export(array $spans): void
+    {
+        // Serialize bounded TelemetrySpan values to your durable queue.
+    }
+}
+```
+
+## Configuration and values
+
+`ConfigValue` provides typed `string()`, `int()`, `float()`, `bool()`,
+`stringList()` and `scalarMap()` access. `CheckResult` exposes its typed status,
+name, message and context and serializes with `toArray()`.
+
+## Integer-backed enums
+
+All durable coded variants use sequential integer values:
+
+| Enum | Cases |
+| --- | --- |
+| `StackPreset` | `Api=1`, `Livewire=2`, `Inertia=3`, `Realtime=4` |
+| `CheckStatus` | `Pass=1`, `Warning=2`, `Failure=3` |
+| `CompatibilityStatus` | `Certified=1`, `Provisional=2`, `Incompatible=3` |
+| `MigrationFindingStatus` | `Action=1`, `Review=2` |
+| `RemoteProviderType` | `PamCloud=1`, `Forge=2` |
+| `RemoteAction` | `Deploy=1` through `Scale=9` |
+| `JobEventType` | `Processing=1`, `Processed=2`, `Failed=3` |
+| `SpanKind` | `Internal=1`, `Server=2`, `Client=3`, `Producer=4`, `Consumer=5` |
+| `SpanStatus` | `Unset=1`, `Ok=2`, `Error=3` |
+| `PackageCategory` | Eight categories from first-party Laravel through development quality |
+
+Use enum cases in application code and persisted integer values in manifests
+and protocols. Do not serialize enum case names as the durable contract.
+
+## Service provider
+
+`PamServiceProvider::register()` binds lifecycle, state, telemetry,
+observability, deployment, supervision and remote-operation services.
+`boot()` registers middleware, health/metrics endpoints, event listeners,
+published assets and all commands above. Applications normally rely on package
+discovery and should not call either method directly.

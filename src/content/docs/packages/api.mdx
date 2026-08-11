@@ -109,6 +109,50 @@ Composer package discovery can register providers from installed package metadat
 
 Routes, middleware, providers, error handlers, and PSR handlers cannot be changed after the application begins handling requests. PAM throws rather than silently mutating a live long-lived pipeline.
 
+## Public API reference
+
+| Type | Public surface |
+| --- | --- |
+| `App` | `get()`, `post()`, `put()`, `patch()`, `delete()`, `route()`, `middleware()`, `handler()`, `provider()`, `onError()`, `listen()`, `handle()` |
+| `Router` | `add(method, path, handler)`, `match(method, path)`, `routes()` |
+| `Pipeline` | Construct with middleware and a destination; execute with `handle()` |
+| `CallableRequestHandler` | Adapts a callable to `RequestHandlerInterface` |
+| `Route` | Readonly method, path, handler closure, compiled pattern and parameter names |
+| `RoutingResult` | Readonly type, matched route, decoded parameters and allowed methods |
+| `PackageDiscovery` | `providers(projectRoot)` reads Composer package provider metadata |
+
+`RoutingResultType` is integer-backed: `Found=1`,
+`MethodNotAllowed=2`, `NotFound=3`.
+
+## Included middleware
+
+```php
+use Pam\Api\Middleware\CorsMiddleware;
+use Pam\Api\Middleware\RateLimitMiddleware;
+use Pam\Api\Middleware\SecurityHeadersMiddleware;
+
+$app
+    ->middleware(new CorsMiddleware(
+        origins: ['https://app.example.com'],
+        credentials: true,
+        maxAge: 600,
+    ))
+    ->middleware(new RateLimitMiddleware(
+        requestsPerSecond: 20,
+        burst: 40,
+        maxBuckets: 65_536,
+        idleTtlSeconds: 300,
+    ))
+    ->middleware(new SecurityHeadersMiddleware(hsts: true));
+```
+
+`CorsMiddleware` handles matching origins and terminates valid preflight
+requests with `204`. Never combine wildcard origins with credentials.
+`RateLimitMiddleware` is a per-worker, in-memory token bucket keyed by
+`REMOTE_ADDR`; use an upstream or shared limiter when limits must be global.
+`SecurityHeadersMiddleware` adds content-type, frame, referrer and permissions
+policies; HSTS is added only when `HTTPS=on`.
+
 :::note[License]
 `pushinbr/pam-api` uses the Apache License 2.0.
 :::
