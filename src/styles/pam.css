@@ -1425,7 +1425,7 @@ select:focus-visible {
 
 .pam-paths-head h2,
 .pam-ecosystem-copy h2,
-.pam-catalog-intro h1 {
+.pam-catalog-intro h2 {
   color: #171717;
   font-size: clamp(2.4rem, 5vw, 4.75rem);
   font-weight: 500;
@@ -1507,7 +1507,17 @@ select:focus-visible {
 /* Capability catalog */
 
 :root:has(.pam-catalog-intro) { --sl-content-width: 72rem; }
-:root:has(.pam-catalog-intro) main > .content-panel:first-child { display: none; }
+:root:has(.pam-catalog-intro) main > .content-panel:first-child {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 :root:has(.pam-catalog-intro) main > .content-panel:last-child .sl-container {
   width: 100%;
 }
@@ -1526,7 +1536,7 @@ select:focus-visible {
 }
 
 .pam-catalog-copy { min-width: 0; }
-.pam-catalog-copy h1 { max-width: 11ch; margin: 0; color: var(--pam-ink); overflow-wrap: normal; word-break: normal; }
+.pam-catalog-copy h2 { max-width: 11ch; margin: 0; color: var(--pam-ink); overflow-wrap: normal; word-break: normal; }
 .pam-catalog-copy > p:not(.pam-home-kicker) { max-width: 39rem; margin-top: 1.75rem; color: var(--pam-muted); font-size: 1.05rem; line-height: 1.7; }
 .pam-catalog-intro pre { min-width: 0; margin: 0; padding: clamp(1.25rem, 3vw, 2rem); overflow-x: auto; border: 1px solid var(--pam-line); border-radius: 0.75rem; background: var(--pam-code); box-shadow: 0 1.5rem 3rem rgba(0, 0, 0, 0.12); }
 .pam-catalog-intro pre code { color: #d8d4ca; font-size: clamp(0.68rem, 1.2vw, 0.78rem); line-height: 2; white-space: pre; }
