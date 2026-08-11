@@ -36,3 +36,8 @@ intent, `RemoteChange` represents server state, and `SyncPushResult` /
 `SyncPullResult` are transport outcomes. Implement `ConflictResolver` for
 domain-specific resolution or use `PolicyConflictResolver` for a declared
 policy.
+
+`SyncOperationKind` uses `Upsert=1` and `Delete=2`; `SyncOperationState` uses
+`Pending=1`, `InFlight=2`, `Acknowledged=3`, `Failed=4`; `SyncRunState` uses
+`Succeeded=1`, `Partial=2`, `Failed=3`. `SyncPluginProvider` registers the
+engine integration.

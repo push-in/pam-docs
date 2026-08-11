@@ -23,3 +23,7 @@ proxy, and suppresses duplicate values for the configured interval. Android
 bundles ML Kit so first use needs no model download. Request permission before
 mount, limit formats for speed, and validate scanned data before navigation,
 network, or payment actions.
+
+`BarcodeValueKind` classifies unknown, text, URL, email, phone, SMS, Wi-Fi,
+contact, calendar, geo, driver-license, ISBN and product payloads with sequential
+integer cases. `ScannerPluginProvider` registers `ScannerView` automatically.

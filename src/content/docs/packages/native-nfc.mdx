@@ -22,3 +22,5 @@ Only one session may run. The queue holds 128 events and PHP NDEF payloads stop
 at 1 MiB; physical tag capacity is checked on write. iOS requires capability
 and signed compatible hardware; Android requires a foreground Activity. End
 sessions when their screen leaves foreground and treat all tag data as untrusted.
+
+`NfcPluginProvider` registers the native session module.

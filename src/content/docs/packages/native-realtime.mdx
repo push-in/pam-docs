@@ -28,3 +28,5 @@ incoming events use a 256-item native queue and one pending long poll. Poll
 continuously, treat timeout as a lifecycle tick, refresh credentials as needed,
 and reconnect with bounded jitter. Android uses OkHttp 5.3.0; iOS uses
 `URLSessionWebSocketTask`.
+
+`RealtimePluginProvider` registers the transport automatically.

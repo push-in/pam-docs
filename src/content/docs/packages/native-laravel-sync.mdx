@@ -37,3 +37,6 @@ secrets in signed-but-unencrypted cursor state. Laravel 12 and 13 are supported.
 `AppliedChange`, `PushOutcome`, and integer-backed `OperationStatus`.
 `LaravelSyncServiceProvider` registers configuration, migrations, routes and
 bindings through Laravel package discovery.
+
+`LaravelSyncPluginProvider` registers the Native transport. Domain handlers may
+raise `SyncConflictException` when a change cannot be resolved automatically.
