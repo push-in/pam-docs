@@ -33,7 +33,7 @@ expresses two cells in every twelve-column row:
 
 ```xml
 <Grid gutterX="12" gutterY="12">
-    <Column v-for="$photo in $photos" :key="$photo->id" span="6">
+    <Column p-for="$photo in $photos" :key="$photo->id" span="6">
         <Image
             :source="$photo->url"
             aspectRatio="1"
@@ -88,10 +88,10 @@ width. Avoid fixed screen-width calculations.
 
 ## Repeat an integer
 
-`v-for` accepts a positive integer directly:
+`p-for` accepts a positive integer directly:
 
 ```xml
-<Column v-for="$item in $count" :key="$item">
+<Column p-for="$item in $count" :key="$item">
     <Text>Repeated item {{ $item }}</Text>
 </Column>
 ```
@@ -107,7 +107,7 @@ only the visible and prefetched cell trees through `RecyclerView`:
 ```xml
 <VirtualGrid columns="2" rowHeight="224" prefetch="6">
     <Pressable
-        v-for="$photo in $photos"
+        p-for="$photo in $photos"
         :key="$photo->id"
         @press="openPhoto"
     >

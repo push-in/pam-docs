@@ -51,8 +51,8 @@ removes the incomplete declaration and fails boot.
 ## Rust plugin workflow
 
 ```bash
-pam desktop plugin new system.info .
-pam desktop plugin build system.info .
+pam desktop plugin new system.info
+pam desktop plugin build system.info
 ```
 
 The scaffold pins the matching `pam-desktop-plugin` SDK. A locked release build
@@ -98,4 +98,3 @@ authority of the application user.
 
 Configured executables are required during packaging; scaffold source is
 excluded from the production bundle.
-

@@ -10,8 +10,9 @@
     "check": "astro check",
     "check:links": "node scripts/check-links.mjs",
     "check:accessibility": "node scripts/check-accessibility.mjs",
+    "check:pam-syntax": "node scripts/check-pam-syntax.mjs",
     "check:freshness": "node scripts/check-release-freshness.mjs",
-    "validate": "npm run check && npm run build && npm run check:links && npm run check:accessibility"
+    "validate": "npm run check:pam-syntax && npm run check && npm run build && npm run check:links && npm run check:accessibility"
   },
   "dependencies": {
     "@astrojs/starlight": "0.41.4",

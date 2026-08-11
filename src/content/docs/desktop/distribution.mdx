@@ -31,25 +31,25 @@ The identifier uses reverse-DNS form. Icons are validated PNG or SVG assets. Cat
 The default creates a directory and portable archive:
 
 ```bash
-pam desktop build .
+pam desktop build
 ```
 
 Select formats and output:
 
 ```bash
-pam desktop build . \
+pam desktop build \
   --output dist \
   --format directory
 
-pam desktop build . \
+pam desktop build \
   --output dist \
   --format portable
 
-pam desktop build . \
+pam desktop build \
   --output dist \
   --format deb
 
-pam desktop build . \
+pam desktop build \
   --output dist \
   --format all
 ```
@@ -105,7 +105,7 @@ Archive metadata uses `SOURCE_DATE_EPOCH`, or zero when unset:
 
 ```bash
 SOURCE_DATE_EPOCH=1784937600 \
-  pam desktop build . --format portable
+  pam desktop build --format portable
 ```
 
 Reproducible metadata reduces avoidable archive differences. Native toolchain and input differences can still change bytes.

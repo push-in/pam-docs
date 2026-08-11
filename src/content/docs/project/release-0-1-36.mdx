@@ -17,7 +17,7 @@ curl --proto '=https' --tlsv1.2 --fail --silent --show-error --location \
 sh pam-install.sh
 rm pam-install.sh
 pam --version
-pam doctor .
+pam doctor
 ```
 
 Pin the installer for reproducible automation:
@@ -48,8 +48,8 @@ benchmark command executes the cold-startup Macrobenchmark journey and keeps
 Baseline Profile generation available:
 
 ```bash
-pam mobile benchmark .
-pam mobile profile .
+pam mobile benchmark
+pam mobile profile
 ```
 
 The benchmark module and application under test are distinct packages. Current

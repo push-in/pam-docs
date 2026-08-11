@@ -20,9 +20,9 @@ Discovery and autolinking happen at build time. Production frames do not scan cl
 
 ```bash
 composer require vendor/maps-plugin
-pam mobile plugin:doctor .
-pam mobile plugin:list .
-pam mobile codegen .
+pam mobile plugin:doctor
+pam mobile plugin:list
+pam mobile codegen
 ```
 
 `prepare`, `build`, `run`, and `dev` also run code generation. The resolved graph is written to `.pam-native/plugins.lock.json` with package versions and descriptor SHA-256 hashes.

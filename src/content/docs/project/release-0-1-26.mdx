@@ -29,7 +29,7 @@ sh pam-install.sh
 rm pam-install.sh
 
 pam --version
-pam doctor .
+pam doctor
 ```
 
 For a reproducible build or CI job, pin the tag in the release URL:
@@ -64,7 +64,7 @@ The Native surface includes:
 
 - a twelve-column responsive grid for arbitrary rich children;
 - list cell templates, including image and custom component grids;
-- `v-for` over arrays, `Traversable`, or a positive integer;
+- `p-for` over arrays, `Traversable`, or a positive integer;
 - stack navigation, deep links, Android back handling, and native transitions;
 - atomic development reloads that remount the PHP component tree; and
 - bounded overlays, safe-area layout, controlled form inputs, tabs, and

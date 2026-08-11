@@ -180,8 +180,7 @@ The compiler supports:
 - `key` for stable identity.
 
 Keep business rules in PHP methods rather than embedding them in markup.
-The former `v-if`, `v-else-if`, `v-else`, and `v-for` spellings remain
-deprecated migration aliases.
+Use the PAM-native `p-*` directive spellings in every new or migrated template.
 A component root may itself use `p-if`. A false root becomes an inert invisible
 placeholder with no layout footprint, while multiple rendered roots remain an
 error.
@@ -502,9 +501,9 @@ rules, and integer repetition, use the complete
 ## Generators
 
 ```bash
-pam mobile make:screen Orders .
-pam mobile make:component MetricCard .
-pam mobile make:native-view CameraPreview .
+pam mobile make:screen Orders
+pam mobile make:component MetricCard
+pam mobile make:native-view CameraPreview
 ```
 
 Generators are non-destructive. The package also ships a JSON schema for `pam-native.json` and custom HTML data for `.pam` tag completion.

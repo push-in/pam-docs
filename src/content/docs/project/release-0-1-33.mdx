@@ -27,7 +27,7 @@ sh pam-install.sh
 rm pam-install.sh
 
 pam --version
-pam doctor .
+pam doctor
 ```
 
 Pin 0.1.33 in CI and reproducible images:
@@ -84,7 +84,7 @@ The certified Native distribution includes:
 - rich twelve-column grids with spans, offsets, ordering, responsive
   breakpoints, independent row/column gutters, and arbitrary children;
 - `VirtualGrid` recycling for image and custom component cells;
-- integer `v-for`, where `1..N` is generated without an intermediate array and
+- integer `p-for`, where `1..N` is generated without an intermediate array and
   zero or negative values render no iterations;
 - stack navigation, deep links, Android Back, staged transitions without
   destination flicker, and native motion;

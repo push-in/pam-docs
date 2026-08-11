@@ -21,8 +21,8 @@ The official PAM release does not require a system PHP CLI. Composer executes in
 ## Diagnose a project
 
 ```bash
-pam doctor .
-pam test .
+pam doctor
+pam test
 ```
 
 `doctor` validates the Embed runtime, isolated INI tree, Composer autoloader, and generated platform check. If a system PHP CLI is present, it also compares the version, ABI, thread-safety mode, debug build, integer size, and extensions.

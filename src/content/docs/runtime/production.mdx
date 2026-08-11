@@ -9,7 +9,7 @@ PAM's production model is a master process supervising disposable workers. Worke
 
 ```bash
 pam composer install --no-dev --classmap-authoritative
-pam doctor .
+pam doctor
 ```
 
 Start a native application:
@@ -91,10 +91,10 @@ Build a relocatable directory before copying it into a minimal image or release
 artifact:
 
 ```bash
-pam build . --entry index.php --output dist
+pam build --entry index.php --output dist
 ```
 
-The bundle includes the application, `vendor`, runtime, exact private `libphp`, and a SHA-256 manifest. Run `pam doctor .` inside the final artifact.
+The bundle includes the application, `vendor`, runtime, exact private `libphp`, and a SHA-256 manifest. Run `pam doctor` inside the final artifact.
 
 Laravel applications can additionally publish systemd, Kubernetes, Docker
 Compose, and Forge assets with:
