@@ -1,0 +1,107 @@
+---
+title: HTTP and binary streaming
+description: Make origin-scoped HTTPS requests and stream authorized files with backpressure, cancellation, and bounded memory in PAM Desktop.
+---
+
+PAM Desktop separates bounded JSON control messages from native HTTP and binary
+data planes. The renderer receives narrow capabilities, not ambient network or
+filesystem authority.
+
+## Declare an HTTP origin
+
+```php
+use Pam\Desktop\Capabilities;
+use Pam\Desktop\HttpOrigin;
+
+$app->capabilities(
+    Capabilities::none()->http(
+        HttpOrigin::allow('api', 'https://api.example.com/v1'),
+    ),
+);
+```
+
+Every request names an allowed origin:
+
+```js
+const controller = new AbortController();
+
+const response = await pam.http.request("api", {
+  method: 1,
+  path: "/users/42",
+  headers: { Accept: "application/json" },
+  timeout: 10_000,
+  signal: controller.signal,
+});
+
+const user = JSON.parse(response.body);
+```
+
+HTTP method is an integer enum:
+
+| Value | Method |
+| ---: | --- |
+| `1` | GET |
+| `2` | POST |
+| `3` | PUT |
+| `4` | PATCH |
+| `5` | DELETE |
+| `6` | HEAD |
+
+The Rust TLS client does not follow redirects and rejects URL credentials,
+cookies, and hop-by-hop headers. Requests cannot escape an allowed base path
+such as `/v1`. Request bodies stop at 8 MiB and response bodies at 16 MiB.
+
+Responses contain `status`, `headers`, and a UTF-8 `body`. Non-2xx HTTP status
+codes remain ordinary responses; capability, validation, and transport failures
+reject with a typed PAM error.
+
+An `AbortSignal` stops local waiting. A native blocking request may still finish
+remotely after cancellation, so mutating endpoints should accept idempotency
+keys.
+
+## Read binary data with backpressure
+
+```js
+const { size, stream } = await pam.fs.openRead({
+  root: "media",
+  path: "video.mp4",
+});
+
+const reader = stream.getReader();
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+  await decoder.write(value);
+}
+```
+
+The native `ReadableStream<Uint8Array>` pulls 64 KiB chunks from an already
+authorized file. A slow consumer does not load the complete file into Rust or
+JavaScript memory.
+
+## Stream a binary write
+
+```js
+await pam.fs.writeStream(
+  { root: "exports", path: "archive.bin" },
+  generatedReadableStream,
+  { signal: abortController.signal },
+);
+```
+
+Sources may be a `Blob`, `ArrayBuffer`, typed array, or `ReadableStream`. The
+gateway consumes chunks with backpressure and returns exact `bytesWritten`.
+Cancellation closes both request and file.
+
+Like `writeText`, a streaming write truncates its destination before writing.
+For transactional publication, stream to a temporary name, validate it, and
+rename it through a domain command.
+
+## Streaming security and limits
+
+- Each read or write is limited to 4 GiB.
+- Targets retain named-root or opaque-grant policy.
+- Parent traversal and symbolic links are rejected.
+- Origin, ephemeral bridge token, and source-window authority are revalidated.
+- Binary data avoids base64 expansion and the 1 MiB worker control-envelope
+  limit.

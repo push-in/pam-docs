@@ -1,0 +1,147 @@
+---
+title: Linux system integration
+description: Use authorized processes, Secret Service, desktop portals, bounded system information, and native file watchers in PAM Desktop.
+---
+
+PAM Desktop keeps operating-system authority explicit. Each integration below
+is disabled until PHP policy enables it, and the frontend receives a narrow
+operation rather than ambient shell, credential, device, or filesystem access.
+
+## Authorized processes
+
+Declare one bundled executable and its argument policy:
+
+```php
+use Pam\Desktop\Capabilities;
+use Pam\Desktop\ProcessCommand;
+
+$app->capabilities(
+    Capabilities::none()->process(
+        ProcessCommand::executable('thumbnailer', 'bin/thumbnailer')
+            ->arguments('--format', 'webp')
+            ->allowArguments(),
+    ),
+);
+```
+
+```js
+const result = await pam.process.run("thumbnailer", {
+  arguments: ["input.png"],
+  stdin: "",
+  timeout: 10_000,
+});
+```
+
+The host never exposes `exec`, a shell, or an arbitrary program path. Argument
+policy is an integer enum: `1` fixed arguments only, `2` bounded frontend
+arguments appended.
+
+The host rejects paths outside the project, symlinks, non-executable files,
+more than 32 arguments, NUL bytes, timeouts outside 100–120,000 ms, stdin over
+1 MiB, and stdout/stderr over 1 MiB. It clears inherited environment variables,
+captures output concurrently, kills timed-out children, and returns `success`,
+`exitCode`, `stdout`, and `stderr`.
+
+Use a process plugin for a persistent or richer native integration. This API is
+for small bundled tools whose complete authority is reviewable in PHP.
+
+## Secret Service
+
+```php
+$app->capabilities(Capabilities::none()->secrets());
+```
+
+```js
+await pam.secrets.set("api-token", token);
+const token = await pam.secrets.get("api-token");
+await pam.secrets.delete("api-token");
+```
+
+Linux credentials use the freedesktop Secret Service. Keys use PAM identifiers;
+UTF-8 values stop at 64 KiB. Items are scoped by reverse-DNS application ID and
+key, replacement is atomic, and the D-Bus session negotiates encrypted
+Diffie-Hellman transport. A locked collection may display its native unlock
+prompt. Missing keys return `null`.
+
+Secrets never enter PAM diagnostics or logs. A headless session without Secret
+Service returns a typed native error; PAM deliberately has no plaintext-file
+fallback.
+
+## Desktop portals
+
+```php
+$app->capabilities(Capabilities::none()->desktopPortal());
+```
+
+```js
+await pam.portal.open("https://example.com/help");
+const screenshot = await pam.portal.screenshot();
+await pam.portal.printPdf(
+  { root: "reports", path: "annual.pdf" },
+  { title: "Annual report" },
+);
+```
+
+Portal operation is an integer enum: `1` open URI, `2` interactive screenshot,
+`3` print PDF. PAM talks directly to `xdg-desktop-portal` over D-Bus, leaving
+consent and chooser UI to the desktop environment under Wayland, X11, and
+sandboxed packaging.
+
+URI opening accepts credential-free `https`, `mailto`, and `tel`. Screenshots
+return an opaque read-only file grant, not a path. Printing accepts only a
+capability-scoped `.pdf` descriptor and uses the native prepare/print flow.
+
+Camera, continuous screen capture, biometrics, and hardware devices belong in
+process plugins because their long-lived sessions cannot be represented safely
+as bounded JSON.
+
+## System information
+
+Hardware/connectivity data may contribute to fingerprinting and is therefore
+disabled by default:
+
+```php
+$app->capabilities(Capabilities::none()->systemInformation());
+```
+
+```js
+const snapshot = await pam.system.snapshot();
+```
+
+The bounded snapshot contains operating system, architecture, logical CPU
+count, total/available memory, uptime, connectivity, power state, and optional
+battery percentage. Missing kernel data is `null`, never guessed.
+
+| Field | Integer values |
+| --- | --- |
+| `connectivityState` | `1` offline, `2` online |
+| `powerState` | `1` unknown, `2` charging, `3` discharging, `4` full |
+
+Connectivity only means a non-loopback Linux interface reports `up`; it does
+not prove internet reachability. PAM does not expose hostname, username, IP,
+network name, serial number, or hardware identifier.
+
+## Native file watching
+
+Every named filesystem root with read access can be watched without JavaScript
+polling:
+
+```js
+const watch = await pam.fs.watch(
+  "documents",
+  { root: "data", path: "documents" },
+);
+
+const off = pam.on("pam.fs.changed", ({ watchId }) => {
+  if (watchId === "documents") refreshDocuments();
+});
+
+await watch.close();
+off();
+```
+
+The host confines the path to a named, read-capable root and rejects opaque
+grants and symlinks. A native worker snapshots every 250 ms, coalesces bursts,
+targets the event to the owning window, and caps traversal at 10,000 regular
+files. Watchers stop with the gateway and never block the renderer or PHP
+worker.
