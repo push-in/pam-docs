@@ -1,0 +1,55 @@
+---
+title: PHP Runtime Manager
+description: Understand how PAM owns, verifies, versions, locks, and ships one exact PHP runtime across server, Native, and Desktop targets.
+---
+
+PAM is the single owner of PHP across the platform. Server, Native, and Desktop
+adapters inherit their runtime from PAM; they do not independently download,
+compile, or publish PHP distributions.
+
+## Declare the Native PHP series
+
+```json
+{
+  "runtime": {
+    "php": "8.5",
+    "channel": "stable"
+  }
+}
+```
+
+PAM resolves the request through `runtime/catalog.json`. Each catalog entry
+pins the official PHP source URL and SHA-256, Android API and NDK, extension
+surface, and PAM runtime revision. The project resolution is written to
+`.pam-native/runtime.lock.json`.
+
+```bash
+pam mobile runtime:list
+pam mobile runtime:use 8.5
+pam mobile runtime:info
+pam mobile runtime:update
+```
+
+These commands default to the current project. Pass a directory only when
+operating on another project.
+
+## Runtime identity
+
+Runtime IDs use `<php-version>-r<revision>`. A PHP security update changes the
+PHP version and resets the revision. A PAM portability patch, build flag, or
+packaging correction increments only the revision.
+
+For example, `8.5.8-r2` means the second PAM build of the verified official PHP
+8.5.8 source. It is not a forked application version.
+
+## Reproducible release behavior
+
+Release builds consume the exact runtime lock rather than resolving “latest” at
+build time. PAM release automation recompiles every supported Android ABI from
+the verified source and publishes runtimes inside the PAM distribution with
+build provenance.
+
+Commit the runtime declaration and preserve the generated lock as a CI/release
+artifact. Verify downloaded archives before extraction. Native and Desktop
+packages must never hide a second PHP toolchain behind their own installers;
+fixes belong in the central catalog and revision.

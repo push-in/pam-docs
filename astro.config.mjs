@@ -75,6 +75,7 @@ export default defineConfig({
           label: 'Server runtime',
           items: [
             { label: 'How PAM works', slug: 'runtime/how-pam-works' },
+            { label: 'PHP Runtime Manager', slug: 'runtime/php-runtime-manager' },
             { label: 'HTTP applications', slug: 'runtime/http' },
             { label: 'Async I/O', slug: 'runtime/async-io' },
             { label: 'Durable workflows', slug: 'runtime/durable-workflows' },
