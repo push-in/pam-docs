@@ -143,6 +143,7 @@ export default defineConfig({
             { label: 'Plugin SDK', slug: 'native/plugins' },
             { label: 'DevTools', slug: 'native/devtools' },
             { label: 'Protocol & limits', slug: 'native/protocol' },
+            { label: 'Migrate to Native 0.6', slug: 'native/migration-0-6' },
           ],
         },
         {

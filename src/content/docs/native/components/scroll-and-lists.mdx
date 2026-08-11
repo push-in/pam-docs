@@ -131,6 +131,24 @@ $list = FlatList::make(array_map(
     ->onEndReached(fn () => $this->loadNextPage(), threshold: 0.35);
 ```
 
+`NativeList` preserves the original, narrower string-row API for existing
+applications:
+
+```php
+use Pam\Native\UI\NativeList;
+
+return NativeList::make($recentSearches)
+    ->rowHeight(48)
+    ->prefetch(12)
+    ->onEndReached(fn () => $this->loadMore(), threshold: 0.6);
+```
+
+Every item must be a string. Row height and prefetch are clamped to at least
+one, and the threshold to `0.0`–`1.0`. Prefer `FlatList` for new string-row
+screens because it additionally supports horizontal layout, columns, inversion,
+initial index, clipping, indicators, scroll events, and bounded prefetch up to
+32 rows. Use `VirtualizedList` for custom or heterogeneous cells.
+
 ## VirtualizedList and SectionList
 
 ```php

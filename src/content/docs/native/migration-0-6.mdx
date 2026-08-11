@@ -1,0 +1,119 @@
+---
+title: Migrate to PAM Native 0.6
+description: Move an existing PAM Native application to named routes and the production capability layer without rewriting the lower-level API at once.
+---
+
+PAM Native 0.6 keeps the lower-level navigation surface source-compatible, so
+an application can migrate one root navigator at a time. New applications
+should start with named routes.
+
+## Upgrade the artifacts together
+
+PHP, Rust, Android, and iOS artifacts share an append-only protocol and must be
+updated as one compatible set. Protocol version remains `1`, but 0.6 adds node
+and property IDs used by Canvas, press scaling, and shared transitions. An old
+host can decode existing frames; it cannot execute a new capability it does not
+contain.
+
+After the dependency update, regenerate the host and run the platform build and
+tests before changing application routes.
+
+## Replace an anonymous stack
+
+Previous lower-level declaration:
+
+```php
+$navigator = Router::stack('home')
+    ->route('home', fn () => $home)
+    ->route('product', fn (RouteContext $route) => new ProductScreen(
+        $route->integer('productId'),
+    ))
+    ->build();
+```
+
+Named-route declaration:
+
+```php
+use Pam\Native\Routing\Route;
+
+$navigator = Route::stack('main', initial: 'home', routes: function (): void {
+    Route::screen('home', HomeScreen::class);
+    Route::screen('product', ProductScreen::class);
+});
+```
+
+The screen constructor becomes the typed parameter boundary:
+
+```php
+final class ProductScreen extends Component
+{
+    public function __construct(public readonly int $productId)
+    {
+    }
+}
+```
+
+Low-level infrastructure may continue to use `Navigator`, `Router`,
+`NavigationContainer`, typed actions, and navigation events directly.
+
+## Migrate component actions
+
+Remove injected `Navigator` properties from ordinary components and use their
+application navigation scope:
+
+```php
+$this->pushRoute('product', productId: 42);
+$this->navigateRoute('account');
+$this->replaceRoute('login');
+$this->popRoute();
+```
+
+Migrate call sites after registering the equivalent named destinations. This
+keeps every intermediate commit runnable.
+
+## Separate route names from URLs
+
+An internal route name is not a URL path. Declare a deep-link pattern only for
+a destination that accepts an external URL:
+
+```php
+Route::screen('product', ProductScreen::class)
+    ->deepLink('/products/{productId}');
+```
+
+Test cold-start and warm-start links after migrating because both enter the
+same typed route constructor through different host lifecycle paths.
+
+## Adopt production capabilities
+
+The capability additions are backward-compatible. Existing string permission
+calls remain available, but new code should use the integer-backed
+`PermissionKind` enum.
+
+- Android FCM projects place their client configuration at
+  `.pam/google-services.json` or project-root `google-services.json`. PAM owns
+  the messaging service; a custom service may keep forwarding receives.
+- iOS adds the relevant usage descriptions and forwards notification delegate
+  callbacks to the PAM host.
+- iOS hosts may provide the optional runtime diagnostic callback.
+- WebView roots accept `https`, `http`, and `file`; inline HTML is unchanged.
+- SQLite results above 1,000 rows or 256 columns require pagination.
+- File imports stop after 64 MiB.
+- Media pauses with the host lifecycle and resumes only when it was previously
+  playing.
+
+## Migration verification
+
+Before shipping, verify:
+
+1. The application uses one compatible PHP/Rust/Android/iOS artifact set.
+2. Every named screen can be constructed from its declared parameters.
+3. Back, replace, reset, auth guards, and restored navigation state behave as
+   they did before the migration.
+4. Cold and warm deep links resolve to the same screen and typed parameters.
+5. Permission denial and cancellation have visible recovery paths.
+6. Large SQLite queries and file imports respect the new bounds.
+7. Background/foreground transitions pause and restore media correctly.
+
+See [Navigation](../navigation/) for the complete named-route surface and
+[Platform capabilities](../capabilities/) for host setup and limits.
