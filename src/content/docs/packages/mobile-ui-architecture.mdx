@@ -1,0 +1,71 @@
+---
+title: PAM Mobile UI architecture and quality
+description: Rendering, threading, accessibility, performance and parity guarantees behind PAM Mobile UI.
+---
+
+PAM Mobile UI is designed around a strict boundary: PHP describes state and
+intent; the native UI thread owns drawing, gestures, transient animation and
+platform controls.
+
+## Rendering pipeline
+
+1. PHP templates or typed facades produce a component tree.
+2. Tokens and utility classes compile into typed native properties.
+3. The PAM renderer reconciles stable identities and emits bounded mutations.
+4. Android views or UIKit controls apply those mutations on the UI thread.
+5. Only explicit, compact event payloads return to PHP.
+
+There is no DOM diff, browser layout, JavaScript bridge or CSS parser at
+runtime. Lists, tables and other data-heavy views use native virtualization and
+reuse.
+
+## Threading contract
+
+View creation, mutation, layout, gesture recognition and animation execute on
+the platform UI thread. PHP handles application orchestration outside the frame
+loop. High-frequency native events are coalesced or deduplicated before crossing
+the boundary, and listeners are detached with their view lifecycle.
+
+## Accessibility baseline
+
+Components must expose platform semantics, labels, roles, state and actions;
+support screen readers and keyboard/switch navigation where the platform does;
+respect scalable text, reduced motion, contrast and touch-target expectations;
+and preserve focus through reconciliation. Accessibility is part of parity and
+release verification, not an optional application overlay.
+
+Application authors remain responsible for meaningful labels, reading order,
+error messages and domain-specific announcements.
+
+## Compatibility and parity
+
+The generated `resources/material-parity.json` contract records sequential
+module identifiers, component tags, Android/iOS targets and twelve verification
+gates. Release verification checks registry equality, native implementation,
+typed PHP exposure, theme behavior, accessibility, lifecycle cleanup and
+representative interaction behavior.
+
+Compatibility means equivalent public intent and state—not pixel-identical
+Android and iOS controls. Platform conventions are preserved when they produce
+the more native result.
+
+## Performance claims
+
+Performance evidence belongs to reproducible benchmarks with device, OS,
+build mode, sample size and thresholds recorded. Microbenchmarks are useful for
+regression detection but are not a universal FPS promise. Profile real product
+flows with release builds, representative data and the slowest supported
+hardware.
+
+Before shipping:
+
+- keep keys stable and payloads bounded;
+- virtualize large collections;
+- avoid rebuilding unchanged subtrees;
+- keep gesture-driven animation native;
+- test light/dark themes, large text and reduced motion;
+- run `pam doctor`, platform tests and release benchmarks.
+
+See [PAM Mobile UI](/pam-docs/packages/mobile-ui/) for installation and
+authoring, and the [component catalog](/pam-docs/packages/mobile-ui-catalog/)
+for the verified public surface.

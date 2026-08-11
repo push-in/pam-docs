@@ -1,0 +1,119 @@
+---
+title: PAM Mobile UI
+description: Build polished Android and iOS interfaces in PHP with retained native Material 3 components, typed facades, themes and native directives.
+---
+
+PAM Mobile UI is the application-grade component system for PAM Native. It
+renders real Android views and UIKit controls—there is no WebView, JavaScript
+runtime or CSS engine between your PHP application and the platform.
+
+```bash
+pam add mobile-ui
+pam doctor
+pam native dev
+```
+
+`pam add mobile-ui` performs compatibility preflight, updates the application
+manifests and lockfile, discovers the native plugin, and refreshes the Android
+and iOS registries. Use `pam remove mobile-ui` to uninstall it. Application
+developers should use PAM rather than invoking Composer directly.
+
+## Build a screen
+
+Author with declarative `p-*` tags:
+
+```xml
+<p-screen-scroll class="p-4 gap-4">
+    <p-app-bar title="Orders" />
+
+    <p-card class="p-4 gap-3">
+        <Text class="text-title-large">Ready to ship</Text>
+        <p-chip color="success">Paid</p-chip>
+        <p-btn @press="shipOrder">Ship order</p-btn>
+    </p-card>
+</p-screen-scroll>
+```
+
+Or compose the same native tree with typed PHP facades:
+
+```php
+use Pam\MobileUi\Component\Button;
+use Pam\MobileUi\Component\Card;
+
+$content = Card::make()
+    ->class('p-4 gap-3')
+    ->child(
+        Button::make('Ship order')
+            ->onPress('shipOrder')
+            ->color('primary'),
+    );
+```
+
+Templates are compiled once. The native targets receive resolved integers,
+floats, booleans and bounded payloads—not markup or style strings on every
+frame.
+
+## Themes
+
+Change semantic tokens instead of hard-coding platform colors:
+
+```php
+use Pam\MobileUi\Enum\ColorToken;
+use Pam\MobileUi\PamUI;
+use Pam\MobileUi\Theme\Color;
+use Pam\MobileUi\Theme\Themes;
+
+PamUI::theme(
+    Themes::light()->withColors([
+        ColorToken::Primary->value => Color::rgb(37, 99, 235),
+    ]),
+    Themes::dark()->withColors([
+        ColorToken::Primary->value => Color::rgb(147, 197, 253),
+    ]),
+);
+```
+
+System, light, dark and custom themes resolve per provider subtree. Components
+consume Material 3 color, typography, shape, elevation and motion tokens.
+
+## Native directives
+
+Directives use the `p-*` namespace. They are PAM primitives, not Vue syntax:
+
+```xml
+<p-card
+    p-ripple
+    p-click-outside="closeMenu"
+    p-intersect="visibilityChanged"
+    p-resize="resized"
+    p-touch-start="dragStarted"
+    p-touch-move="dragMoved"
+    p-touch-end="dragEnded"
+>
+    <Text>Native interaction surface</Text>
+</p-card>
+```
+
+| Directive | Native behavior |
+| --- | --- |
+| `p-ripple` | Android ripple or UIKit state layer; no application event |
+| `p-click-outside` | Root pointer observer with page coordinates |
+| `p-intersect` | Visible-frame observer |
+| `p-mutate` | Deduplicated frame mutation observer |
+| `p-resize` | Deduplicated native size observer |
+| `p-scroll` | Native scroll delegate, coalesced per frame |
+| `p-touch-start`, `p-touch-move`, `p-touch-end` | Native pointer recognizers with local and page coordinates |
+
+Recognizers and observers detach on update, unmount, hot reload and shutdown.
+Transient gesture animation remains on the UI thread.
+
+## Escape hatches
+
+Use `Pam\Native\UI` for low-level layout, register application tags through
+`TemplateRegistry`, package native Android/iOS views as a PAM plugin, or use
+`CustomView::make()` for an application-owned generated view. Custom native
+views still participate in identity, Rust reconciliation, layout,
+accessibility and the bounded binary event channel.
+
+Continue with the [complete component catalog](/pam-docs/packages/mobile-ui-catalog/)
+and the [architecture and quality contract](/pam-docs/packages/mobile-ui-architecture/).

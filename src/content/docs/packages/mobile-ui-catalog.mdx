@@ -1,0 +1,71 @@
+---
+title: PAM Mobile UI component catalog
+description: Complete verified catalog of PAM Mobile UI retained-native Material 3 tags for Android and iOS.
+---
+
+Every tag below creates or configures retained native UI. The release parity
+manifest is the source of truth for this verified surface: **62 modules and 84
+component parts**, on both Android and iOS.
+
+> The repository README also describes the next-generation target as 73
+> modules and 124 parts. Until the generated release manifest and executable
+> gates publish that larger surface, this page deliberately promises only the
+> 62/84 contract that can be verified.
+
+## Actions, feedback and status
+
+| Module | Tags |
+| --- | --- |
+| Buttons | `p-btn`, `p-btn-group`, `p-btn-toggle`, `p-icon-btn`, `p-fab` |
+| Status | `p-alert`, `p-badge`, `p-chip`, `p-chip-group` |
+| Feedback | `p-snackbar`, `p-tooltip`, `p-progress-circular`, `p-progress-linear`, `p-skeleton-loader` |
+| Overlays | `p-dialog`, `p-bottom-sheet`, `p-sheet`, `p-overlay`, `p-menu` |
+
+## Input and forms
+
+| Module | Tags |
+| --- | --- |
+| Form | `p-form`, `p-text-field`, `p-textarea`, `p-number-input`, `p-otp-input` |
+| Choice | `p-checkbox`, `p-switch`, `p-radio`, `p-radio-group`, `p-select`, `p-autocomplete`, `p-combobox` |
+| Range | `p-slider`, `p-range-slider`, `p-rating` |
+| Date and time | `p-calendar`, `p-calendar-day`, `p-date-input`, `p-date-picker`, `p-time-picker` |
+| Color | `p-color-input` |
+
+## Content and data
+
+| Module | Tags |
+| --- | --- |
+| Content | `p-avatar`, `p-icon`, `p-img`, `p-divider`, `p-empty-state` |
+| Cards | `p-card`, `p-card-actions` |
+| Lists | `p-list`, `p-list-item`, `p-item-group`, `p-item` |
+| Data | `p-data-table`, `p-data-table-virtual`, `p-infinite-scroll`, `p-sparkline` |
+| Expandable | `p-expansion-panels`, `p-expansion-panel`, `p-expansion-panel-title`, `p-expansion-panel-text` |
+| Timeline | `p-timeline`, `p-timeline-item` |
+
+Use the virtual table and infinite-scroll components for large collections.
+Keep stable item keys and bounded event payloads so native reconciliation can
+reuse views rather than recreate them.
+
+## Navigation and layout
+
+| Module | Tags |
+| --- | --- |
+| App chrome | `p-app-bar`, `p-app-bar-nav-icon`, `p-toolbar`, `p-banner`, `p-banner-actions` |
+| Tabs | `p-tabs`, `p-tab` |
+| Carousels | `p-carousel`, `p-carousel-item`, `p-slide-group`, `p-slide-group-item` |
+| Steppers | `p-stepper`, `p-stepper-header`, `p-stepper-item`, `p-stepper-window`, `p-stepper-window-item`, `p-stepper-actions` |
+| Vertical steppers | `p-stepper-vertical`, `p-stepper-vertical-item`, `p-stepper-vertical-actions` |
+| Trees | `p-treeview`, `p-treeview-item` |
+| Floating actions | `p-speed-dial` |
+
+## Product composition
+
+Typed forms bind schema, values, errors, loading and submit behavior without
+inventing a second state model. Async content should model loading, empty,
+error and ready states explicitly. Navigation chrome belongs to the platform
+navigation primitives; component tags provide the visual and interactive
+content inside those destinations.
+
+For app-owned reusable tags, register a PHP component with
+`TemplateRegistry`. Keep public tag inputs serializable and treat native events
+as an explicit, versioned contract.

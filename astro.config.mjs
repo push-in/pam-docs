@@ -207,6 +207,14 @@ export default defineConfig({
             { label: 'pushinbr/pam-core-api', slug: 'packages/core-api' },
             { label: 'PAM Native Nitro', slug: 'packages/native-nitro' },
             {
+              label: 'Mobile UI',
+              items: [
+                { label: 'Overview & authoring', slug: 'packages/mobile-ui' },
+                { label: 'Component catalog', slug: 'packages/mobile-ui-catalog' },
+                { label: 'Architecture & quality', slug: 'packages/mobile-ui-architecture' },
+              ],
+            },
+            {
               label: 'Native integrations',
               items: [
                 { label: 'Auth', slug: 'packages/native-auth' },
