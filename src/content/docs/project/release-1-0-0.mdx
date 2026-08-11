@@ -12,7 +12,7 @@ native mobile, and desktop workflows.
 ```bash
 curl --proto '=https' --tlsv1.2 --fail --silent --show-error --location \
   --output pam-install.sh \
-  https://github.com/push-in/pam/releases/download/v1.0.1/install.sh
+  https://github.com/push-in/pam/releases/download/v1.0.2/install.sh
 sh pam-install.sh
 rm pam-install.sh
 
@@ -63,13 +63,15 @@ the Intel archive contains the verified PHP 8.4/8.5 macOS runtime.
 
 The six server Composer packages are split into immutable public repositories
 and published on Packagist under the organization-owned `pushinbr/pam-*`
-namespace. `v1.0.1` is the recommended 1.0 patch because it completes this
-public package contract. PAM Native and its plugins keep their own release
-cadence and declare explicit compatible version ranges.
+namespace. `v1.0.2` is the recommended 1.0 patch: besides completing this
+public package contract, new API applications now pass `pam format --check`,
+`pam lint`, and `pam test` immediately after creation. PAM Native and its
+plugins keep their own release cadence and declare explicit compatible version
+ranges.
 
 ## Verification
 
-- [PAM 1.0.1 release](https://github.com/push-in/pam/releases/tag/v1.0.1)
+- [PAM 1.0.2 release](https://github.com/push-in/pam/releases/tag/v1.0.2)
 - [PAM CI](https://github.com/push-in/pam/actions/workflows/ci.yml)
 - [Android certification](https://github.com/push-in/pam/actions/workflows/ci.yml)
 - [iOS certification](https://github.com/push-in/pam/actions/workflows/ios-native.yml)
