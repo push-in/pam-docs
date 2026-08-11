@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { extname, join, relative, resolve } from 'node:path';
+import { extname, join, relative, resolve, sep } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
 const distribution = join(root, 'dist');
@@ -25,16 +25,24 @@ for (const file of htmlFiles) {
     const href = match[1] ?? match[2];
 
     if (
-      !href.startsWith('/') ||
       href.startsWith('//') ||
-      href.startsWith('/_')
+      href.startsWith('#') ||
+      href.startsWith('/_') ||
+      /^[a-z][a-z\d+.-]*:/i.test(href)
     ) {
       continue;
     }
 
     inspectedLinks++;
 
-    const url = new URL(href, 'https://pam.dev');
+    const sourceRelative = relative(output, file).split(sep).join('/');
+    const sourcePathname = sourceRelative.endsWith('index.html')
+      ? `/${sourceRelative.slice(0, -'index.html'.length)}`
+      : `/${sourceRelative}`;
+    const url = new URL(
+      href,
+      `https://pam.dev${basePath}${sourcePathname}`,
+    );
     const decodedPathname = decodeURIComponent(url.pathname);
     const pathname =
       basePath && decodedPathname.startsWith(`${basePath}/`)
