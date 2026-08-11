@@ -1,0 +1,77 @@
+---
+title: PAM public repository map
+description: Canonical documentation ownership and product role for every public repository in the PAM ecosystem.
+---
+
+This map prevents public code from becoming undiscoverable. Every public
+`push-in/pam*` repository has a product role and a canonical documentation
+destination.
+
+## Runtime, frameworks and applications
+
+| Repository | Role | Canonical documentation |
+| --- | --- | --- |
+| `pam` | Persistent PHP runtime, CLI, packaging and release system | [Runtime](/runtime/how-pam-works/) and [CLI](/getting-started/cli/) |
+| `pam-api` | Optional HTTP application/router layer | [Package guide](/packages/api/) |
+| `pam-core-api` | Minimal extension contracts | [Package guide](/packages/core-api/) |
+| `pam-laravel` | Laravel lifecycle, operations and production tooling | [Laravel platform](/laravel/production-platform/) and [API reference](/laravel/api-reference/) |
+| `pam-socket` | Event API over native RFC 6455 WebSockets | [Package guide](/packages/socket/) |
+| `pam-psr-bridge` | PSR-7/15/17 interoperability | [Package guide](/packages/psr-bridge/) |
+| `pam-testing` | In-memory PAM API test client | [Package guide](/packages/testing/) |
+| `pam-skeleton` | Versioned API template used by `pam init` | [Skeleton guide](/packages/skeleton/) |
+| `pam-desktop` | Native desktop shell, worker and PHP API | [Desktop](/desktop/overview/) and [API contracts](/desktop/api-contracts/) |
+| `pam-docs` | This documentation site and its validation gates | [Documentation contract](/community/documentation/) |
+
+## Native platform and UI
+
+| Repository | Role | Canonical documentation |
+| --- | --- | --- |
+| `pam-native` | Native runtime, Android/iOS renderers and PHP authoring API | [Native overview](/native/overview/) and [PHP API index](/native/php-api-index/) |
+| `pam-native-php` | Generated/distribution mirror of the Native PHP surface | [Distribution mirrors](/packages/distribution-mirrors/) |
+| `pam-mobile-ui` | Retained-native Material 3 component system | [Mobile UI](/packages/mobile-ui/) and [catalog](/packages/mobile-ui-catalog/) |
+| `pam-mobile-ui-php` | Generated/distribution mirror of Mobile UI | [Distribution mirrors](/packages/distribution-mirrors/) |
+| `pam-native-nitro` | Offline-first typed local data engine | [Nitro](/packages/native-nitro/) |
+
+## Official Native integrations
+
+| Repository | Capability | Guide |
+| --- | --- | --- |
+| `pam-native-auth` | Encrypted credential vault and PKCE | [Auth](/packages/native-auth/) |
+| `pam-native-background-transfer` | Durable uploads and downloads | [Background Transfer](/packages/native-background-transfer/) |
+| `pam-native-bluetooth` | BLE scan, connection and GATT | [Bluetooth](/packages/native-bluetooth/) |
+| `pam-native-devtools` | Development inspection integration | [DevTools package](/packages/native-devtools/) |
+| `pam-native-feature-flags` | Typed flags, snapshots and rollout evaluation | [Feature Flags](/packages/native-feature-flags/) |
+| `pam-native-firebase` | Firebase services and messaging bridge | [Firebase](/packages/native-firebase/) |
+| `pam-native-health` | Health data permissions and queries | [Health](/packages/native-health/) |
+| `pam-native-intents` | Android intents and iOS URL activities | [Intents](/packages/native-intents/) |
+| `pam-native-laravel-sync` | Laravel-backed native synchronization | [Laravel Sync](/packages/native-laravel-sync/) |
+| `pam-native-live-activities` | iOS Live Activities | [Live Activities](/packages/native-live-activities/) |
+| `pam-native-maps` | Native maps, markers and camera control | [Maps](/packages/native-maps/) |
+| `pam-native-media` | Camera, picker and media processing | [Media](/packages/native-media/) |
+| `pam-native-nfc` | NFC sessions and records | [NFC](/packages/native-nfc/) |
+| `pam-native-observability` | Vendor-neutral telemetry and crash context | [Observability](/packages/native-observability/) |
+| `pam-native-payments` | Platform payment sheets | [Payments](/packages/native-payments/) |
+| `pam-native-plugin-kit` | Authoring and validating Native plugins | [Plugin Kit](/packages/native-plugin-kit/) |
+| `pam-native-realtime` | Realtime native client transport | [Realtime](/packages/native-realtime/) |
+| `pam-native-scanner` | Barcode and document scanning | [Scanner](/packages/native-scanner/) |
+| `pam-native-share-extension` | Platform share extensions | [Share Extension](/packages/native-share-extension/) |
+| `pam-native-subscriptions` | Store subscriptions and entitlement state | [Subscriptions](/packages/native-subscriptions/) |
+| `pam-native-sync` | Offline mutation and synchronization primitives | [Sync](/packages/native-sync/) |
+| `pam-native-testing` | Native integration testing utilities | [Native Testing](/packages/native-testing/) |
+| `pam-native-video` | Native video playback | [Video](/packages/native-video/) |
+| `pam-native-widgets` | Android/iOS home-screen widgets | [Widgets](/packages/native-widgets/) |
+
+## Installation rule
+
+Use PAM aliases for official application capabilities:
+
+```bash
+pam packages
+pam add observability
+pam add mobile-ui
+pam doctor
+```
+
+`pam composer require` remains correct for normal server/framework packages
+such as `pushinbr/pam-api` and `pushinbr/pam-laravel`. Distribution mirrors are
+not separate installation choices.

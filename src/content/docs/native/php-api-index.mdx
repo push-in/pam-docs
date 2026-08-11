@@ -1,0 +1,160 @@
+---
+title: PAM Native PHP API index
+description: Namespace-by-namespace index of the public PHP types shipped by pushinbr/pam-native 0.6.
+---
+
+This index maps the Composer-autoloaded surface in `packages/native/src`. Use
+the focused guides for behavior and examples; use this page to discover the
+exact type responsible for a capability.
+
+```bash
+pam add native
+pam doctor
+```
+
+## Application and component core
+
+| Area | Public types |
+| --- | --- |
+| Boot | `App`, `BuildConfiguration`, `BuildMode`, `Protocol` |
+| Tree | `Renderable`, `Element`, `View`, `Component`, `FunctionalComponent`, `Slot` |
+| State | `State`, `ComponentState`, `ComponentChanges`, `Effect`, `Watch`, `Restorable` |
+| Events and refs | `ComponentEvent`, `ComponentRef`, `NativeRef`, `NativeOperation`, `EventKind`, `ErrorContext` |
+| Templates | `TemplateRegistry`, `TemplateException` |
+| Async | `AsyncResource`, `AsyncValue`, `AsyncStatus` |
+| Styling | `Style`, `Theme`, `PropKey`, `CssColor` |
+
+Component attributes live in `Pam\Native\Attributes`: `Prop`, `State`,
+`Computed`, and `Expose`.
+
+## Layout, text and input enums
+
+These enums replace stringly typed platform values:
+
+`Align`, `Justify`, `FlexDirection`, `FlexWrap`, `PositionType`, `Overflow`,
+`PointerEvents`, `LayoutDirection`, `BorderStyle`, `FontStyle`, `TextAlignment`,
+`TextDecoration`, `TextTransform`, `TextBreakStrategy`,
+`TextHyphenationFrequency`, `TextEllipsizeMode`, `TextDataDetectorType`,
+`InputMode`, `InputAutoCapitalize`, `InputAutofillImportance`,
+`InputSubmitBehavior`, `InputSyncMode`, `InputTextAlignVertical`, `KeyboardType`,
+`ReturnKeyType`, `KeyboardAvoidingBehavior`, `SafeAreaMode`,
+`ScrollKeyboardDismissMode`, `ScrollOverScrollMode`, `ScrollTargetAlignment`,
+`RefreshIndicatorSize`, and `ActivityIndicatorSize`.
+
+Input and interaction event values are `InputContentSizeEvent`, `InputKeyEvent`,
+`InputSelectionEvent`, `PressEvent`, `GestureEvent`, `GestureState`,
+`GestureType`, `GestureDirection`, and `GestureComposition`.
+
+## Accessibility and appearance
+
+`AccessibilityRole`, `AccessibilityImportance`, `AccessibilityLiveRegion`,
+`AccessibilityCheckedState`, `UserInterfaceAppearance`,
+`StatusBarAppearance`, `WindowMetrics`, `AppState`, and `MemoryPressure`.
+
+## Animation, modal and media values
+
+| Area | Types |
+| --- | --- |
+| Animation | `AnimationKind`, `AnimationEasing`, `AnimationFillMode`, `AnimationKeyframe`, `AnimationPlayState`, `MotionPreset` |
+| Modal/sheet | `ModalAnimationType`, `ModalPresentation`, `ModalOrientation`, `BottomSheetEvent`, `BottomSheetKeyboardBehavior` |
+| Image | `ImageFit`, `ImageResizeMethod`, `ImageFilterType`, `ImageCropRatio`, `ImageCachePolicy`, `ImageLoadEvent`, `ImageErrorEvent`, `ImageProgressEvent`, `ImageTextLayerStyle` |
+| Media | `MediaType`, `MediaPickerType`, `MediaPriority`, `MediaCachePolicy`, `MediaCacheEntryState`, `MediaCacheEvent`, `MediaAsset`, `MediaAssetPage`, `MediaAlbum` |
+| Capture/audio | `CaptureType`, `AudioRecording`, `AudioRecordingProgress`, `DrawingMode` |
+
+## System data and enums
+
+`Contact`, `LocationPosition`, `IncomingShare`, `FileReference`,
+`FileDownloadProgress`, `DeviceStatus`, `NetworkType`, `SensorReading`,
+`SensorType`, `PermissionKind`, `PermissionStatus`, `PermissionDecision`,
+`NotificationImportance`, `PushProvider`, `PushToken`, `PushMessage`,
+`PushEventType`, `NativeMenuItem`, `HapticFeedback`, `CacheUsage`, `NodeKind`,
+`ModuleResultStatus`, and `BinaryValue`.
+
+## UI namespace
+
+`Pam\Native\UI` contains retained native views:
+
+| Family | Types |
+| --- | --- |
+| Layout | `Screen`, `SafeAreaView`, `View`, `Column`, `Row`, `Grid`, `Spacer`, `Scroll`, `ScrollView`, `KeyboardAvoidingView` |
+| Text/input | `Text`, `Input`, `TextInput`, `InputAccessoryView`, `Button`, `Toggle`, `NativeSwitch` |
+| Interaction | `Pressable`, `InteractionRegion`, `GestureDetector`, `TouchableHighlight`, `TouchableNativeFeedback`, `TouchableOpacity`, `TouchableWithoutFeedback` |
+| Lists | `FlatList`, `SectionList`, `VirtualizedList`, `VirtualGrid`, `NativeList`, `RefreshControl` |
+| Images/media | `Image`, `ImageBackground`, `MediaPlayer`, `DrawingCanvas`, `Canvas` |
+| Overlay/system | `Modal`, `BottomSheet`, `StatusBar`, `ActivityIndicator`, `Suspense`, `WebView`, `DrawerLayoutAndroid` |
+| Extension | `CustomView`, `Animated` |
+
+Shared behavior traits are `HasImageBehavior`, `HasInputBehavior`, and
+`HasMediaCacheBehavior`.
+
+## System facade namespace
+
+Static/native facades in `Pam\Native\System`:
+
+`Alert`, `AudioRecorder`, `BackgroundTasks`, `Caches`, `Clipboard`, `Contacts`,
+`DeviceInfo`, `DeviceStatus`, `Files`, `Haptics`, `ImageEditor`,
+`IncomingShares`, `Keyboard`, `Linking`, `Location`, `MediaCapture`,
+`MediaLibrary`, `Notifications`, `Permissions`, `PushNotifications`, `Sensors`,
+`Share`, `Sms`, `Timers`, `Toast`, and `Vibration`.
+
+See [platform capabilities](/native/capabilities/) and
+[files and media](/native/files-and-media/) for permissions, result values,
+lifecycle limits and examples.
+
+## Navigation and routing
+
+| Namespace | Public types |
+| --- | --- |
+| `Navigation` core | `NavigationContainer`, `Navigator`, `Router`, `NavigationAction`, `NavigationActionType`, `NavigationOperation`, `NavigationPresentation`, `NavigationOrientation`, `NavigationTransition` |
+| Screens/state | `NavigationScreen`, `NavigationRef`, `NavigationHost`, `NavigationStateProvider`, `NavigationObservable`, `NavigationSubscription`, `NavigationEvent`, `NavigationEventType`, `PendingRoute`, `RouteContext` |
+| Back/lifecycle | `NavigationBackCoordinator`, `NavigationBackHandler`, `NavigationActionHandler`, `NavigationLifecycleAware`, `InteractsWithNavigationLifecycle` |
+| Stack options | `ScreenOptions`, `ScreenOptionsPatch`, `ScreenOptionLayer`, `NavigationGestureDirection`, `NavigationTheme` |
+| Tabs | `TabNavigator`, `TabRouter`, `TopTabNavigator`, `TopTabRouter`, `NativeTabHost`, `NavigationTab`, `TabPresentation`, `TabBackBehavior` |
+| Drawers | `DrawerNavigator`, `DrawerRouter`, `NavigationDrawerItem`, `DrawerType`, `DrawerPosition`, `DrawerBackBehavior`, `DrawerKeyboardDismissMode`, `DrawerStatusBarAnimation` |
+| Links/devtools | `DeepLink`, `NavigationLinkHandler`, `NavigationDevTools`, `NavigationTraceKind` |
+| Shared elements | `SharedTransitionStyle`, `SharedTransitionEasing`, `SharedTransitionResizeMode` |
+| `Routing` facade | `Navigation`, `Route`, `RouteDefinition`, `RouteName`, `RoutePreset`, `RouteTarget`, `RouteModule`, `RouteRegistrar`, `RouteCodeGenerator`, `ScreenFactory`, `TabRegistrar`, `TopTabRegistrar`, `DrawerRegistrar` |
+
+See the [navigation guide](/native/navigation/) for stacks, tabs, drawers,
+deep links, predictive back and shared elements.
+
+## Data, forms and synchronization
+
+| Namespace | Public types |
+| --- | --- |
+| `Database` | `SQLite` |
+| `Storage` | `Storage` |
+| `Http` | `Http`, `HttpResponse` |
+| `Forms` | `NativeForm`, `FormStatus`, `ValidationRule`, `Required`, `Email`, `MinLength`, `MaxLength`, `Matches` |
+| `Store` | `Store`, `Stores`, `StoreManager`, `StoreSelector`, `StoreChange`, `StoreChangeKind`, `StoreMiddleware`, `ActionPolicy`, `Computed`, `StoreDevTools`, `StorePersistence`, `StatePersistence`, `EncryptedStatePersistence`, `StoreMigration`, `StoreReplica` |
+| `Sync` | `OfflineMutationQueue`, `Mutation`, `MutationStatus` |
+
+## Scheduling, bridge and extension APIs
+
+| Namespace | Public types |
+| --- | --- |
+| `Scheduling` | `Scheduler`, `ScheduledTask`, `TaskPriority`, `CancellationToken`, `TaskCancelledException` |
+| `Jobs` | `BackgroundJobs` |
+| `Modules` | `NativeModules`, `NativeModuleTransport`, `NativeModuleResult` |
+| `Bridge` | `IdlCompiler`, `IdlArtifacts`, `IdlType` |
+| `Plugin` | `PluginProvider`, `PluginManager`, `PluginException` |
+| `Canvas` | `CanvasCommandKind` |
+| `Worklets` | `Worklet`, `WorkletOpcode`, `WorkletTarget` |
+| `ServerDriven` | `ServerDrivenUi`, `ServerNodeKind` |
+| `Diagnostics` | `Profiler`, `ProfileSpan` |
+| `Tooling` | `PamFormatter` |
+
+## Internal namespace
+
+Types under `Pam\Native\Internal` are autoloadable because of PSR-4, but they
+are implementation details for compilation, encoding, reconciliation and
+runtime supervision. Do not couple application code to `Runtime`,
+`RuntimeSupervisor`, `Wire`, `TreeEncoder`, `TemplateCompiler`,
+`TemplateRenderer`, `PamPhpCompiler`, `PamPhpComponent`, `PamPhpRegistry`,
+`PamPhpPreloader`, `EncodedNode`, `EncodedSubtree`, `CompiledTemplateNode`,
+`CompiledComponentView`, `DependencyTracker`, `ComponentLifecycle`,
+`ScopedStyleCompiler`, `TemplateExpression`, or `SubtreeCacheCandidate`.
+
+Their presence in Composer autoloading is not a stability promise. Public
+application contracts live outside `Internal` and follow the Native protocol
+and compatibility policy.

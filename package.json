@@ -13,7 +13,8 @@
     "check:seo": "node scripts/check-seo.mjs",
     "check:pam-syntax": "node scripts/check-pam-syntax.mjs",
     "check:freshness": "node scripts/check-release-freshness.mjs",
-    "validate": "npm run check:pam-syntax && npm run check && npm run build && npm run check:links && npm run check:accessibility && npm run check:seo"
+    "check:repositories": "node scripts/check-repository-coverage.mjs",
+    "validate": "npm run check:pam-syntax && npm run check:repositories && npm run check && npm run build && npm run check:links && npm run check:accessibility && npm run check:seo"
   },
   "dependencies": {
     "@astrojs/starlight": "0.41.4",
