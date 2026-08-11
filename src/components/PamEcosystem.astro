@@ -28,12 +28,18 @@ const capabilities = [
   ['widgets', 'Platform integration', 'Android App Widgets and iOS WidgetKit timelines.', 'pam-native-widgets'],
   ['native', 'Foundation', 'The PAM Native SDK, component runtime, and renderer contracts.', 'pam-native'],
 ] as const;
+
+const categories = [...new Map(
+  capabilities.map(([alias, category]) => [category, alias]),
+).entries()];
 ---
 
 <div class="pam-catalog-intro">
-  <p class="pam-home-kicker">27 official capabilities</p>
-  <h2>One command between<br/>idea and native capability.</h2>
-  <p>Choose what the product needs. PAM checks package metadata and compatibility before it changes the normal Composer manifest, then refreshes native integration for you.</p>
+  <div class="pam-catalog-copy">
+    <p class="pam-home-kicker">27 official capabilities · one workflow</p>
+    <h1>One command between idea and native capability.</h1>
+    <p>Choose what the product needs. PAM resolves compatibility, updates the project, and refreshes native integration through one predictable workflow.</p>
+  </div>
   <pre aria-label="Install a PAM capability"><code><span>$</span> pam packages
 <span>$</span> pam add observability
 <strong>✓</strong> Compatibility preflight passed
@@ -41,12 +47,24 @@ const capabilities = [
 <span>$</span> pam doctor</code></pre>
 </div>
 
+<section class="pam-catalog-browser" aria-labelledby="catalog-heading">
+  <div>
+    <p class="pam-home-kicker">Browse by outcome</p>
+    <h2 id="catalog-heading">Build the exact product you imagined.</h2>
+  </div>
+  <nav aria-label="Capability categories">
+    {categories.map(([category, alias]) => (
+      <a href={`#${alias}`}>{category}</a>
+    ))}
+  </nav>
+</section>
+
 <div class="pam-catalog-grid">
   {capabilities.map(([alias, category, description, repository]) => (
     <article id={alias} class="pam-catalog-card">
       <div>
         <span>{category}</span>
-        <h2>{alias}</h2>
+        <h3>{alias}</h3>
         <p>{description}</p>
       </div>
       <code>pam add {alias}</code>
