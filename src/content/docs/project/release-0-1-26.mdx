@@ -79,8 +79,8 @@ parity are not part of this release.
 The release gate includes:
 
 ```bash
-composer validate --working-dir=packages/laravel --strict
-composer audit --working-dir=compat/laravel-smoke
+pam composer validate --working-dir=packages/laravel --strict
+pam composer audit --working-dir=compat/laravel-smoke
 compat/laravel-smoke/vendor/bin/phpstan analyse packages/laravel/src \
   --level=9 --no-progress
 php compat/laravel-smoke/telemetry-smoke.php

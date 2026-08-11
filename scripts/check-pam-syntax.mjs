@@ -5,7 +5,7 @@ const root = resolve(import.meta.dirname, '..');
 const content = join(root, 'src', 'content', 'docs');
 const failures = [];
 const explicitCurrentDirectory = /\bpam\b[^\n`]*\s+\.(?=\s*(?:\\|`|$)|\s+--)/;
-const directComposerCommand = /^\s*composer\s+(?:install|update|require|remove|audit|test|benchmark)\b/;
+const directComposerCommand = /^\s*composer\s+(?:install|update|require|remove|audit|validate|test|benchmark)\b/;
 
 for (const example of [
   'pam desktop doctor .',
