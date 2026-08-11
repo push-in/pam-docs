@@ -1,0 +1,119 @@
+---
+title: Windows, events, and menus
+description: Model named desktop surfaces, event contracts, tray menus, and shortcuts as PHP types.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Named window types
+
+```php
+#[Window(
+    name: 'settings',
+    title: 'Settings',
+    page: 'resources/settings.html',
+    width: 760,
+    height: 620,
+)]
+final readonly class SettingsWindow extends DesktopWindow
+{
+}
+```
+
+Register it on the application:
+
+```php
+protected function windows(): array
+{
+    return [SettingsWindow::class];
+}
+```
+
+Then inject the exact window:
+
+```php
+#[Command]
+public function openSettings(SettingsWindow $settings): void
+{
+    $settings->show()->focus();
+}
+```
+
+`DesktopWindow` collects title, visibility, focus, close, fullscreen, and
+maximize effects. It never exposes Winit, Servo, or an operating-system handle.
+
+## Typed events
+
+```php
+final readonly class DocumentSaved
+{
+    public function __construct(
+        public int $documentId,
+        public int $revision,
+    ) {}
+}
+
+$events->emit(new DocumentSaved($document->id, $document->revision));
+```
+
+The default wire name is `document.saved`; public properties form the payload.
+Implement `Event` for an explicit stable name or serialized shape.
+
+Frontend events map back to typed methods:
+
+```php
+#[Listen('editor.changed')]
+public function editorChanged(
+    string $documentId,
+    WindowHandle $window,
+): void {
+    $window->title("Editing {$documentId}");
+}
+```
+
+## Menus are actions
+
+```php
+#[Menu(
+    id: 'application',
+    label: 'My desktop app',
+    close: TrayCloseBehavior::Hide,
+)]
+final class ApplicationMenu
+{
+    #[MenuItem('Show window', shortcut: 'CmdOrCtrl+Shift+KeyP')]
+    public function show(WindowHandle $window): void
+    {
+        $window->show()->focus();
+    }
+
+    #[MenuSeparator]
+    public function separator(): void {}
+
+    #[MenuItem('Background mode', checkbox: true)]
+    public function background(): void {}
+
+    #[MenuItem('Quit')]
+    public function quit(ApplicationControl $application): void
+    {
+        $application->quit();
+    }
+}
+```
+
+```php
+protected function menus(): array
+{
+    return [ApplicationMenu::class];
+}
+```
+
+The menu item ID defaults to the method's dotted name. A declared shortcut is
+validated once and registered as a native global shortcut with the same action.
+Linux currently supports one tray-backed application menu.
+
+<Aside type="tip" title="Dynamic or generated menus">
+  Use the immutable `Menu`, `MenuItem`, `Tray`, `GlobalShortcut`, and `Shell`
+  builders when the tree comes from application data or needs submenus and
+  runtime state generation.
+</Aside>

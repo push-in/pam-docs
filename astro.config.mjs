@@ -139,7 +139,10 @@ export default defineConfig({
           label: 'Desktop',
           items: [
             { label: 'Overview', slug: 'desktop/overview' },
-            { label: 'Windows & commands', slug: 'desktop/windows-and-commands' },
+            { label: 'Convention-first authoring', slug: 'desktop/authoring' },
+            { label: 'Commands & dependency injection', slug: 'desktop/commands-and-di' },
+            { label: 'Windows, events & menus', slug: 'desktop/windows-events-and-menus' },
+            { label: 'Advanced API', slug: 'desktop/windows-and-commands' },
             { label: 'Native capabilities', slug: 'desktop/capabilities' },
             { label: 'Native shell', slug: 'desktop/native-shell' },
             { label: 'Background jobs', slug: 'desktop/background-jobs' },

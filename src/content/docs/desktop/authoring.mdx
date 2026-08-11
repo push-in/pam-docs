@@ -1,0 +1,98 @@
+---
+title: Convention-first authoring
+description: Build a PAM Desktop application with attributes, safe conventions, and explicit permissions.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+PAM Desktop is convention-first where convention is safe and explicit where
+authority matters.
+
+## Minimal application
+
+```php
+#[Desktop(id: 'com.example.hello', name: 'Hello')]
+final class HelloApp extends App
+{
+    #[Command]
+    public function greet(string $name = 'world'): array
+    {
+        return ['message' => "Hello, {$name}!"];
+    }
+}
+```
+
+PAM supplies `resources/index.html`, a responsive 1120 × 720 main window, a
+720 × 520 minimum, system theme, a 30-second command deadline, and no native
+permissions. Call `HelloApp::run()` from the project entry point.
+
+## Configure only what changes
+
+```php
+protected function configure(Desktop $desktop): void
+{
+    $desktop
+        ->permissions(static fn (Permissions $permissions) => $permissions
+            ->filesystem('data', __DIR__.'/../storage', read: true, write: true)
+            ->database('app', 'storage/app.sqlite')
+            ->http('api', 'https://api.example.com/v1')
+            ->dialogs()
+            ->clipboard()
+            ->notifications()
+        )
+        ->timeout(10_000)
+        ->workers(4);
+}
+```
+
+Permissions compile to the same immutable `Capabilities` value used by the
+advanced API. Rust validates the manifest and enforces each operation. Source
+code discovery never grants native authority.
+
+<Aside type="caution" title="Permissions are product policy">
+  Declare the smallest authority the application needs. A command cannot turn
+  on a missing capability at runtime, and frontend JavaScript cannot bypass the
+  Rust host by constructing a request manually.
+</Aside>
+
+## Bind application services
+
+Concrete classes are autowired through constructor types. Bind interfaces and
+preconfigured instances explicitly:
+
+```php
+protected static function bindings(): array
+{
+    return [
+        Clock::class => new SystemClock(),
+        DocumentRepository::class => new SqliteDocumentRepository(),
+    ];
+}
+```
+
+Bindings are cloned into invocation scopes. Contextual services such as the
+current window and event collector exist only while a handler is running.
+
+## Organize a larger project
+
+```text
+app/
+├── MyApp.php
+├── Commands/
+│   ├── SaveDocument.php
+│   └── DeleteDocument.php
+├── Events/
+│   └── DocumentSaved.php
+├── Menus/
+│   └── ApplicationMenu.php
+└── Windows/
+    └── SettingsWindow.php
+resources/
+├── index.html
+└── settings.html
+storage/
+```
+
+Register command, menu, and window classes in the corresponding protected
+methods. This is deliberate discovery: predictable in production, friendly to
+static analysis, and free of filesystem scanning during command dispatch.

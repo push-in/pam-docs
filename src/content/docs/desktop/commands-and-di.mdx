@@ -1,0 +1,113 @@
+---
+title: Commands and dependency injection
+description: Bind typed command payloads, DTOs, enums, services, and return values.
+---
+
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+## Method commands
+
+```php
+#[Command]
+public function generateReport(
+    ReportService $reports,
+    int $accountId,
+    ReportFormat $format,
+    bool $notify = true,
+): ReportResource {
+    return new ReportResource(
+        $reports->generate($accountId, $format, $notify),
+    );
+}
+```
+
+Without an explicit name, `generateReport` becomes `generate.report`. Payload
+fields bind by parameter name. PHP defaults and nullable types behave normally.
+
+`ReportFormat` should be an integer-backed enum with sequential values. PAM
+constructs it through `from()` and never introduces string coded variants into
+the protocol.
+
+## DTO hydration
+
+```php
+final readonly class DocumentData
+{
+    public function __construct(
+        public int $id,
+        public string $title,
+        public ?string $body = null,
+    ) {}
+}
+
+#[Command('documents.save')]
+public function save(DocumentData $document): array
+{
+    return ['id' => $document->id];
+}
+```
+
+```js
+await window.pam.invoke("documents.save", {
+  document: { id: 42, title: "Roadmap", body: null },
+});
+```
+
+Nested arrays must be JSON objects with string keys. Missing, extra-type, or
+invalid enum values fail visibly; PAM does not guess or coerce command input.
+
+## Command classes
+
+```php
+#[Command('documents.delete')]
+final class DeleteDocument
+{
+    public function __construct(private DocumentRepository $documents) {}
+
+    public function __invoke(int $documentId, Events $events): void
+    {
+        $this->documents->delete($documentId);
+        $events->emit(new DocumentDeleted($documentId));
+    }
+}
+```
+
+```php
+protected function commands(): array
+{
+    return [DeleteDocument::class];
+}
+```
+
+## Contextual services
+
+| Type | Injected value |
+| --- | --- |
+| `WindowHandle` | Source window for this invocation |
+| `Windows` | Validated named-window registry |
+| `DesktopWindow` subclass | One declared named window |
+| `Events` | Typed frontend-event collector |
+| `ApplicationControl` | Application lifecycle effects |
+| `CommandContext` | Raw low-level request context |
+
+Effects and events are accumulated and merged with the method's return after
+successful execution. If the method throws, no partial response is published.
+
+## Return normalization
+
+<Tabs>
+  <TabItem label="Ordinary PHP">
+    Arrays, objects, strings, integers, booleans, and `null` become successful
+    payloads automatically.
+  </TabItem>
+  <TabItem label="Advanced result">
+    Return `CommandResult` to attach low-level `Effect` and `ClientEvent`
+    instances manually. Contextual effects are merged into the same result.
+  </TabItem>
+</Tabs>
+
+<Aside type="note">
+  PHP command and event identifiers stay validated strings chosen by the app.
+  Status, kind, state, category, policy, and execution discriminators remain
+  sequential integer-backed enums.
+</Aside>

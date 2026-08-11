@@ -1,75 +1,147 @@
 ---
 title: PAM Desktop
-description: Build capability-secured desktop applications with PHP, Rust, and Servo.
+description: Build secure Linux desktop applications with expressive PHP, Rust-enforced capabilities, and Servo.
 ---
 
-PAM Desktop 1.1.2 is a direct Servo host for native desktop applications whose
-application logic remains in typed PHP. It lives in a separate repository
-because its native toolchain, release cadence, and security boundary differ
-from the server runtime.
+import { Aside, Card, CardGrid, LinkCard, Steps } from '@astrojs/starlight/components';
 
-PAM Desktop is our answer to desktop stacks that make application code choose
-between web productivity and native operational control. PHP owns typed
-commands, state, windows, and policy; Servo renders the interface; Rust
-supervises the process and enforces capabilities. The result is a desktop
-architecture with explicit security, recovery, plugins, signed updates, and
-reproducible distribution designed in from the beginning.
-
-It is an ambitious product, and we are proud of the engineering behind it:
-not a browser tab with filesystem access, but a controlled application host
-whose boundaries can be inspected, versioned, and tested.
-
-```bash
-pam init hello-desktop --template desktop
-cd hello-desktop
-pam desktop doctor .
-pam desktop dev .
-pam desktop build .
-```
-
-## Application model
-
-PHP declares the manifest, windows, commands, events, effects, and allowed native capabilities. Local HTML, CSS, and JavaScript render directly in Servo and call only the commands or native surfaces the application explicitly exposes.
+**Desktop software that feels like PHP.** PAM Desktop keeps your application
+alive in typed PHP, renders trusted local
+HTML and CSS directly with Servo, and puts Rust in charge of every native
+boundary. You get web-speed authoring without an Electron-sized Node runtime
+or ambient access to the machine.
 
 ```php
-$app = Application::create(
-    window: Window::create('My desktop app')
-        ->size(1120, 720)
-        ->minimumSize(720, 520)
-        ->theme(WindowTheme::Dark),
-    manifest: Manifest::create(
-        'com.example.my-app',
-        'My desktop app',
-        '1.1.2',
-    ),
-);
+#[Desktop(id: 'com.example.notes', name: 'Notes')]
+final class NotesApp extends App
+{
+    #[Command]
+    public function save(
+        DocumentData $document,
+        DocumentRepository $documents,
+        WindowHandle $window,
+    ): DocumentResource {
+        $saved = $documents->save($document);
+        $window->title("Saved · {$saved->title}");
+
+        return new DocumentResource($saved);
+    }
+}
 ```
 
-## Available today
+No payload plumbing. No hand-built response envelope. No effect tree in your
+use case. PHP types describe the command; PAM binds input, resolves services,
+collects native effects, and returns the result.
 
-- stable public PHP API `1`, worker protocol `6`, and Rust plugin protocol `1`;
-- local HTML, CSS, JavaScript, and assets rendered by Servo;
-- typed commands and bidirectional events;
-- deadlines, cancellation, crash detection, and worker recovery;
-- multiple windows and targeted effects;
-- development hot reload;
-- named filesystem roots with read/write policy;
-- dialogs, clipboard, notifications, and drag-and-drop grants;
-- menus, tray behavior, global shortcuts, and periodic PHP jobs;
-- composable PHP plugins and supervised process-isolated Rust plugins;
-- signed Ed25519 update feeds with verified atomic install and rollback;
-- reproducible Linux directory bundles, portable archives, and optional Debian
-  packages; and
-- per-file SHA-256 integrity metadata, public GitHub artifact provenance and
-  executable compatibility snapshots.
+<CardGrid>
+  <Card title="Convention first" icon="open-book">
+    `resources/index.html`, safe window defaults, method commands, constructor
+    injection, DTO hydration, and typed events give a new project a short path.
+  </Card>
+  <Card title="Rust at the boundary" icon="padlock">
+    Files, SQLite, HTTP, processes, secrets, portals, clipboard, notifications,
+    plugins, and updates remain capability-scoped and deny by default.
+  </Card>
+  <Card title="One runtime, two levels" icon="code-branch">
+    The elegant API compiles into the stable immutable builders. Reach for
+    `Application`, `Capabilities`, and `Shell` when you need exact host policy.
+  </Card>
+  <Card title="Built to ship" icon="rocket">
+    Reproducible Linux bundles, integrity metadata, supervised workers, signed
+    updates, rollback, diagnostics, and executable compatibility contracts.
+  </Card>
+</CardGrid>
 
-## Supported release track
+## Start in three commands
 
-The stable 1.x contract targets Linux x86-64 on the Ubuntu 22.04 glibc
-baseline. Windows and macOS code is experimental groundwork and is not built,
-published, or certified in the current pipeline. Servo remains an evolving
-engine, so PAM guarantees the documented application and lifecycle contracts,
-not feature-for-feature Electron parity.
+<Steps>
+1. Create the project.
 
-Continue with [native shell](../native-shell/), [plugins](../plugins/),
-[signed updates](../signed-updates/), and [stability](../stability/).
+   ```bash
+   pam init hello-desktop --template desktop
+   cd hello-desktop
+   ```
+
+2. Validate the host and project.
+
+   ```bash
+   pam desktop doctor .
+   ```
+
+3. Start the persistent development session.
+
+   ```bash
+   pam desktop dev .
+   ```
+</Steps>
+
+Edit PHP, HTML, CSS, or JavaScript and save. PAM replaces the development
+worker or rendering generation safely while preserving what can survive the
+change.
+
+## The application model
+
+The class-level `#[Desktop]` attribute describes stable product metadata and
+the main window. Methods marked `#[Command]` become frontend-callable use
+cases. Dependencies come from the application container; input comes from the
+command payload by parameter name.
+
+```php
+#[Desktop(
+    id: 'com.pushin.my-app',
+    name: 'My desktop app',
+    version: '1.0.0',
+    description: 'A PHP-first native desktop application.',
+    category: ApplicationCategory::Development,
+    theme: WindowTheme::Dark,
+)]
+final class MyApp extends App
+{
+    #[Command]
+    public function greet(
+        WindowHandle $window,
+        Events $events,
+        string $name = 'world',
+    ): array {
+        $window->title("Hello, {$name}");
+        $events->emit(new GreetingCompleted($name));
+
+        return ['message' => "Hello, {$name}!"];
+    }
+}
+```
+
+The entry point is deliberately boring:
+
+```php
+App\MyApp::run();
+```
+
+<Aside type="note" title="Same mental model as PAM Native">
+  PAM Native uses classes, attributes, typed state, and injected platform
+  services. PAM Desktop follows that authoring philosophy while exposing
+  desktop-specific concepts: windows, tray, menus, files, processes, SQLite,
+  and secure host capabilities.
+</Aside>
+
+## What ships today
+
+- stable public PHP API 1, worker protocol 6, and Rust plugin protocol 1;
+- Linux x86-64 releases built on the Ubuntu 22.04 glibc baseline;
+- direct Servo rendering in independent native Winit windows;
+- typed commands, DTOs, events, listeners, effects, deadlines, and cancellation;
+- supervised stateful and parallel PHP workers with crash recovery;
+- named filesystem, SQLite, HTTPS, process, secret, and portal capabilities;
+- menus, tray, global shortcuts, background jobs, and lifecycle activation;
+- process-isolated Rust plugins and composable PHP plugins;
+- reproducible archives, per-file integrity, signed updates, and rollback; and
+- diagnostics and repeatable bridge benchmarks.
+
+Windows and macOS remain outside the current build and support contract.
+
+## Choose the next guide
+
+<LinkCard title="Authoring model" href="../authoring/" description="Build the smallest app, configure permissions, and understand conventions." />
+<LinkCard title="Commands & DI" href="../commands-and-di/" description="Bind scalars, enums and DTOs; inject services; organize command classes." />
+<LinkCard title="Windows, events & menus" href="../windows-events-and-menus/" description="Model desktop surfaces and actions as types instead of loose identifiers." />
+<LinkCard title="Security model" href="../security/" description="See exactly where PHP, Servo, the gateway, and the Rust host trust each other." />
