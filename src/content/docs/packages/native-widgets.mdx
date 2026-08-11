@@ -1,0 +1,31 @@
+---
+title: PAM Native Widgets
+description: Publish bounded process-safe Android App Widget and WidgetKit timeline state from PHP with stable IDs and deep links.
+---
+
+```bash
+pam add widgets
+pam doctor
+```
+
+```php
+(new Widgets())->update(
+    'account-summary',
+    new WidgetContent(
+        title: 'Available balance',
+        subtitle: 'Updated just now',
+        value: '$1,284.00',
+        deepLink: 'myapp://account',
+    ),
+    fn (bool $updated, ?string $error) => null,
+);
+```
+
+`Widgets` publishes bounded shared state; `WidgetContent` defines title,
+subtitle, value, and route. Autolinking creates WidgetKit extension/shared
+entitlements and Android receiver/resources. iOS uses
+`group.<application-id>.pam-native`.
+
+Widgets are snapshots, not a background PHP runtime. Prepare display state in
+the app, keep lock-screen-visible values small/non-sensitive, use stable widget
+identifiers, and route rich interaction back through validated named deep links.

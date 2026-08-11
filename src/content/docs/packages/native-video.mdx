@@ -1,0 +1,27 @@
+---
+title: PAM Native Video
+description: Play adaptive HLS/DASH and local video with native Media3 and AVPlayer decoding, tracks, controls, seek, and progress events.
+---
+
+```bash
+pam add video
+pam doctor
+```
+
+```php
+return VideoPlayer::make('https://cdn.example.com/master.m3u8')
+    ->autoPlay()
+    ->controls()
+    ->resizeMode(VideoResizeMode::Cover)
+    ->onEvent(fn (VideoEventKind $kind, array $event) => $this->handle($kind, $event));
+```
+
+`VideoPlayer` owns native adaptive/local playback; `VideoResizeMode` selects
+contain/cover/fill; `VideoEventKind` reports prepared/progress/completion/
+failure; `VideoPlaybackState` tracks lifecycle. Subtitle/audio tracks, looping,
+mute/volume, revision-based seek, and sandboxed local files are supported.
+
+Prefer adaptive manifests for variable networks, keep progress intervals
+coarse, make seek an intentional state revision rather than every render, and
+pause/release with screen visibility. Android uses Media3 1.9.3; iOS uses
+AVFoundation/AVKit.

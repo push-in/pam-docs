@@ -1,0 +1,29 @@
+---
+title: PAM Native Sync
+description: Build offline-first synchronization with an idempotent outbox, ordered batches, cursors, tombstones, retry budgets, and deterministic conflicts.
+---
+
+```bash
+pam add sync
+pam doctor
+```
+
+```php
+$engine = new SyncEngine(
+    new SQLiteSyncStore(),
+    $transport,
+    new PolicyConflictResolver(ConflictPolicy::LastWriteWins),
+);
+$engine->upsert('todos', 'todo-42', ['title' => 'Ship'], 7, fn ($operation) => null);
+$engine->synchronize(fn (SyncRunReport $report) => null);
+```
+
+`SyncEngine` queues local mutations and coordinates push/pull;
+`SQLiteSyncStore` persists outbox/cursor/replicas/attempts/tombstones;
+`SyncTransport` is provider-neutral; conflict resolvers make decisions;
+`SyncRunReport` summarizes state/counts/conflicts.
+
+Use stable idempotency IDs, monotonic server versions, transactional remote
+changes plus cursor advancement, explicit retry/tombstone policy, and a domain
+conflict strategy. HTTP, Realtime, and Laravel adapters remain separate
+packages—the engine is not a database wrapper or hidden transport.

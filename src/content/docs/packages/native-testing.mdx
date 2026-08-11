@@ -1,0 +1,31 @@
+---
+title: PAM Native Testing
+description: Replace the native module transport with strict deterministic fakes, immediate or deferred responses, recorded calls, and completion assertions.
+---
+
+```bash
+pam add testing
+pam doctor
+```
+
+```php
+$native = NativeTestHarness::install();
+$native->succeed('auth.session', 'current', [
+    'identifier' => 'user-1',
+    'state' => 2,
+]);
+
+// Exercise production code.
+
+$native->assertCalled('auth.session', 'current');
+$native->assertSatisfied();
+NativeTestHarness::uninstall();
+```
+
+`NativeTestHarness` owns install/teardown; `FakeNativeModuleTransport` stubs
+success/failure, records calls, defers callbacks, and asserts completion;
+`DispatchMode`, `RecordedModuleCall`, and `StubbedModuleResponse` type fixtures.
+
+Unstubbed calls fail immediately. Always call `assertSatisfied()` to catch
+unused responses and pending completions, flush deferred work, and uninstall in
+teardown even after failure so production transport cannot leak between tests.

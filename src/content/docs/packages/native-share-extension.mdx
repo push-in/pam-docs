@@ -1,0 +1,24 @@
+---
+title: PAM Native Share Extension
+description: Receive text, URLs, and sandboxed file copies from Android shares and an iOS Share Extension through a process-safe inbox.
+---
+
+```bash
+pam add share-extension
+pam doctor
+```
+
+```php
+(new ShareInbox())->drain(function (array $items): void {
+    foreach ($items as $item) handleSharedItem($item);
+});
+```
+
+`ShareInbox` drains process-safe platform items; `SharedItem` exposes normalized
+text, URL, or copied-file value; `SharedItemKind` is an integer-backed type.
+
+Drain after launch and each resume. Returned entries are consumed, so move files
+that must survive into application-owned storage before completion. iOS app and
+extension share `group.<application-id>.pam-native`; Android intent filters are
+generated from the package manifest. Never trust MIME, extension, contents, or
+size—validate before parsing/upload.

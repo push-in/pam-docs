@@ -1,0 +1,30 @@
+---
+title: PAM Native Subscriptions
+description: Load, purchase, restore, verify, and acknowledge StoreKit 2 and Google Play Billing subscriptions without trusting client entitlement.
+---
+
+```bash
+pam add subscriptions
+pam doctor
+```
+
+```php
+$subscriptions = new Subscriptions();
+$subscriptions->products(['pro.monthly'], function (array $products) use ($subscriptions): void {
+    if (($product = $products[0] ?? null) === null) return;
+    $subscriptions->purchase(
+        $product->identifier,
+        fn ($transaction) => sendToBackend($transaction->verification),
+        $product->offerToken,
+    );
+});
+```
+
+`Subscriptions` loads products, purchases, restores, and acknowledges;
+`SubscriptionProduct` normalizes price/offers; `SubscriptionTransaction`
+carries JWS/Play verification material; `SubscriptionPurchaseState` separates
+completed, pending, cancelled, and failed.
+
+Verify every transaction through App Store Server or Google Play Developer API,
+persist entitlement server-side, then acknowledge Play. Never grant durable
+entitlement from a device callback. Reconcile after sign-in and account restore.

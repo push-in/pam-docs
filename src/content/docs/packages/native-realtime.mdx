@@ -1,0 +1,30 @@
+---
+title: PAM Native Realtime
+description: Keep native-owned RFC 6455 WebSockets alive across PHP renders and reloads with bounded frames, polling, state, and cleanup.
+---
+
+```bash
+pam add realtime
+pam doctor
+```
+
+```php
+$realtime = new Realtime();
+$realtime->connect(
+    'wss://api.example.com/socket',
+    ['Authorization' => 'Bearer '.$token],
+    ['pam.v1'],
+    fn (?string $id, ?string $error) => null,
+);
+$realtime->poll($id, fn (?RealtimeEvent $event, ?string $error) => null);
+```
+
+`Realtime` connects, sends text/binary, polls, inspects state, and closes;
+`RealtimeEvent`/`RealtimeEventKind` normalize messages/lifecycle/timeouts;
+`RealtimeConnectionState` types connection state.
+
+Only authenticated `wss://` is accepted. Frames are bounded per connection;
+incoming events use a 256-item native queue and one pending long poll. Poll
+continuously, treat timeout as a lifecycle tick, refresh credentials as needed,
+and reconnect with bounded jitter. Android uses OkHttp 5.3.0; iOS uses
+`URLSessionWebSocketTask`.

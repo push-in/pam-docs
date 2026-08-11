@@ -1,0 +1,25 @@
+---
+title: PAM Native Scanner
+description: Scan QR and barcodes in real time with native CameraX/ML Kit and AVFoundation/Vision previews and typed results.
+---
+
+```bash
+pam add scanner
+pam doctor
+```
+
+```php
+return ScannerView::make(BarcodeFormat::QrCode, BarcodeFormat::Ean13)
+    ->duplicateInterval(1200)
+    ->onResult(fn (ScanResult $result) => $this->accept($result));
+```
+
+`ScannerView` owns preview/analyzer; `BarcodeFormat` restricts symbologies;
+`ScanResult` normalizes value/format; `ScannerEventKind` reports result,
+permission, and native failure; `CameraFacing` chooses lens.
+
+The analyzer keeps only the newest frame, works off UI, closes every image
+proxy, and suppresses duplicate values for the configured interval. Android
+bundles ML Kit so first use needs no model download. Request permission before
+mount, limit formats for speed, and validate scanned data before navigation,
+network, or payment actions.
