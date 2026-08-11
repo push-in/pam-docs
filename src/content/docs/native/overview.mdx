@@ -40,6 +40,23 @@ Every public authoring style resolves to the same `Renderable → Element → PN
 
 Templates are parsed once, validated, and kept in memory. Expressions read component or data paths and do not use `eval`.
 
+## Create and prepare an Android app
+
+Install PAM once, then let the CLI own the project lifecycle:
+
+```bash
+pam init my-app --template mobile-ui --platform android
+cd my-app
+pam doctor --fix
+pam doctor
+pam dev
+```
+
+The repair command installs the release's checksum-verified PHP runtimes and
+prebuilt native engines for `arm64-v8a` and `x86_64`. A normal application build
+does not require a local Rust toolchain. Java 17 and the Android SDK remain
+platform prerequisites and the doctor reports their exact missing components.
+
 ## Native component surface
 
 The Android renderer includes layout, text, images, inputs, pressables, scrolling and recycled lists, modals, activity indicators, status bar control, keyboard avoidance, refresh control, Android-specific touch behavior, and system APIs.
@@ -67,11 +84,7 @@ production updates without adding work to the first native frame.
 
 | Requirement | Contract |
 | --- | --- |
-| PHP | 8.4.x |
+| PHP | 8.4.x and 8.5.x selectable runtimes |
 | Android | API 26–36 |
 | PAM Native protocol | Version 1 |
-| iOS | Swift/UIKit renderer implemented; host and device verification in progress |
-
-:::caution[iOS is not a production target yet]
-The protocol peer, runtime bridge, UIKit renderer, native modules, and advanced event lifecycle exist in source. A complete application host, signed packaging pipeline, simulator/device compatibility matrix, accessibility pass, and physical performance evidence are still required before iOS can be described as production-supported.
-:::
+| iOS | Generated UIKit host; PHP 8.4/8.5 simulator certification and signed IPA tooling |

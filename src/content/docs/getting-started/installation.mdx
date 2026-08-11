@@ -44,6 +44,11 @@ An official bundle includes:
 
 You do **not** need a system PHP installation, global Composer, Rust, PHP development headers, or an FPM service to use an official release.
 
+Inside an Android project, `pam doctor --fix` downloads the attested Android
+bundle, verifies its SHA-256, and installs the PHP 8.4/8.5 runtimes and prebuilt
+ARM64/x86_64 native engines. Rust is only required when rebuilding the engine
+itself.
+
 ## Platform support
 
 | Target | Current support |
