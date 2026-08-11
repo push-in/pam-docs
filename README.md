@@ -26,13 +26,32 @@ every public component contract—documented in one place.**
 PAM is not one binary with a few side projects. It is a coherent PHP
 application platform spanning persistent servers, Laravel production
 operations, real native mobile interfaces, secure desktop applications, and a
-Composer-first package ecosystem.
+PAM-first package ecosystem that remains fully compatible with Composer.
 
 ## Source repositories
 
 - [PAM runtime](https://github.com/push-in/pam)
 - [PAM Native core](https://github.com/push-in/pam-native)
+- [PAM Mobile UI](https://github.com/push-in/pam-mobile-ui)
 - [PAM Native Nitro](https://github.com/push-in/pam-native-nitro)
+- [PAM Desktop](https://github.com/push-in/pam-desktop)
+- [Laravel on PAM](https://github.com/push-in/pam-laravel)
+
+Official capabilities are installed through the PAM CLI:
+
+```bash
+pam packages
+pam add auth
+pam add maps
+pam add observability
+pam doctor
+```
+
+PAM performs package metadata lookup, dependency compatibility preflight,
+updates the normal Composer manifest and lockfile, and refreshes native
+integration where required. Package authors and advanced interoperability flows
+can still use `pam composer`; application documentation should lead with
+`pam add <capability>` whenever an official alias exists.
 
 This repository explains that platform without hiding the hard parts. The
 documentation records public APIs, architectural ownership, lifecycle,
