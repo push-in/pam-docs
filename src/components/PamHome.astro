@@ -24,7 +24,29 @@ const path = (value: string) => `${base}${value}`;
       </div>
     </div>
 
-    <div class="pam-runtime-visual" aria-label="PAM connects Composer PHP to native application targets">
+    <div class="pam-runtime-visual" aria-label="Create and run a PAM application from one terminal">
+      <div class="pam-hero-terminal">
+        <div class="pam-terminal-bar">
+          <span aria-hidden="true"><i></i><i></i><i></i></span>
+          <strong>orbit / pam</strong>
+          <em>ready</em>
+        </div>
+        <div class="pam-terminal-body">
+          <p><span>$</span> pam init orbit --template mobile</p>
+          <p class="pam-terminal-success"><span>✓</span> Project created</p>
+          <p class="pam-terminal-success"><span>✓</span> Native runtime ready</p>
+          <p><span>$</span> cd orbit &amp;&amp; pam dev</p>
+          <p class="pam-terminal-live"><span>●</span> Android connected</p>
+          <p class="pam-terminal-live"><span>●</span> iOS connected</p>
+          <p class="pam-terminal-hot"><span>↻</span> Hot reload armed<span class="pam-terminal-caret" aria-hidden="true"></span></p>
+        </div>
+        <div class="pam-terminal-flow" aria-label="PAM Native reactive update pipeline">
+          <span>native event</span><i aria-hidden="true">→</i>
+          <span>PHP state</span><i aria-hidden="true">→</i>
+          <span>Rust diff</span><i aria-hidden="true">→</i>
+          <span>UI commit</span>
+        </div>
+      </div>
       <svg viewBox="0 0 680 600" role="img" aria-labelledby="runtime-visual-title runtime-visual-description">
         <title id="runtime-visual-title">The PAM application stack</title>
         <desc id="runtime-visual-description">Composer and PHP run through PAM into server, native mobile, and desktop targets.</desc>
@@ -91,6 +113,62 @@ const path = (value: string) => `${base}${value}`;
     <a href={path('/laravel/production-platform/')}><strong>Laravel</strong><span>Observe, deploy, scale, automate</span></a>
     <a href={path('/native/overview/')}><strong>Native mobile</strong><span>Android Views and iOS UIKit from PHP</span></a>
     <a href={path('/desktop/overview/')}><strong>Desktop</strong><span>Secure Servo-powered windows</span></a>
+  </section>
+
+  <section class="pam-paths" aria-labelledby="pam-paths-title">
+    <div class="pam-paths-head">
+      <div>
+        <p class="pam-home-kicker">Choose what ships</p>
+        <h2 id="pam-paths-title">One command. Four ceilings removed.</h2>
+      </div>
+      <p>Pick the product surface. PAM keeps the workflow, runtime discipline, and PHP application model coherent.</p>
+    </div>
+    <div class="pam-path-grid">
+      <a href={path('/runtime/http/')}>
+        <span>Server</span>
+        <strong>Persistent APIs &amp; realtime</strong>
+        <code>pam init app --template api</code>
+        <em>HTTP · WebSockets · async I/O <b aria-hidden="true">→</b></em>
+      </a>
+      <a href={path('/laravel/overview/')}>
+        <span>Laravel</span>
+        <strong>Boot once. Isolate every request.</strong>
+        <code>pam init app --template laravel</code>
+        <em>Artisan · OTLP · deploy · scale <b aria-hidden="true">→</b></em>
+      </a>
+      <a class="pam-path-featured" href={path('/native/overview/')}>
+        <span>Native mobile</span>
+        <strong>Real Android &amp; iOS UI from PHP</strong>
+        <code>pam init app --template mobile</code>
+        <em>UIKit · Android Views · no JS runtime <b aria-hidden="true">→</b></em>
+      </a>
+      <a href={path('/desktop/overview/')}>
+        <span>Desktop</span>
+        <strong>Secure native windows with Servo</strong>
+        <code>pam init app --template desktop</code>
+        <em>Capabilities · updates · distribution <b aria-hidden="true">→</b></em>
+      </a>
+    </div>
+  </section>
+
+  <section class="pam-ecosystem-preview" aria-labelledby="pam-ecosystem-title">
+    <div class="pam-ecosystem-copy">
+      <p class="pam-home-kicker">The capability shelf</p>
+      <h2 id="pam-ecosystem-title">Add the hard parts.<br/>Keep building the product.</h2>
+      <p>Every official capability installs through PAM, passes compatibility preflight, and keeps the normal Composer contract underneath.</p>
+      <a class="pam-button pam-button-primary" href={path('/ecosystem/')}>Explore all 27 capabilities <span aria-hidden="true">→</span></a>
+    </div>
+    <div class="pam-capability-cloud" aria-label="Popular PAM Native capabilities">
+      <a href={path('/ecosystem/#auth')}><strong>auth</strong><code>pam add auth</code></a>
+      <a href={path('/ecosystem/#maps')}><strong>maps</strong><code>pam add maps</code></a>
+      <a href={path('/ecosystem/#observability')}><strong>observability</strong><code>pam add observability</code></a>
+      <a href={path('/ecosystem/#sync')}><strong>sync</strong><code>pam add sync</code></a>
+      <a href={path('/ecosystem/#video')}><strong>video</strong><code>pam add video</code></a>
+      <a href={path('/ecosystem/#payments')}><strong>payments</strong><code>pam add payments</code></a>
+      <a href={path('/ecosystem/#firebase')}><strong>firebase</strong><code>pam add firebase</code></a>
+      <a href={path('/ecosystem/#bluetooth')}><strong>bluetooth</strong><code>pam add bluetooth</code></a>
+      <a href={path('/ecosystem/#widgets')}><strong>widgets</strong><code>pam add widgets</code></a>
+    </div>
   </section>
 
   <section class="pam-home-section pam-home-intro" aria-labelledby="beyond-request">

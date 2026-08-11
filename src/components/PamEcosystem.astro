@@ -1,0 +1,64 @@
+---
+const capabilities = [
+  ['auth', 'Identity & security', 'Encrypted credentials and OAuth 2.1/PKCE primitives.', 'pam-native-auth'],
+  ['background-transfer', 'Files & background', 'Durable uploads and downloads outside the PHP lifecycle.', 'pam-native-background-transfer'],
+  ['bluetooth', 'Hardware', 'BLE discovery, GATT operations, and bounded native events.', 'pam-native-bluetooth'],
+  ['devtools', 'Developer experience', 'Timeline, state snapshots, network inspection, and performance marks.', 'pam-native-devtools'],
+  ['feature-flags', 'Delivery', 'Typed targeting, deterministic rollout, and offline snapshots.', 'pam-native-feature-flags'],
+  ['firebase', 'Platform services', 'Analytics, Crashlytics, Remote Config, Messaging, and Installations.', 'pam-native-firebase'],
+  ['health', 'Health', 'Health Connect and HealthKit authorization, reads, and writes.', 'pam-native-health'],
+  ['intents', 'Platform integration', 'Android shortcuts and Apple App Intents for named routes.', 'pam-native-intents'],
+  ['laravel-sync', 'Data & offline', 'Authenticated Laravel delta and mutation APIs for PAM Native Sync.', 'pam-native-laravel-sync'],
+  ['live-activities', 'Platform integration', 'ActivityKit Live Activities and Android ongoing notifications.', 'pam-native-live-activities'],
+  ['maps', 'Location', 'Declarative Google Maps and MapKit cameras, markers, and overlays.', 'pam-native-maps'],
+  ['media', 'Media', 'Native media inspection, thumbnails, and embedded camera capture.', 'pam-native-media'],
+  ['mobile-ui', 'Interface', 'Retained Material Design 3 components for Android and iOS.', 'pam-mobile-ui'],
+  ['nfc', 'Hardware', 'Lifecycle-safe NDEF reading and writing on Android and iOS.', 'pam-native-nfc'],
+  ['nitro', 'Data & offline', 'Typed, reactive, offline-first data built for native workloads.', 'pam-native-nitro'],
+  ['observability', 'Operations', 'Vendor-neutral spans, logs, metrics, crash context, and export.', 'pam-native-observability'],
+  ['payments', 'Commerce', 'PCI-conscious Stripe PaymentSheet with native SCA flows.', 'pam-native-payments'],
+  ['plugin-kit', 'Developer experience', 'Scaffold and generate typed PHP, Kotlin, and Swift plugins.', 'pam-native-plugin-kit'],
+  ['realtime', 'Networking', 'Persistent native RFC 6455 connections with bounded queues.', 'pam-native-realtime'],
+  ['scanner', 'Hardware', 'Real-time QR and barcode scanning with native camera previews.', 'pam-native-scanner'],
+  ['share-extension', 'Platform integration', 'Receive text, URLs, and files from native share surfaces.', 'pam-native-share-extension'],
+  ['subscriptions', 'Commerce', 'StoreKit 2 and Google Play Billing subscriptions.', 'pam-native-subscriptions'],
+  ['sync', 'Data & offline', 'Idempotent outbox, cursors, conflicts, and incremental synchronization.', 'pam-native-sync'],
+  ['testing', 'Developer experience', 'Deterministic bridge fakes and strict native assertions.', 'pam-native-testing'],
+  ['video', 'Media', 'Adaptive HLS/DASH playback through Media3 and AVPlayer.', 'pam-native-video'],
+  ['widgets', 'Platform integration', 'Android App Widgets and iOS WidgetKit timelines.', 'pam-native-widgets'],
+  ['native', 'Foundation', 'The PAM Native SDK, component runtime, and renderer contracts.', 'pam-native'],
+] as const;
+---
+
+<div class="pam-catalog-intro">
+  <p class="pam-home-kicker">27 official capabilities</p>
+  <h2>One command between<br/>idea and native capability.</h2>
+  <p>Choose what the product needs. PAM checks package metadata and compatibility before it changes the normal Composer manifest, then refreshes native integration for you.</p>
+  <pre aria-label="Install a PAM capability"><code><span>$</span> pam packages
+<span>$</span> pam add observability
+<strong>✓</strong> Compatibility preflight passed
+<strong>✓</strong> Native integration refreshed
+<span>$</span> pam doctor</code></pre>
+</div>
+
+<div class="pam-catalog-grid">
+  {capabilities.map(([alias, category, description, repository]) => (
+    <article id={alias} class="pam-catalog-card">
+      <div>
+        <span>{category}</span>
+        <h2>{alias}</h2>
+        <p>{description}</p>
+      </div>
+      <code>pam add {alias}</code>
+      <div class="pam-catalog-links">
+        <a href={`https://github.com/push-in/${repository}`}>README <span aria-hidden="true">↗</span></a>
+        <a href={`https://github.com/push-in/${repository}/issues`}>Support <span aria-hidden="true">↗</span></a>
+      </div>
+    </article>
+  ))}
+</div>
+
+<aside class="pam-catalog-note">
+  <strong>Remove safely.</strong>
+  <p>Use <code>pam remove &lt;capability&gt;</code>. PAM performs a dry-run dependency check, updates the project, refreshes native integration, and leaves diagnostics to <code>pam doctor</code>.</p>
+</aside>

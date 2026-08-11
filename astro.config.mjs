@@ -58,6 +58,7 @@ export default defineConfig({
             { label: 'Installation', slug: 'getting-started/installation' },
             { label: 'Create your first app', slug: 'getting-started/first-app' },
             { label: 'Choose a target', slug: 'getting-started/choose-a-target' },
+            { label: 'Capability catalog', slug: 'ecosystem' },
             { label: 'CLI & project console', slug: 'getting-started/cli' },
             { label: 'Project status', slug: 'project/status' },
             { label: 'Release 1.0.2', slug: 'project/release-1-0-2' },

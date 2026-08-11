@@ -46,7 +46,23 @@ The socket preset enables PAM's native WebSocket transport on the same listener:
 pam init realtime-api --template api --socket
 ```
 
-## Try another target
+## Build the product you came for
+
+The same project workflow drives every PAM target:
+
+| Product | Create it | First visible result |
+| --- | --- | --- |
+| Persistent API | `pam init my-api --template api` | JSON endpoint on port 3000 |
+| Laravel | `pam init my-app --template laravel` | Warm Laravel route and working Artisan |
+| Native mobile | `pam init my-app --template mobile` | Real Android/iOS controls with hot reload |
+| Mobile UI | `pam init my-app --template mobile-ui` | Retained Material Design 3 screen |
+| Desktop | `pam init my-app --template desktop` | Capability-secured native window |
+
+```text
+pam doctor → pam dev → pam test → pam build → pam package
+```
+
+Choose one explicitly:
 
 ```bash
 pam init my-laravel-app --template laravel
@@ -62,3 +78,7 @@ project, prefer the contextual workflow: `pam doctor`, `pam dev`, `pam test`,
 Read [Choose a target](../choose-a-target/) for the exact platform contracts.
 Use the [CLI & project console](../cli/) as the command reference for daily
 development, automation, Composer, Artisan, generators, and releases.
+
+When the product needs maps, authentication, offline sync, video, payments,
+observability, hardware, or platform services, continue in the
+[capability catalog](/ecosystem/).

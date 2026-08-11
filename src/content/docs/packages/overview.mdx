@@ -1,9 +1,23 @@
 ---
 title: Package ecosystem
-description: Understand the first-party Composer packages that extend PAM.
+description: Add official PAM capabilities while keeping standard Composer contracts.
 ---
 
-The PAM binary owns runtime-level capabilities. Optional application abstractions remain ordinary Composer packages with versioned PHP contracts.
+The PAM binary owns runtime-level capabilities. Applications install official
+capabilities through the PAM CLI; underneath, they remain ordinary Composer
+packages with versioned PHP contracts.
+
+```bash
+pam packages
+pam add auth
+pam add observability
+pam doctor
+```
+
+`pam add` looks up package metadata, performs a non-mutating dependency
+compatibility preflight, updates the normal manifest and lockfile, and refreshes
+native integration when required. Explore every alias in the
+[capability catalog](/ecosystem/).
 
 This is how PAM grows without becoming a monolith. The runtime provides the
 hard systems boundary; packages provide focused application contracts using
@@ -21,9 +35,13 @@ custom lockfile, or proprietary package format is required.
 | [`pushinbr/pam-native-nitro`](/packages/native-nitro/) | Offline-first, model-driven local data engine on PAM Native SQLite workers |
 | `pam/desktop` | Typed PHP API and worker loop for PAM Desktop |
 
-## Composer remains Composer
+## PAM first. Composer remains Composer.
 
 PAM discovers the normal Composer autoloader, including projects with a custom `config.vendor-dir`. It does not introduce a package wrapper or alternate lockfile.
+
+Use `pam add <capability>` for official ecosystem features. Package authors and
+advanced interoperability flows can invoke Composer through PAM's private PHP
+runtime:
 
 ```bash
 pam composer install
