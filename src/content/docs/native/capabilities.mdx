@@ -1,0 +1,387 @@
+---
+title: Platform capabilities
+description: Use permissions, contacts, location, recording, files, links, notifications, background work, SQLite, sensors, and device state from typed PHP APIs.
+---
+
+PAM Native exposes platform features through typed PHP APIs. Coded variants
+are integer-backed enums, native work stays bounded, and protocol additions are
+append-only. This page is the cross-platform capability reference; component-
+specific details remain in the linked guides.
+
+| Capability | PHP entry point | Deep guide |
+| --- | --- | --- |
+| Permissions | `System\Permissions` | This page |
+| Contacts | `System\Contacts` | This page |
+| Current location | `System\Location` | This page |
+| Voice recording | `System\AudioRecorder` | This page |
+| Files, camera, gallery | `System\Files`, `MediaCapture`, `MediaLibrary` | [Files and media](./files-and-media/) |
+| Incoming and outgoing links | `System\Linking` | [Navigation](./navigation/#deep-links) |
+| Shared content | `System\IncomingShares` | [Navigation](./navigation/#receive-content-shared-by-other-android-apps) |
+| Local and push notifications | `System\Notifications`, `PushNotifications` | This page |
+| Finite background work | `System\BackgroundTasks` | This page |
+| Cache inspection and cleanup | `System\Caches` | [Images and cache](./components/images-and-cache/) |
+| SQLite | `Database\SQLite` | This page |
+| Sensors and device state | `System\Sensors`, `DeviceStatus` | This page |
+| Web and media | `UI\WebView`, `MediaPlayer` | [WebView](./components/webview/), [Video and audio](./components/video-and-audio/) |
+| Interaction and motion | `UI\GestureDetector`, `Animated`, `InteractionRegion` | [Interaction and motion](./components/interaction-and-motion/) |
+
+## Permissions
+
+Use `PermissionKind` instead of platform permission strings. Read status before
+requesting, explain the product reason in UI, and route blocked users to system
+settings only after they act.
+
+```php
+use Pam\Native\PermissionKind;
+use Pam\Native\System\Permissions;
+
+Permissions::status(PermissionKind::Camera, function ($decision): void {
+    if ($decision->granted()) {
+        $this->openCamera();
+        return;
+    }
+
+    if ($decision->canAskAgain) {
+        Permissions::requestKind(PermissionKind::Camera, function ($result): void {
+            if ($result->granted()) {
+                $this->openCamera();
+            }
+        });
+        return;
+    }
+
+    $this->showCameraSettingsExplanation();
+});
+```
+
+`PermissionStatus` distinguishes granted, denied, blocked, and limited access.
+Limited photo access is a valid decision on current Android and iOS versions.
+
+iOS hosts provide the usage descriptions required by enabled features:
+
+- `NSCameraUsageDescription`;
+- `NSMicrophoneUsageDescription`;
+- `NSPhotoLibraryUsageDescription`;
+- `NSLocationWhenInUseUsageDescription`; and
+- `NSContactsUsageDescription`.
+
+## Contacts
+
+Request typed permission before reading the address book. Contacts contain
+stable platform identifiers, names, phone numbers, and email addresses.
+
+```php
+use Pam\Native\PermissionKind;
+use Pam\Native\System\Contacts;
+use Pam\Native\System\Permissions;
+
+Permissions::requestKind(PermissionKind::Contacts, function ($decision): void {
+    if (!$decision->granted()) {
+        return;
+    }
+
+    Contacts::all(function (array $contacts): void {
+        foreach ($contacts as $contact) {
+            $this->indexContact($contact->id, $contact->displayName);
+        }
+    });
+});
+```
+
+`Contacts::all()` reads bounded native pages internally so a large address book
+does not exceed the bridge payload limit. Keep the stable ID and reload details
+rather than persisting a second unbounded copy of the address book.
+
+## Current location
+
+Pass both completion and failure callbacks so provider or timeout failures can
+restore loading state without becoming uncaught asynchronous exceptions.
+
+```php
+use Pam\Native\LocationPosition;
+use Pam\Native\System\Location;
+use Pam\Native\System\Toast;
+
+Location::current(
+    callback: function (LocationPosition $position): void {
+        $this->useLocation(
+            $position->latitude,
+            $position->longitude,
+            $position->accuracy,
+        );
+    },
+    highAccuracy: true,
+    timeoutMs: 15_000,
+    maximumAgeMs: 10_000,
+    failure: function (string $message): void {
+        Toast::show($message !== '' ? $message : 'Location is unavailable.');
+    },
+);
+```
+
+Request `PermissionKind::Location` first. The failure callback is optional for
+source compatibility; omitting it preserves the legacy exception behavior.
+
+## Voice recording
+
+`AudioRecorder` records AAC/M4A and provides bounded amplitude updates for a
+waveform. Start, stop, and other asynchronous operations accept failure
+callbacks so the composer can recover when the native recorder is unavailable.
+
+```php
+use Pam\Native\AudioRecording;
+use Pam\Native\System\AudioRecorder;
+
+AudioRecorder::start(
+    function (): void {
+        $this->recording = true;
+        $this->amplitudeSubscription = AudioRecorder::watch(
+            fn ($progress) => $this->amplitude = $progress->amplitude,
+        );
+    },
+    fn (string $message) => $this->restoreComposer($message),
+);
+
+AudioRecorder::stop(
+    function (AudioRecording $recording): void {
+        $this->upload($recording->relativePath, $recording->durationMs);
+    },
+    fn (string $message) => $this->restoreComposer($message),
+);
+```
+
+Stop amplitude observation when its screen unmounts. Microphone permission and
+the iOS usage description are application responsibilities.
+
+## Files, camera, and gallery
+
+`Files::pick()` and `pickMany()` import selected content into the application
+sandbox. `FileReference::uri()` returns a `pam-file:///` source that `Image`
+can render without copying bytes through PHP or exposing an absolute path.
+
+Key guarantees:
+
+- a file is limited to 64 MiB and one multi-selection to 256 MiB;
+- multi-select returns at most 50 files in selection order;
+- failed selections remove files already copied by that operation;
+- `read()` and `write()` bridge at most 1 MiB per call;
+- `stat()`, `list()`, and `delete()` accept sandbox-relative paths only;
+- `download()` accepts HTTPS, rejects embedded credentials, and replaces the
+  destination atomically after a successful transfer; and
+- `downloadWithProgress()` validates headers and can be cancelled when its
+  owner is disposed.
+
+Android `MediaLibrary::assets()` and `albums()` query gallery metadata on a
+native worker without importing every asset. Import only the chosen URI.
+Portable applications keep the system document picker as their fallback. See
+[Files and media](./files-and-media/) for complete picker, gallery, editor, and
+download examples.
+
+## Links
+
+Native failures are asynchronous, so product UI should supply failure
+callbacks instead of wrapping the original call in `try/catch`.
+
+```php
+use Pam\Native\System\Linking;
+
+Linking::open(
+    'https://example.com',
+    fn () => $this->recordLinkOpened(),
+    fn (string $message) => $this->offerCopyFallback($message),
+);
+```
+
+`canOpen()` and `initial()` expose the same optional final failure callback.
+Cold and warm incoming links, intent filters, URI limits, and routing are
+covered in [Navigation](./navigation/#deep-links).
+
+## Incoming shares
+
+Declare only accepted MIME types in `pam-native.json`:
+
+```json
+{
+  "android": {
+    "shareTargets": ["image/*", "video/*", "text/plain"]
+  }
+}
+```
+
+```php
+use Pam\Native\IncomingShare;
+use Pam\Native\System\IncomingShares;
+
+$openComposer = function (IncomingShare $share): void {
+    $this->draftText = $share->text;
+    $this->draftFiles = $share->files;
+};
+
+IncomingShares::initial(function (?IncomingShare $share) use ($openComposer): void {
+    if ($share !== null) {
+        $openComposer($share);
+    }
+});
+
+$subscription = IncomingShares::listen($openComposer);
+```
+
+Android copies files to private cache before PHP is notified. Payloads are
+bounded to 10 files, 64 KiB of text, and 16 queued events. Unsubscribe when a
+short-lived owner no longer needs warm-start shares.
+
+## Background work
+
+`BackgroundTasks::begin()` requests a finite execution window: a partial wake
+lock on Android or `UIBackgroundTask` on iOS. It is not an unlimited service.
+
+```php
+use Pam\Native\System\BackgroundTasks;
+
+BackgroundTasks::begin(
+    name: 'finish-upload',
+    timeoutSeconds: 120,
+    callback: function (int $token): void {
+        $finish = static fn () => BackgroundTasks::end($token);
+
+        $this->finishPendingUpload(
+            completed: $finish,
+            failed: $finish,
+        );
+    },
+);
+```
+
+Always call `end()`, including on errors. Persist resumable work before the
+window expires and move durable synchronization to the native sync APIs.
+
+## Local notifications
+
+`Notifications` requests permission and schedules or cancels local
+notifications. Use stable application identifiers so rescheduling replaces the
+intended item rather than creating duplicates.
+
+```php
+use Pam\Native\System\Notifications;
+
+Notifications::requestPermission(function (bool $granted): void {
+    if ($granted) {
+        Notifications::schedule(
+            id: 'order-ready:42',
+            title: 'Order ready',
+            body: 'Order #42 is ready for pickup.',
+            delaySeconds: 60,
+        );
+    }
+});
+```
+
+## Push notifications
+
+Android enables Firebase only when `.pam/google-services.json` or the root
+`google-services.json` exists. Projects without it do not compile or package
+Firebase Messaging.
+
+```php
+use Pam\Native\System\PushNotifications;
+
+PushNotifications::register(
+    fn ($token) => $this->sendTokenToServer($token),
+    fn (string $message) => $this->recordProviderFailure($message),
+);
+
+$subscription = PushNotifications::listenAndRoute(
+    $navigator,
+    fn ($event) => $this->recordPushEvent($event),
+);
+```
+
+The optional registration failure callback keeps expected provider or client-
+configuration failures in application control. Android persists up to 64
+unconsumed events through process startup. The data payload is bounded to 256
+KiB, and automatic routing opens only a numeric `Opened = 2` event with a
+non-empty deep link.
+
+iOS delegates forward token, foreground delivery, and open callbacks through
+`PamPushNotifications`. Provider transport and server-side FCM/APNs delivery
+remain application configuration.
+
+## SQLite
+
+```php
+use Pam\Native\Database\SQLite;
+
+SQLite::execute(
+    'app.db',
+    'CREATE TABLE IF NOT EXISTS drafts (id INTEGER PRIMARY KEY, body TEXT NOT NULL)',
+);
+SQLite::execute(
+    'app.db',
+    'INSERT INTO drafts (id, body) VALUES (?, ?)',
+    [42, 'Ready offline'],
+);
+SQLite::query(
+    'app.db',
+    'SELECT id, body FROM drafts ORDER BY id DESC LIMIT ?',
+    [50],
+    fn (array $rows) => $this->drafts = $rows,
+);
+```
+
+Databases live under the private application directory. Statements execute on
+a serial native queue with bound positional values. WAL,
+`synchronous=NORMAL`, and a bounded busy timeout are enabled. Queries stop at
+1,000 rows or 256 columns; paginate larger results. `executeMany()` reuses one
+prepared statement inside one native transaction for bulk writes.
+
+## Sensors and device state
+
+```php
+use Pam\Native\SensorType;
+use Pam\Native\System\DeviceStatus;
+use Pam\Native\System\Sensors;
+
+$sensor = Sensors::watch(
+    SensorType::Accelerometer,
+    fn ($reading) => $this->motion = $reading,
+    50,
+);
+$device = DeviceStatus::watch(
+    fn ($status) => $this->deviceStatus = $status,
+    1_000,
+);
+
+Sensors::unwatch($sensor);
+DeviceStatus::unwatch($device);
+```
+
+Supported sensor types are accelerometer, gyroscope, magnetometer, and device
+motion/attitude. Device status contains battery, charging, low-power, network
+availability, and `NetworkType`. Observation uses a four-value native queue;
+when PHP is busy, old samples are discarded in favor of recent state.
+
+## Lifecycle and recovery
+
+Android pauses WebView timers and active media from `Activity.onPause()` and
+resumes only media that was playing. iOS applies the same behavior across
+active and inactive notifications.
+
+Components implementing `Restorable` persist on lifecycle transitions.
+Navigators restore stacks, selected destinations, and parameters. Picker or
+camera operations cancelled by process death must be restarted from restored
+product state rather than replayed blindly.
+
+## Security and resource limits
+
+- WebView allowlists apply to exact main-frame hosts and reject executable or
+  custom root schemes.
+- WebView main-frame navigation times out after 30 seconds.
+- File paths remain canonical inside `pam-files`.
+- Imports stop at 64 MiB; bridge reads and writes stop at 1 MiB.
+- SQLite queries stop at 1,000 rows or 256 columns.
+- Push queues, IDs, text, deep links, and JSON payloads are bounded.
+- Runtime event payloads remain bounded to 1 MiB.
+- Continuous observers must be unsubscribed by their owning lifecycle.
+
+Use [DevTools](./devtools/) to inspect module latency, failures, lifecycle
+events, and runtime errors while exercising these APIs.
