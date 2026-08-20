@@ -1,9 +1,11 @@
 ---
 title: pushinbr/pam-api
-description: Routing, middleware, error boundaries, and package discovery for native PAM applications.
+description: Express-like routing with Laravel-style controllers, validation, resources, dependency injection, and production boundaries.
 ---
 
-`pushinbr/pam-api` is PAM's optional HTTP application layer. It provides static and parameterized routes, `404` and `405` handling, a compiled middleware pipeline, error boundaries, providers, and package discovery.
+`pushinbr/pam-api` is PAM's optional HTTP application layer. It combines
+Express-like route ergonomics with Laravel-style application boundaries while
+keeping the persistent PAM runtime explicit and safe.
 
 ```bash
 pam composer require pushinbr/pam-api
@@ -35,6 +37,121 @@ $app->post('/users', static function ($request, $response) {
 });
 
 $app->listen(3000);
+```
+
+## Controllers and method mapping
+
+Routes accept closures, invokable controllers, or an explicit controller and
+method pair:
+
+```php
+$app->post('/orders', CreateOrderController::class);
+$app->post('/login', [LoginController::class, 'onLogin']);
+```
+
+Class-and-method handlers are checked when the route is registered. PAM resolves
+the controller through its container, injects constructor services, and injects
+request, response, container services, and named route parameters into the
+action method.
+
+```php
+final readonly class LoginController
+{
+    public function __construct(private LoginService $login) {}
+
+    public function onLogin(LoginRequest $request): AuthResource
+    {
+        return new AuthResource($this->login->handle($request->validated()));
+    }
+}
+```
+
+## Fluent routes and groups
+
+```php
+use Pam\Api\RouteConstraint;
+use Pam\Api\RouteRegistrar;
+
+$app->prefix('/api/v1')
+    ->middleware(Authenticate::class)
+    ->group(function (RouteRegistrar $routes): void {
+        $routes->apiResource('/users', UserController::class);
+
+        $routes->get('/users/{id}', [UserController::class, 'show'])
+            ->where('id', RouteConstraint::Integer)
+            ->name('users.show');
+    });
+```
+
+Built-in constraints cover integers, UUIDs, ULIDs, slugs, alphabetic values and
+alphanumeric values. `where()` also accepts an explicit regular expression.
+
+## Container and request scope
+
+```php
+$container = $app->container();
+$container->bind(UserRepository::class, DatabaseUserRepository::class);
+$container->singleton(Cache::class, RedisCache::class);
+$container->scoped(CurrentUser::class);
+```
+
+Transient bindings create a value for each resolution. Singletons live for the
+worker. Scoped values live only for the current request and are discarded in a
+`finally` boundary, including exceptional responses. Never place request or
+tenant state in a singleton.
+
+## Form Requests
+
+```php
+use Pam\Api\Validation\FormRequest;
+use Pam\Api\Validation\Rule;
+
+final class LoginRequest extends FormRequest
+{
+    public function rules(): array
+    {
+        return [
+            'email' => ['required', 'string', 'email'],
+            'type' => ['required', Rule::enum(UserType::class)],
+        ];
+    }
+}
+
+enum UserType: int
+{
+    case Regular = 1;
+    case Administrator = 2;
+}
+```
+
+Validation and authorization stay outside controllers. Validation failures use
+Problem Details and stable integer error codes. Status/type/state/kind/category
+values should be sequential integer-backed enums.
+
+Validated values can be hydrated into a readonly DTO, including backed enum
+constructor arguments:
+
+```php
+$data = $request->dto(CreateUserData::class);
+```
+
+## JSON Resources
+
+Handlers may return `JsonResource` or `ResourceCollection`. PAM converts them
+into consistent `data` and optional `meta` envelopes:
+
+```php
+final readonly class UserResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id' => $this->resource->id,
+            'name' => $this->resource->name,
+            'type' => $this->resource->type->value,
+        ];
+    }
+}
 ```
 
 Convenience methods exist for `GET`, `POST`, `PUT`, `PATCH`, and `DELETE`. Use `route()` for another valid HTTP method.
@@ -113,11 +230,16 @@ Routes, middleware, providers, error handlers, and PSR handlers cannot be change
 
 | Type | Public surface |
 | --- | --- |
-| `App` | `get()`, `post()`, `put()`, `patch()`, `delete()`, `route()`, `middleware()`, `handler()`, `provider()`, `onError()`, `listen()`, `handle()` |
+| `App` | Route verbs, `prefix()`, `group()`, `container()`, middleware, providers, errors, listener and request handling |
 | `Router` | `add(method, path, handler)`, `match(method, path)`, `routes()` |
+| `RouteRegistrar` | Prefix/group composition and REST resource registration |
+| `PendingRoute` | Route names, constraints and route middleware |
+| `Container` | Transient, singleton and request-scoped dependency resolution |
+| `FormRequest` | Dedicated authorization and input validation |
+| `JsonResource` | Domain response transformation and `data` envelopes |
 | `Pipeline` | Construct with middleware and a destination; execute with `handle()` |
 | `CallableRequestHandler` | Adapts a callable to `RequestHandlerInterface` |
-| `Route` | Readonly method, path, handler closure, compiled pattern and parameter names |
+| `Route` | Method, path, compiled handler, matching metadata and route middleware |
 | `RoutingResult` | Readonly type, matched route, decoded parameters and allowed methods |
 | `PackageDiscovery` | `providers(projectRoot)` reads Composer package provider metadata |
 
@@ -149,9 +271,54 @@ $app
 `CorsMiddleware` handles matching origins and terminates valid preflight
 requests with `204`. Never combine wildcard origins with credentials.
 `RateLimitMiddleware` is a per-worker, in-memory token bucket keyed by
-`REMOTE_ADDR`; use an upstream or shared limiter when limits must be global.
+`REMOTE_ADDR` by default. Pass a `RateLimitStore` backed by Redis or another
+atomic shared system when limits must be global across workers, and pass a
+custom key resolver for user, token or tenant limits. Proxy-derived client
+addresses must only be accepted behind an explicitly trusted proxy boundary.
+Limit, remaining and retry headers are emitted with a Problem Details `429`.
 `SecurityHeadersMiddleware` adds content-type, frame, referrer and permissions
 policies; HSTS is added only when `HTTPS=on`.
+
+## Authentication, idempotency, and tenants
+
+Authentication uses application-provided `Authenticator` and `Principal`
+contracts. The authenticated principal and resolved tenant exist only in the
+current request scope. Ability checks never retain user state in a worker
+singleton.
+
+`IdempotencyMiddleware` replays an identical request and rejects reuse of the
+same key with a different payload. Response caching and idempotency both use
+replaceable stores; bounded memory stores are included for development and
+tests, while multiworker deployments should provide atomic shared adapters.
+
+## OpenAPI and clients
+
+```php
+$app->post('/users', [UserController::class, 'store'])
+    ->name('users.store')
+    ->summary('Create a user')
+    ->tags(['Users'])
+    ->input(StoreUserRequest::class)
+    ->output(UserResource::class);
+
+$contract = $app->openApi('My API', '1.0.0');
+$json = $contract->toJson();
+$typescript = $contract->client(ClientLanguage::TypeScript);
+```
+
+Kotlin and Swift clients use the same OpenAPI 3.1 contract. Compatibility
+checks report removed paths and operations through sequential integer codes.
+
+## Production and testing contracts
+
+The package includes replaceable contracts for transactions, events, jobs,
+cache, retry, circuit breakers, deadlines, health checks, tenant resolution and
+request observations. SSE remains in PAM's native response API; WebSocket rooms
+and events remain in `pushinbr/pam-socket`.
+
+`TestClient` executes the real application pipeline without a network socket
+and provides status, header, JSON and JSON-path assertions. Container
+diagnostics expose request-scope state for leak checks.
 
 :::note[License]
 `pushinbr/pam-api` uses the Apache License 2.0.
