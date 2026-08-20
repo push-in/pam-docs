@@ -128,6 +128,13 @@ Validation and authorization stay outside controllers. Validation failures use
 Problem Details and stable integer error codes. Status/type/state/kind/category
 values should be sequential integer-backed enums.
 
+Validated values can be hydrated into a readonly DTO, including backed enum
+constructor arguments:
+
+```php
+$data = $request->dto(CreateUserData::class);
+```
+
 ## JSON Resources
 
 Handlers may return `JsonResource` or `ResourceCollection`. PAM converts them
@@ -271,6 +278,47 @@ addresses must only be accepted behind an explicitly trusted proxy boundary.
 Limit, remaining and retry headers are emitted with a Problem Details `429`.
 `SecurityHeadersMiddleware` adds content-type, frame, referrer and permissions
 policies; HSTS is added only when `HTTPS=on`.
+
+## Authentication, idempotency, and tenants
+
+Authentication uses application-provided `Authenticator` and `Principal`
+contracts. The authenticated principal and resolved tenant exist only in the
+current request scope. Ability checks never retain user state in a worker
+singleton.
+
+`IdempotencyMiddleware` replays an identical request and rejects reuse of the
+same key with a different payload. Response caching and idempotency both use
+replaceable stores; bounded memory stores are included for development and
+tests, while multiworker deployments should provide atomic shared adapters.
+
+## OpenAPI and clients
+
+```php
+$app->post('/users', [UserController::class, 'store'])
+    ->name('users.store')
+    ->summary('Create a user')
+    ->tags(['Users'])
+    ->input(StoreUserRequest::class)
+    ->output(UserResource::class);
+
+$contract = $app->openApi('My API', '1.0.0');
+$json = $contract->toJson();
+$typescript = $contract->client(ClientLanguage::TypeScript);
+```
+
+Kotlin and Swift clients use the same OpenAPI 3.1 contract. Compatibility
+checks report removed paths and operations through sequential integer codes.
+
+## Production and testing contracts
+
+The package includes replaceable contracts for transactions, events, jobs,
+cache, retry, circuit breakers, deadlines, health checks, tenant resolution and
+request observations. SSE remains in PAM's native response API; WebSocket rooms
+and events remain in `pushinbr/pam-socket`.
+
+`TestClient` executes the real application pipeline without a network socket
+and provides status, header, JSON and JSON-path assertions. Container
+diagnostics expose request-scope state for leak checks.
 
 :::note[License]
 `pushinbr/pam-api` uses the Apache License 2.0.
