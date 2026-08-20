@@ -264,7 +264,11 @@ $app
 `CorsMiddleware` handles matching origins and terminates valid preflight
 requests with `204`. Never combine wildcard origins with credentials.
 `RateLimitMiddleware` is a per-worker, in-memory token bucket keyed by
-`REMOTE_ADDR`; use an upstream or shared limiter when limits must be global.
+`REMOTE_ADDR` by default. Pass a `RateLimitStore` backed by Redis or another
+atomic shared system when limits must be global across workers, and pass a
+custom key resolver for user, token or tenant limits. Proxy-derived client
+addresses must only be accepted behind an explicitly trusted proxy boundary.
+Limit, remaining and retry headers are emitted with a Problem Details `429`.
 `SecurityHeadersMiddleware` adds content-type, frame, referrer and permissions
 policies; HSTS is added only when `HTTPS=on`.
 
