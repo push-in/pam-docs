@@ -7,6 +7,12 @@ description: Express-like routing with Laravel-style controllers, validation, re
 Express-like route ergonomics with Laravel-style application boundaries while
 keeping the persistent PAM runtime explicit and safe.
 
+:::caution[Development line]
+The advanced APIs marked on this page target PAM API 2.0 and are not part of
+the Packagist `1.0.x` line. Pin an explicit `2.0` prerelease when it is
+published; do not copy a development branch constraint into production.
+:::
+
 ```bash
 pam composer require pushinbr/pam-api
 ```
@@ -154,7 +160,11 @@ final readonly class UserResource extends JsonResource
 }
 ```
 
-Convenience methods exist for `GET`, `POST`, `PUT`, `PATCH`, and `DELETE`. Use `route()` for another valid HTTP method.
+Convenience methods exist for `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`
+and `OPTIONS`. Use `route()` for another valid HTTP method. When no explicit
+`OPTIONS` route exists, PAM returns `204` with a deterministic `Allow` header.
+Every `GET` route advertises and matches `HEAD`; explicit handlers take
+precedence.
 
 Route paths must be absolute and cannot include a query string. A parameter occupies an entire segment:
 
@@ -222,6 +232,97 @@ Service providers implement `register()` and `boot()`. Registration happens whil
 
 Composer package discovery can register providers from installed package metadata. Pass `discoverPackages: false` to `new App()` when configuration must be fully explicit.
 
+## Eloquent ORM
+
+Eloquent is the official PAM API ORM. Its connection resolver creates one
+Illuminate manager per request Fiber and automatically rolls back unfinished
+transactions and disconnects connections at the request boundary.
+
+```php
+use Pam\Api\Database\DatabaseConfig;
+use Pam\Api\Database\EloquentServiceProvider;
+
+$app->provider(new EloquentServiceProvider(DatabaseConfig::fromEnvironment()));
+```
+
+`DB_CONNECTION` accepts `pgsql`, `mysql`, `sqlite`, or `sqlsrv`; PostgreSQL is
+the production default. Models, events, schema builders and anonymous-class
+Laravel migrations work normally. `MigrationManager` supports migrate,
+rollback, named connections and dry-run execution.
+
+Use `QueryBudgetMiddleware` to fail tests or development requests that exceed
+query count, accumulated SQL time or duplicate-query limits. This turns N+1
+detection into an executable route contract instead of a manual review.
+
+For tenant-owned models, register `TenantModelGuard` during boot. It applies a
+global scope, assigns `tenant_id` on creation, rejects cross-tenant assignment
+and fails closed when no scoped `TenantContext` exists.
+
+## Typed configuration
+
+```php
+use Pam\Api\Config\ConfigDefinition;
+use Pam\Api\Config\Configuration;
+use Pam\Api\Config\ConfigType;
+
+$config = Configuration::fromEnvironment([
+    new ConfigDefinition('app.port', 'PAM_PORT', ConfigType::Integer),
+    new ConfigDefinition('auth.secret', 'AUTH_SECRET', sensitive: true),
+]);
+```
+
+Configuration is validated before the application serves requests. Diagnostics
+must use `redacted()`, which masks sensitive values. Error messages name the
+missing variable and expected type without echoing the supplied value.
+
+## Signed bearer authentication
+
+`HmacTokenCodec` issues bounded HS256 access tokens with issuer, audience,
+`iat`, `nbf`, `exp`, `jti` and abilities. `BearerTokenAuthenticator` integrates
+the codec with `AuthenticateMiddleware`.
+
+The active signing key has a bounded `kid`; up to four retiring keys may remain
+in the verification keyring for zero-downtime rotation. Unknown key IDs fail
+closed. A `TokenRevocationStore` can revoke a `jti`; the included memory store
+is bounded and intended only for development and tests. Production clusters
+must implement the contract with atomic shared state.
+
+Access tokens cannot live longer than 24 hours. Refresh-token rotation and
+OAuth/OIDC authorization-server behavior still belong to an identity provider
+or a separately audited application flow.
+
+## Request lifecycle and PAM Lens
+
+`$app->observe($observer)` registers a `RequestLifecycleObserver`. Observers
+start in registration order and finish in reverse order before request-scoped
+state is destroyed. They receive the handled failure when present; an observer
+cleanup failure is logged and cannot stop the remaining cleanup chain.
+
+`MemoryProfiler` is the bounded first PAM Lens collector. It is disabled by
+default and must be enabled with `ProfilerMode::Development` or
+`ProfilerMode::Testing`. Profiles retain only method, path, status, duration,
+memory delta and failure class. Headers, bearer tokens and request/response
+payloads are never stored.
+
+## PAM API generators
+
+Inside a PAM API project:
+
+```bash
+pam make:model User
+pam make:controller UserController
+pam make:request StoreUserRequest
+pam make:resource UserResource
+pam make:service CreateUserService
+pam make:repository UserRepository
+pam make:migration CreateUsersTable
+```
+
+Names must be bounded PascalCase identifiers. Generators create the expected
+application directories and refuse to overwrite existing files. Controllers
+use named actions and are ready for handlers such as
+`[UserController::class, 'index']`.
+
 ## Configuration freeze
 
 Routes, middleware, providers, error handlers, and PSR handlers cannot be changed after the application begins handling requests. PAM throws rather than silently mutating a live long-lived pipeline.
@@ -242,6 +343,12 @@ Routes, middleware, providers, error handlers, and PSR handlers cannot be change
 | `Route` | Method, path, compiled handler, matching metadata and route middleware |
 | `RoutingResult` | Readonly type, matched route, decoded parameters and allowed methods |
 | `PackageDiscovery` | `providers(projectRoot)` reads Composer package provider metadata |
+| `EloquentManager` | Fiber-local connections, schemas and transactions |
+| `MigrationManager` | Laravel-compatible migration and rollback execution |
+| `Configuration` | Boot-time typed configuration and secret-safe diagnostics |
+| `HmacTokenCodec` | Signed access tokens, bounded key rotation and verification |
+| `RequestLifecycleObserver` | Failure-aware request start/finish instrumentation |
+| `MemoryProfiler` | Bounded privacy-safe development request profiles |
 
 `RoutingResultType` is integer-backed: `Found=1`,
 `MethodNotAllowed=2`, `NotFound=3`.
