@@ -13,6 +13,25 @@ the Packagist `1.0.x` line. Pin an explicit `2.0` prerelease when it is
 published; do not copy a development branch constraint into production.
 :::
 
+## Independent release and installation proof
+
+PAM API 2 versions independently from the native runtime. Its release workflow
+accepts only a source commit already integrated into the protected PAM `main`
+branch, validates the package's own SemVer tag and dated changelog, verifies the
+isolated `pam-api` history, and retains a provenance manifest containing both
+the monorepo and split commit identities.
+
+Publishing is not considered complete when GitHub merely has a tag. The same
+workflow waits for the immutable version to appear on Packagist, constructs a
+clean consumer project, runs a Composer dry-run, and performs a real public
+installation. This lets API 2 ship without assigning version 2 to the CLI,
+runtime, Socket, PSR bridge, or other independent packages.
+
+The 2.0 gate also executes the application form published by PAM API 1.0.2
+unchanged on the new implementation. That fixture is bound to the public 1.0.2
+tag, mirror commit, and README digest; it complements the reflection-derived
+public API compatibility baseline.
+
 ```bash
 pam composer require pushinbr/pam-api
 ```

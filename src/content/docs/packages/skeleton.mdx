@@ -37,6 +37,11 @@ fresh project, performs a Composer dry-run, installs the local PAM API 2.0
 candidate and executes the endpoint test inside the Embed SAPI, preventing the
 published skeleton and `pam init` output from drifting apart.
 
+API and skeleton releases are intentionally ordered. PAM API 2 must first pass
+its public Packagist installation gate. The skeleton can then receive its own
+2.0 tag and repeat the same clean-consumer dry-run and installation proof; the
+native PAM runtime does not need a matching major version.
+
 ## Daily workflow
 
 ```bash
