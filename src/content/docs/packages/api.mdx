@@ -273,6 +273,10 @@ The custom handler must return a PAM response.
 
 Service providers implement `register()` and `boot()`. Registration happens while the application is mutable; providers boot when the route and middleware pipeline freezes.
 
+Console tools can call the idempotent `$app->boot()` method to boot providers
+and freeze configuration without dispatching a synthetic HTTP request. The
+generated migration command uses this boundary.
+
 Composer package discovery can register providers from installed package metadata. Pass `discoverPackages: false` to `new App()` when configuration must be fully explicit.
 
 ## Eloquent ORM
@@ -292,6 +296,10 @@ $app->provider(new EloquentServiceProvider(DatabaseConfig::fromEnvironment()));
 the production default. Models, events, schema builders and anonymous-class
 Laravel migrations work normally. `MigrationManager` supports migrate,
 rollback, named connections and dry-run execution.
+
+Run schema changes as an explicit deployment step. The starter exposes
+`pam composer migrate`; it never races migrations across HTTP workers during
+application startup.
 
 The generated [`pam-skeleton`](/packages/skeleton/) is the executable reference
 architecture: thin named controller methods, Form Request and DTO, service,

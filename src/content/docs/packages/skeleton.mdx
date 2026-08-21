@@ -11,6 +11,7 @@ the CLI select the release compatible with your runtime.
 pam init my-api --template api
 cd my-api
 mkdir -p storage && touch storage/database.sqlite
+pam composer migrate
 pam doctor
 pam dev index.php
 ```
@@ -50,6 +51,9 @@ curl http://127.0.0.1:3000/api/products
 The create action returns `201 Created`. Validation stays in
 `StoreProductRequest`, the use case stays in `ProductService`, persistence stays
 behind `ProductRepository`, and `ProductResource` owns the representation.
+Migrations are explicit rather than part of HTTP worker boot, so concurrent
+production workers cannot race schema changes. Re-running `pam composer migrate`
+is safe and reports when the database is already current.
 
 The CLI embeds these canonical skeleton files at build time. CI generates a
 fresh project, performs a Composer dry-run, installs the local PAM API 2.0
