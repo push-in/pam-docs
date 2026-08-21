@@ -175,6 +175,11 @@ $app->get('/teams/{team}/members/{member}', $handler);
 
 Parameter names must be unique and match `[A-Za-z_][A-Za-z0-9_]*`. Static paths are normalized for a trailing slash. `HEAD` falls back to a matching `GET` route.
 
+Route configuration has explicit resource limits: 10,000 routes by default
+(configurable up to 100,000), 2 KiB paths, 128 segments, 32 parameters and
+512-byte custom constraints. Compiled patterns carry PCRE match/depth budgets;
+oversized request paths are rejected before regex matching.
+
 ## Routing outcomes
 
 - A matching route receives decoded route parameters.
