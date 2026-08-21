@@ -14,6 +14,7 @@ Every initializer and project command below depends on PAM. Complete
 pam init hello-pam --template api
 cd hello-pam
 mkdir -p storage && touch storage/database.sqlite
+pam composer migrate
 pam dev index.php
 ```
 
