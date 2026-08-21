@@ -347,6 +347,20 @@ client-controlled class names.
 
 Routes, middleware, providers, error handlers, and PSR handlers cannot be changed after the application begins handling requests. PAM throws rather than silently mutating a live long-lived pipeline.
 
+## Public API compatibility
+
+`composer verify` includes `composer api:compat`, which compares PAM API's
+public classes, interfaces, enums, methods, parameters, properties and
+constants with the committed `api-surface.json`. Unreviewed additions fail as
+baseline drift. Removals, signature changes, new interface/abstract methods,
+newly final or abstract contracts and enum changes fail as incompatibilities;
+all findings use sequential integer codes.
+
+Run `bin/api-compat update` after approving compatible additions. Updating the
+baseline for breaking changes is allowed only on an intentional major-version
+branch after its upgrade guide and changelog describe every break. Normal CI
+never regenerates the baseline.
+
 ## Public API reference
 
 | Type | Public surface |
