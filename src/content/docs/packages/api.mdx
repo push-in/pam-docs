@@ -164,7 +164,8 @@ Convenience methods exist for `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`
 and `OPTIONS`. Use `route()` for another valid HTTP method. When no explicit
 `OPTIONS` route exists, PAM returns `204` with a deterministic `Allow` header.
 Every `GET` route advertises and matches `HEAD`; explicit handlers take
-precedence.
+precedence. The final `HEAD` body is suppressed after middleware and error
+handling while status and headers are preserved.
 
 Route paths must be absolute and cannot include a query string. A parameter occupies an entire segment:
 
@@ -323,6 +324,15 @@ application directories and refuse to overwrite existing files. Controllers
 use named actions and are ready for handlers such as
 `[UserController::class, 'index']`.
 
+## Job workers
+
+`JobQueue` defines an at-least-once lifecycle for durable adapters: bounded
+dispatch delay, reservation leases, acknowledgement, delayed release and
+dead-letter transitions. `JobWorker` runs the same contract against the bounded
+memory queue in development and tests. Expired leases may be reclaimed, failed
+attempts retry up to the envelope limit, and exhausted jobs move to the
+dead-letter set. Diagnostics retain the failure class, never its message.
+
 ## Configuration freeze
 
 Routes, middleware, providers, error handlers, and PSR handlers cannot be changed after the application begins handling requests. PAM throws rather than silently mutating a live long-lived pipeline.
@@ -349,6 +359,8 @@ Routes, middleware, providers, error handlers, and PSR handlers cannot be change
 | `HmacTokenCodec` | Signed access tokens, bounded key rotation and verification |
 | `RequestLifecycleObserver` | Failure-aware request start/finish instrumentation |
 | `MemoryProfiler` | Bounded privacy-safe development request profiles |
+| `JobQueue` | Lease, acknowledgement, retry and dead-letter adapter contract |
+| `JobWorker` | Bounded one-job execution with at-least-once semantics |
 
 `RoutingResultType` is integer-backed: `Found=1`,
 `MethodNotAllowed=2`, `NotFound=3`.
