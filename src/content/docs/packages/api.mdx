@@ -202,8 +202,9 @@ oversized request paths are rejected before regex matching.
 ## Routing outcomes
 
 - A matching route receives decoded route parameters.
-- A path with no route returns JSON `404`.
-- A known path with the wrong method returns JSON `405` and an `Allow` header.
+- A path with no route returns Problem Details `404`.
+- A known path with the wrong method returns Problem Details `405`, code `9`,
+  and an `Allow` header.
 - Registering the same method and path twice throws during application configuration.
 
 ## Middleware
@@ -232,13 +233,17 @@ The pipeline is compiled once, in registration order, when the application first
 
 ## Error handling
 
-The default boundary logs the exception through PAM telemetry and returns:
+Routing, operational and unexpected failures share one Problem Details
+contract with `application/problem+json`. The default boundary logs the full
+exception through PAM telemetry and returns only:
 
 ```json
-{"error":"Internal Server Error"}
+{"type":"https://pam.dev/problems/8","title":"Internal Server Error","status":500,"code":8}
 ```
 
-with status `500`. It does not expose the exception message to the client.
+It does not expose the exception message to the client. Domain details attached
+to `HttpException` may add fields but cannot override `type`, `title`, `status`,
+or `code`.
 
 Customize the boundary before the application starts:
 
@@ -476,6 +481,15 @@ $typescript = $contract->client(ClientLanguage::TypeScript);
 
 Kotlin and Swift clients use the same OpenAPI 3.1 contract. Compatibility
 checks report removed paths and operations through sequential integer codes.
+
+## Performance regression contract
+
+`composer benchmark` emits schema 1 JSON for 100 routes plus one constrained
+dynamic route. It performs warm-up, measures static and dynamic paths
+independently, and reports throughput, p50/p95/p99 latency and peak memory.
+`composer verify` runs the assertion mode with conservative throughput, p99 and
+memory ceilings. These gates detect severe regressions; they are not portable
+marketing comparisons because host hardware and load topology still matter.
 
 ## Production and testing contracts
 
