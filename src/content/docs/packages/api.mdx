@@ -179,6 +179,19 @@ final readonly class UserResource extends JsonResource
 }
 ```
 
+Pass a valid HTTP status as the second constructor argument when the action
+creates a resource:
+
+```php
+public function store(StoreUserRequest $request): UserResource
+{
+    return new UserResource($this->users->create($request->data()), 201);
+}
+```
+
+Codes outside `100..599` are rejected during construction. Collections retain
+the normal `200` status.
+
 Convenience methods exist for `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`
 and `OPTIONS`. Use `route()` for another valid HTTP method. When no explicit
 `OPTIONS` route exists, PAM returns `204` with a deterministic `Allow` header.
@@ -279,6 +292,11 @@ $app->provider(new EloquentServiceProvider(DatabaseConfig::fromEnvironment()));
 the production default. Models, events, schema builders and anonymous-class
 Laravel migrations work normally. `MigrationManager` supports migrate,
 rollback, named connections and dry-run execution.
+
+The generated [`pam-skeleton`](/packages/skeleton/) is the executable reference
+architecture: thin named controller methods, Form Request and DTO, service,
+repository abstraction, Eloquent implementation, migration, Resource, SQLite
+tests, and integer-backed domain status.
 
 Use `QueryBudgetMiddleware` to fail tests or development requests that exceed
 query count, accumulated SQL time or duplicate-query limits. This turns N+1
