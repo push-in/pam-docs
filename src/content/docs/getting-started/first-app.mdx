@@ -13,6 +13,7 @@ Every initializer and project command below depends on PAM. Complete
 ```bash
 pam init hello-pam --template api
 cd hello-pam
+mkdir -p storage && touch storage/database.sqlite
 pam dev index.php
 ```
 
@@ -39,7 +40,11 @@ pam composer test
 ```
 
 The generated test invokes the same named action through PAM API's in-memory
-client and asserts the Resource envelope and request ID.
+client and asserts the Resource envelope and request ID. It also executes a
+complete SQLite/Eloquent create-and-list flow through named
+`ProductController::store` and `ProductController::index` actions, Form Request,
+DTO, service, repository and Resource. Product creation returns `201 Created`;
+its status is transmitted as sequential integer enum value `1`.
 
 ## What `pam init` does
 
