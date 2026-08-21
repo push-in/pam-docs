@@ -333,6 +333,11 @@ memory queue in development and tests. Expired leases may be reclaimed, failed
 attempts retry up to the envelope limit, and exhausted jobs move to the
 dead-letter set. Diagnostics retain the failure class, never its message.
 
+Durable adapters encode `SerializableJob` values with `JobCodec`. Its JSON
+envelope is versioned, limited to 64 KiB and depth 16, and resolves job names
+through an explicit registry. It does not accept PHP serialized objects or
+client-controlled class names.
+
 ## Configuration freeze
 
 Routes, middleware, providers, error handlers, and PSR handlers cannot be changed after the application begins handling requests. PAM throws rather than silently mutating a live long-lived pipeline.
@@ -361,6 +366,7 @@ Routes, middleware, providers, error handlers, and PSR handlers cannot be change
 | `MemoryProfiler` | Bounded privacy-safe development request profiles |
 | `JobQueue` | Lease, acknowledgement, retry and dead-letter adapter contract |
 | `JobWorker` | Bounded one-job execution with at-least-once semantics |
+| `JobCodec` | Allowlisted and bounded JSON serialization for durable jobs |
 
 `RoutingResultType` is integer-backed: `Found=1`,
 `MethodNotAllowed=2`, `NotFound=3`.
