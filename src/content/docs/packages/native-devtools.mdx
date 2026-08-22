@@ -3,9 +3,19 @@ title: PAM Native DevTools package
 description: Record bounded events, redacted snapshots, performance measures, errors, and full network transactions for deterministic diagnostics.
 ---
 
+## Start here
+
+Every PAM Native product runs on the PAM runtime. Install and verify PAM first,
+create a Native application, and add this package through PAM Composer:
+
 ```bash
-pam add devtools
+curl -fsSL https://push-in.github.io/pam/install.sh | sh
 pam doctor
+pam init my-app --template native
+cd my-app
+pam composer require pushinbr/pam-native-devtools
+pam doctor
+pam native dev
 ```
 
 ```php

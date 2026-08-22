@@ -59,7 +59,8 @@ pam make:model Post --migration
 ```
 
 Applications and Composer packages can register their own bounded commands.
-Inspect the resolved surface with `pam commands`; built-in names cannot be
+Inspect the resolved surface with `pam commands`. Product-context commands may
+be owned by an installed package; runtime-authority commands cannot be
 shadowed.
 
 ## Machine-readable contracts
@@ -67,7 +68,6 @@ shadowed.
 ```bash
 pam info --json
 pam doctor --json
-pam packages --json
 pam commands --json
 ```
 
@@ -82,12 +82,9 @@ The core executable always provides these runtime operations:
 
 | Command | Purpose |
 | --- | --- |
-| `pam dev [script.php]` | Watch PHP, Composer, and environment files and restart on change. |
 | `pam start [script.php]` | Run a supervised multi-worker cluster with zero-downtime reloads. |
 | `pam exec <script.php>` | Execute one PHP script explicitly through PAM's Embed SAPI. |
-| `pam artisan [args...]` | Run Laravel console work inside the Embed SAPI. |
 | `pam composer [args...]` | Run the embedded Composer toolchain. |
-| `pam test [path]` | Resolve and run Pest or PHPUnit inside PAM. |
 | `pam <script.php> [args...]` | Execute a PHP entry directly; if it registers a server, start serving it. |
 
 ### Supervised production start
@@ -152,7 +149,7 @@ must use the explicit `pam artisan pam:*` form.
 ## Ship commands
 
 ```bash
-pam init hello-api --template api
+pam init hello-api --template http
 pam build --entry public/index.php --output dist
 pam release --check
 pam package --entry public/index.php --output artifacts

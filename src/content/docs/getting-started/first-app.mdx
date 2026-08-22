@@ -11,7 +11,7 @@ Every initializer and project command below depends on PAM. Complete
 :::
 
 ```bash
-pam init hello-pam --template api
+pam init hello-pam --template http
 cd hello-pam
 mkdir -p storage && touch storage/database.sqlite
 pam composer migrate
@@ -54,7 +54,7 @@ The initializer creates a normal Composer project, selects the first-party packa
 Use `--no-install` when you want source generation without dependency resolution:
 
 ```bash
-pam init hello-pam --template api --no-install
+pam init hello-pam --template http --no-install
 ```
 
 :::caution[PAM API 2 development line]
@@ -67,7 +67,7 @@ published, use `--no-install` outside the PAM source workspace.
 The socket preset enables PAM's native WebSocket transport on the same listener:
 
 ```bash
-pam init realtime-api --template api --socket
+pam init realtime-api --template http --socket
 ```
 
 ## Build the product you came for
@@ -76,10 +76,10 @@ The same project workflow drives every PAM target:
 
 | Product | Create it | First visible result |
 | --- | --- | --- |
-| Persistent API | `pam init my-api --template api` | JSON endpoint on port 3000 |
+| Persistent HTTP | `pam init my-api --template http` | JSON endpoint on port 3000 |
 | Laravel | `pam init my-app --template laravel` | Warm Laravel route and working Artisan |
-| Native mobile | `pam init my-app --template mobile` | Real Android/iOS controls with hot reload |
-| Mobile UI | `pam init my-app --template mobile-ui` | Retained Material Design 3 screen |
+| Native mobile | `pam init my-app --template native` | Real Android/iOS controls with hot reload |
+| Native UI | `pam init my-app --template native-ui` | Retained Material Design 3 screen |
 | Desktop | `pam init my-app --template desktop` | Capability-secured native window |
 
 ```text
@@ -90,8 +90,8 @@ Choose one explicitly:
 
 ```bash
 pam init my-laravel-app --template laravel
-pam init native-core --template mobile
-pam init native-ui --template mobile-ui
+pam init native-core --template native
+pam init native-ui --template native-ui
 pam init my-desktop-app --template desktop
 ```
 

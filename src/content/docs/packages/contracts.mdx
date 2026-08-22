@@ -1,12 +1,19 @@
 ---
-title: pushinbr/pam-core-api
+title: pushinbr/pam-contracts
 description: Stable package contracts for HTTP applications, middleware, providers, and runtime capability checks.
 ---
 
-`pushinbr/pam-core-api` contains small versioned contracts for packages that extend PAM. It does not include a router, server, or application framework.
+`pushinbr/pam-contracts` contains small versioned contracts for packages that extend PAM. It does not include a router, server, or application framework.
+
+## Start here
+
+Install and verify the PAM runtime first, then add the contracts package to a
+PAM project through PAM's Composer passthrough:
 
 ```bash
-pam composer require pushinbr/pam-core-api
+curl -fsSL https://push-in.github.io/pam/install.sh | sh
+pam doctor
+pam composer require pushinbr/pam-contracts
 ```
 
 ## HTTP application contract
@@ -33,7 +40,7 @@ interface ApplicationInterface
 }
 ```
 
-Packages should depend on this contract when they need to register routes or middleware without requiring `pushinbr/pam-api` directly.
+Packages should depend on this contract when they need to register routes or middleware without requiring `pushinbr/pam-http` directly.
 
 ## Middleware contract
 
@@ -115,5 +122,5 @@ and capabilities. `assert()` checks exact ABI equality and every requested
 `Capability` enum; it throws on absence or mismatch.
 
 :::note[License]
-`pushinbr/pam-core-api` uses the Apache License 2.0.
+`pushinbr/pam-contracts` uses the Apache License 2.0.
 :::

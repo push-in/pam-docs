@@ -1,39 +1,25 @@
 ---
-title: pushinbr/pam-api
+title: pushinbr/pam-http
 description: Express-like routing with Laravel-style controllers, validation, resources, dependency injection, and production boundaries.
 ---
 
-`pushinbr/pam-api` is PAM's optional HTTP application layer. It combines
+`pushinbr/pam-http` is PAM's optional HTTP application layer. It combines
 Express-like route ergonomics with Laravel-style application boundaries while
 keeping the persistent PAM runtime explicit and safe.
 
-:::caution[Development line]
-The advanced APIs marked on this page target PAM API 2.0 and are not part of
-the Packagist `1.0.x` line. Pin an explicit `2.0` prerelease when it is
-published; do not copy a development branch constraint into production.
-:::
+## Start here
 
-## Independent release and installation proof
-
-PAM API 2 versions independently from the native runtime. Its release workflow
-accepts only a source commit already integrated into the protected PAM `main`
-branch, validates the package's own SemVer tag and dated changelog, verifies the
-isolated `pam-api` history, and retains a provenance manifest containing both
-the monorepo and split commit identities.
-
-Publishing is not considered complete when GitHub merely has a tag. The same
-workflow waits for the immutable version to appear on Packagist, constructs a
-clean consumer project, runs a Composer dry-run, and performs a real public
-installation. This lets API 2 ship without assigning version 2 to the CLI,
-runtime, Socket, PSR bridge, or other independent packages.
-
-The 2.0 gate also executes the application form published by PAM API 1.0.2
-unchanged on the new implementation. That fixture is bound to the public 1.0.2
-tag, mirror commit, and README digest; it complements the reflection-derived
-public API compatibility baseline.
+Every PAM product runs on the PAM runtime. Install the runtime once, verify the
+machine, create the project, and then use PAM's Composer passthrough to add the
+HTTP package:
 
 ```bash
-pam composer require pushinbr/pam-api
+curl -fsSL https://push-in.github.io/pam/install.sh | sh
+pam doctor
+pam init my-api --template http
+cd my-api
+pam composer require pushinbr/pam-http
+pam dev
 ```
 
 ## Register routes
@@ -529,5 +515,5 @@ and provides status, header, JSON and JSON-path assertions. Container
 diagnostics expose request-scope state for leak checks.
 
 :::note[License]
-`pushinbr/pam-api` uses the Apache License 2.0.
+`pushinbr/pam-http` uses the Apache License 2.0.
 :::

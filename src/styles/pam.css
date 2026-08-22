@@ -937,7 +937,7 @@ select:focus-visible {
   border-bottom: 1px solid #3b3933;
 }
 
-.pam-api-throughput {
+.pam-http-throughput {
   display: flex;
   align-items: end;
   justify-content: space-between;
@@ -946,13 +946,13 @@ select:focus-visible {
   border-bottom: 1px solid #3b3933;
 }
 
-.pam-api-throughput > div {
+.pam-http-throughput > div {
   display: grid;
   gap: 0.35rem;
 }
 
-.pam-api-throughput span,
-.pam-api-throughput code {
+.pam-http-throughput span,
+.pam-http-throughput code {
   color: #8f8b82;
   font-family: var(--sl-font-mono);
   font-size: 0.66rem;
@@ -960,7 +960,7 @@ select:focus-visible {
   text-transform: uppercase;
 }
 
-.pam-api-throughput strong {
+.pam-http-throughput strong {
   color: #f7f4eb;
   font-family: var(--sl-font-mono);
   font-size: clamp(1.55rem, 3vw, 2.35rem);
@@ -969,13 +969,13 @@ select:focus-visible {
   line-height: 1;
 }
 
-.pam-api-throughput small {
+.pam-http-throughput small {
   color: #ff795b;
   font-size: 0.42em;
   letter-spacing: 0;
 }
 
-.pam-api-throughput code {
+.pam-http-throughput code {
   border: 0;
   background: transparent;
   padding: 0;
@@ -1303,7 +1303,7 @@ select:focus-visible {
     grid-template-columns: 1fr;
   }
 
-  .pam-api-throughput {
+  .pam-http-throughput {
     align-items: start;
     flex-direction: column;
   }

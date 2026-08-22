@@ -3,21 +3,17 @@ title: Package ecosystem
 description: Add official PAM capabilities while keeping standard Composer contracts.
 ---
 
-The PAM binary owns runtime-level capabilities. Applications install official
-capabilities through the PAM CLI; underneath, they remain ordinary Composer
-packages with versioned PHP contracts.
+The PAM binary owns only runtime-level capabilities. Applications grow through
+ordinary Composer packages with versioned PHP contracts.
 
 ```bash
-pam packages
-pam add auth
-pam add observability
-pam doctor
+pam composer require pushinbr/pam-native-auth
+pam composer require pushinbr/pam-native-observability
 ```
 
-`pam add` looks up package metadata, performs a non-mutating dependency
-compatibility preflight, updates the normal manifest and lockfile, and refreshes
-native integration when required. Explore every alias in the
-[capability catalog](/ecosystem/).
+`pam composer` is the canonical package interface. Explore official packages
+in the [capability catalog](/ecosystem/) or discover any compatible package on
+Packagist.
 
 This is how PAM grows without becoming a monolith. The runtime provides the
 hard systems boundary; packages provide focused application contracts using
@@ -26,14 +22,14 @@ custom lockfile, or proprietary package format is required.
 
 | Package | Purpose |
 | --- | --- |
-| [`pushinbr/pam-api`](/packages/api/) | Express-like routing with controller method mapping, Laravel-style validation, Resources, dependency injection and middleware |
+| [`pushinbr/pam-http`](/packages/http/) | Express-like routing with controller method mapping, Laravel-style validation, Resources, dependency injection and middleware |
 | `pushinbr/pam-socket` | WebSocket events, rooms, broadcasts, acknowledgements, adapters, and resume support |
-| `pushinbr/pam-psr-bridge` | PSR-7, PSR-15, and PSR-17 interoperability using official interfaces |
+| `pushinbr/pam-psr` | PSR-7, PSR-15, and PSR-17 interoperability using official interfaces |
 | `pushinbr/pam-testing` | In-memory HTTP client and fluent response assertions |
-| `pushinbr/pam-core-api` | Small contracts for packages that extend PAM |
+| `pushinbr/pam-contracts` | Small contracts for packages that extend PAM |
 | `pushinbr/pam-native` | PHP authoring and protocol surface for native Android applications |
 | [`pushinbr/pam-native-nitro`](/packages/native-nitro/) | Offline-first, model-driven local data engine on PAM Native SQLite workers |
-| [`pushinbr/pam-mobile-ui`](/packages/mobile-ui/) | Retained-native Material 3 component system for Android and iOS |
+| [`pushinbr/pam-native-ui`](/packages/mobile-ui/) | Retained-native Material 3 component system for Android and iOS |
 | `pushinbr/pam-laravel` | Laravel bridge, Octane integration and framework lifecycle contracts |
 | `pam/desktop` | Typed PHP API and worker loop for PAM Desktop |
 | [`push-in/pam-skeleton`](/packages/skeleton/) | Versioned API starter consumed by `pam init` |
@@ -42,8 +38,7 @@ custom lockfile, or proprietary package format is required.
 
 PAM discovers the normal Composer autoloader, including projects with a custom `config.vendor-dir`. It does not introduce a package wrapper or alternate lockfile.
 
-Use `pam add <capability>` for official ecosystem features. Package authors and
-advanced interoperability flows can invoke Composer through PAM's private PHP
+Applications and package authors invoke Composer through PAM's private PHP
 runtime:
 
 ```bash
@@ -62,7 +57,7 @@ Protocol and enum identifiers are sequential integers and append-only within a p
 
 ## Distribution repositories
 
-`pam-native-php` and `pam-mobile-ui-php` are publication mirrors of their
+`pam-native-php` and `pam-native-ui-php` are publication mirrors of their
 canonical source repositories. They exist so generated and packaged PHP
 artifacts can be distributed independently; they are not separate products or
 alternative installation paths. See the

@@ -15,9 +15,18 @@ scale deliberately, and preserve the framework model teams already know. It is
 Laravel with a purpose-built runtime underneath it — not Laravel rewritten to
 fit somebody else's ecosystem.
 
+## Start here
+
+Laravel support is a Composer ecosystem product running on the PAM runtime.
+Install and verify PAM first, create the application, and then install the
+integration through PAM's Composer passthrough:
+
 ```bash
+curl -fsSL https://push-in.github.io/pam/install.sh | sh
+pam doctor
 pam init my-laravel-app --template laravel
 cd my-laravel-app
+pam composer require pushinbr/pam-laravel
 pam dev pam.php
 ```
 
@@ -25,7 +34,8 @@ PAM downloads the official Laravel skeleton, installs its Composer dependencies,
 
 ## Supported framework versions
 
-The maintained executable contract covers Laravel 12 and current Laravel 13 on PHP 8.4 Embed.
+The maintained executable contract covers Laravel 12 and current Laravel 13 on
+PHP 8.5 Embed by default, with PHP 8.4 retained in the compatibility matrix.
 
 The matrix exercises boot, providers, middleware, routing, validation, exceptions, terminating callbacks, Eloquent, authentication, sessions, CSRF, uploads, streamed responses, binary responses, package discovery, and stable memory behavior.
 

@@ -32,7 +32,7 @@ const path = (value: string) => `${base}${value}`;
           <em>ready</em>
         </div>
         <div class="pam-terminal-body">
-          <p><span>$</span> pam init orbit --template mobile</p>
+          <p><span>$</span> pam init orbit --template native</p>
           <p class="pam-terminal-success"><span>✓</span> Project created</p>
           <p class="pam-terminal-success"><span>✓</span> Native runtime ready</p>
           <p><span>$</span> cd orbit &amp;&amp; pam dev</p>
@@ -80,7 +80,7 @@ const path = (value: string) => `${base}${value}`;
             <path d="m0 35 155-56 155 56-155 56Z" fill="#fff4f1" stroke="#1e1e1e" stroke-width="2"/>
             <path d="m0 35 155 56v92L0 127Z" fill="#ffc9c1" stroke="#1e1e1e" stroke-width="2"/>
             <path d="m310 35-155 56v92l155-56Z" fill="#ff806f" stroke="#1e1e1e" stroke-width="2"/>
-            <text x="155" y="53" text-anchor="middle" fill="#ff2d20" font-size="28" font-weight="800">PHP 8.4</text>
+            <text x="155" y="53" text-anchor="middle" fill="#ff2d20" font-size="28" font-weight="800">PHP 8.5</text>
           </g>
           <g transform="translate(254 363)">
             <path d="m0 35 155-56 155 56-155 56Z" fill="#ff493d" stroke="#1e1e1e" stroke-width="2"/>
@@ -127,7 +127,7 @@ const path = (value: string) => `${base}${value}`;
       <a href={path('/runtime/http/')}>
         <span>Server</span>
         <strong>Persistent APIs &amp; realtime</strong>
-        <code>pam init app --template api</code>
+        <code>pam init app --template http</code>
         <em>HTTP · WebSockets · async I/O <b aria-hidden="true">→</b></em>
       </a>
       <a href={path('/laravel/overview/')}>
@@ -139,7 +139,7 @@ const path = (value: string) => `${base}${value}`;
       <a class="pam-path-featured" href={path('/native/overview/')}>
         <span>Native mobile</span>
         <strong>Real Android &amp; iOS UI from PHP</strong>
-        <code>pam init app --template mobile</code>
+        <code>pam init app --template native</code>
         <em>UIKit · Android Views · no JS runtime <b aria-hidden="true">→</b></em>
       </a>
       <a href={path('/desktop/overview/')}>
@@ -155,19 +155,19 @@ const path = (value: string) => `${base}${value}`;
     <div class="pam-ecosystem-copy">
       <p class="pam-home-kicker">The capability shelf</p>
       <h2 id="pam-ecosystem-title">Add the hard parts.<br/>Keep building the product.</h2>
-      <p>Every official capability installs through PAM, passes compatibility preflight, and keeps the normal Composer contract underneath.</p>
+      <p>Every official and community capability uses the same Composer contract and the same package-command extension model.</p>
       <a class="pam-button pam-button-primary" href={path('/ecosystem/')}>Explore all 27 capabilities <span aria-hidden="true">→</span></a>
     </div>
     <div class="pam-capability-cloud" aria-label="Popular PAM Native capabilities">
-      <a href={path('/ecosystem/#auth')}><strong>auth</strong><code>pam add auth</code></a>
-      <a href={path('/ecosystem/#maps')}><strong>maps</strong><code>pam add maps</code></a>
-      <a href={path('/ecosystem/#observability')}><strong>observability</strong><code>pam add observability</code></a>
-      <a href={path('/ecosystem/#sync')}><strong>sync</strong><code>pam add sync</code></a>
-      <a href={path('/ecosystem/#video')}><strong>video</strong><code>pam add video</code></a>
-      <a href={path('/ecosystem/#payments')}><strong>payments</strong><code>pam add payments</code></a>
-      <a href={path('/ecosystem/#firebase')}><strong>firebase</strong><code>pam add firebase</code></a>
-      <a href={path('/ecosystem/#bluetooth')}><strong>bluetooth</strong><code>pam add bluetooth</code></a>
-      <a href={path('/ecosystem/#widgets')}><strong>widgets</strong><code>pam add widgets</code></a>
+      <a href={path('/ecosystem/#auth')}><strong>auth</strong><code>pushinbr/pam-native-auth</code></a>
+      <a href={path('/ecosystem/#maps')}><strong>maps</strong><code>pushinbr/pam-native-maps</code></a>
+      <a href={path('/ecosystem/#observability')}><strong>observability</strong><code>pushinbr/pam-native-observability</code></a>
+      <a href={path('/ecosystem/#sync')}><strong>sync</strong><code>pushinbr/pam-native-sync</code></a>
+      <a href={path('/ecosystem/#video')}><strong>video</strong><code>pushinbr/pam-native-video</code></a>
+      <a href={path('/ecosystem/#payments')}><strong>payments</strong><code>pushinbr/pam-native-payments</code></a>
+      <a href={path('/ecosystem/#firebase')}><strong>firebase</strong><code>pushinbr/pam-native-firebase</code></a>
+      <a href={path('/ecosystem/#bluetooth')}><strong>bluetooth</strong><code>pushinbr/pam-native-bluetooth</code></a>
+      <a href={path('/ecosystem/#widgets')}><strong>widgets</strong><code>pushinbr/pam-native-widgets</code></a>
     </div>
   </section>
 
@@ -178,7 +178,7 @@ const path = (value: string) => `${base}${value}`;
     </div>
     <div>
       <p>
-        PAM embeds PHP 8.4 through the official Embed SAPI and keeps your application alive.
+        PAM embeds PHP 8.5 through the official Embed SAPI and keeps your application alive.
         Composer stays familiar while Rust and Tokio own scheduling, native I/O, and process supervision.
         It is not a workaround for PHP's past — it is a platform for what PHP can build next.
       </p>
@@ -281,7 +281,7 @@ const path = (value: string) => `${base}${value}`;
         </div>
       </div>
 
-      <div class="pam-api-throughput">
+      <div class="pam-http-throughput">
         <div>
           <span>Persistent API hot path</span>
           <strong>404,150.56 <small>req/s</small></strong>

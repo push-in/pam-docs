@@ -5,13 +5,13 @@ const root = resolve(import.meta.dirname, '..');
 const docs = join(root, 'src', 'content', 'docs');
 const requiredRepositories = [
   'pam',
-  'pam-api',
-  'pam-core-api',
+  'pam-http',
+  'pam-contracts',
   'pam-desktop',
   'pam-docs',
   'pam-laravel',
-  'pam-mobile-ui',
-  'pam-mobile-ui-php',
+  'pam-native-ui',
+  'pam-native-ui-php',
   'pam-native',
   'pam-native-auth',
   'pam-native-background-transfer',
@@ -21,7 +21,7 @@ const requiredRepositories = [
   'pam-native-firebase',
   'pam-native-health',
   'pam-native-intents',
-  'pam-native-laravel-sync',
+  'pam-native-sync-laravel',
   'pam-native-live-activities',
   'pam-native-maps',
   'pam-native-media',
@@ -39,10 +39,21 @@ const requiredRepositories = [
   'pam-native-testing',
   'pam-native-video',
   'pam-native-widgets',
-  'pam-psr-bridge',
+  'pam-psr',
   'pam-skeleton',
   'pam-socket',
   'pam-testing',
+];
+const compatibilityRepositories = [
+  'pam-api',
+  'pam-core-api',
+  'pam-mobile-ui',
+  'pam-native-laravel-sync',
+  'pam-psr-bridge',
+];
+const documentedRepositories = [
+  ...requiredRepositories,
+  ...compatibilityRepositories,
 ];
 
 const mapPath = join(docs, 'project', 'repository-map.mdx');
@@ -51,7 +62,7 @@ if (!existsSync(mapPath)) {
 }
 
 const map = readFileSync(mapPath, 'utf8');
-const missing = requiredRepositories.filter(
+const missing = documentedRepositories.filter(
   (repository) => !map.includes(`\`${repository}\``),
 );
 
@@ -65,7 +76,7 @@ const allDocs = walk(docs)
   .map((path) => readFileSync(path, 'utf8'))
   .join('\n');
 
-const undocumented = requiredRepositories.filter(
+const undocumented = documentedRepositories.filter(
   (repository) => !allDocs.includes(repository),
 );
 
@@ -74,7 +85,7 @@ if (undocumented.length > 0) {
   process.exit(1);
 }
 
-console.log(`${requiredRepositories.length} public PAM repositories have documentation ownership.`);
+console.log(`${requiredRepositories.length} canonical and ${compatibilityRepositories.length} compatibility repositories have documentation ownership.`);
 
 function walk(directory) {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {

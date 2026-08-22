@@ -7,9 +7,17 @@ The `push-in/pam-skeleton` repository is the versioned source used by PAM to
 generate a clean API application. Do not clone it for normal development; let
 the CLI select the release compatible with your runtime.
 
+## Start here
+
+Install and verify PAM first. The runtime then selects the compatible skeleton;
+the generated HTTP dependency remains an ordinary Composer package:
+
 ```bash
-pam init my-api --template api
+curl -fsSL https://push-in.github.io/pam/install.sh | sh
+pam doctor
+pam init my-api --template http
 cd my-api
+pam composer require pushinbr/pam-http
 mkdir -p storage && touch storage/database.sqlite
 pam composer migrate
 pam doctor
@@ -18,11 +26,6 @@ pam dev index.php
 
 The server starts at `http://127.0.0.1:3000`. Set `PAM_PORT` to select another
 listener port.
-
-:::caution[PAM API 2 development line]
-This structured skeleton targets PAM API 2.0. Use the published 1.x skeleton
-until the 2.0 prerelease is available on Packagist.
-:::
 
 ## What the generated project contains
 
@@ -84,13 +87,13 @@ discovery for tooling and CI.
 ## Add capabilities
 
 ```bash
-pam init realtime-api --template api --socket
-pam add observability
+pam init realtime-api --template http --socket
+pam composer require pushinbr/pam-native-observability
 pam doctor
 ```
 
-Use `pam packages` to discover official capabilities. PAM performs metadata
-lookup and a non-mutating compatibility preflight before changing the project.
+Use Packagist to discover packages. PAM exposes Composer without introducing a
+second manifest, registry or lockfile.
 
 ## Release checklist
 

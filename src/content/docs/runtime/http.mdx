@@ -10,12 +10,12 @@ PAM owns the HTTP transport in Rust and dispatches application work into PHP Fib
 The API preset creates the smallest useful server:
 
 ```bash
-pam init my-api --template api
+pam init my-api --template http
 cd my-api
 pam dev index.php
 ```
 
-With `pushinbr/pam-api`, application code registers routes and starts the listener:
+With `pushinbr/pam-http`, application code registers routes and starts the listener:
 
 ```php
 <?php

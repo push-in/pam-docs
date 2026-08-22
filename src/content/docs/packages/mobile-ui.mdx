@@ -1,22 +1,29 @@
 ---
-title: PAM Mobile UI
+title: PAM Native UI
 description: Build polished Android and iOS interfaces in PHP with retained native Material 3 components, typed facades, themes and native directives.
 ---
 
-PAM Mobile UI is the application-grade component system for PAM Native. It
+PAM Native UI is the application-grade component system for PAM Native. It
 renders real Android views and UIKit controls—there is no WebView, JavaScript
 runtime or CSS engine between your PHP application and the platform.
 
+## Start here
+
+PAM Native UI depends on both the PAM runtime and PAM Native. Install PAM first,
+verify it, create a native project, and add both Composer packages through PAM:
+
 ```bash
-pam add mobile-ui
+curl -fsSL https://push-in.github.io/pam/install.sh | sh
+pam doctor
+pam init my-app --template native-ui --platform android
+cd my-app
+pam composer require pushinbr/pam-native pushinbr/pam-native-ui
 pam doctor
 pam native dev
 ```
 
-`pam add mobile-ui` performs compatibility preflight, updates the application
-manifests and lockfile, discovers the native plugin, and refreshes the Android
-and iOS registries. Use `pam remove mobile-ui` to uninstall it. Application
-developers should use PAM rather than invoking Composer directly.
+`pam composer` is the canonical package workflow. It preserves normal Composer
+semantics while ensuring commands run inside the PAM project environment.
 
 ## Build a screen
 

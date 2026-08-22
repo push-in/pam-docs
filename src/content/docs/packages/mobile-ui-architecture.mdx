@@ -1,9 +1,9 @@
 ---
-title: PAM Mobile UI architecture and quality
-description: Rendering, threading, accessibility, performance and parity guarantees behind PAM Mobile UI.
+title: PAM Native UI architecture and quality
+description: Rendering, threading, accessibility, performance and parity guarantees behind PAM Native UI.
 ---
 
-PAM Mobile UI is designed around a strict boundary: PHP describes state and
+PAM Native UI is designed around a strict boundary: PHP describes state and
 intent; the native UI thread owns drawing, gestures, transient animation and
 platform controls.
 
@@ -66,6 +66,6 @@ Before shipping:
 - test light/dark themes, large text and reduced motion;
 - run `pam doctor`, platform tests and release benchmarks.
 
-See [PAM Mobile UI](/packages/mobile-ui/) for installation and
+See [PAM Native UI](/packages/mobile-ui/) for installation and
 authoring, and the [component catalog](/packages/mobile-ui-catalog/)
 for the verified public surface.

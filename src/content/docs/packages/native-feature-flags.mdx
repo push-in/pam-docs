@@ -3,9 +3,19 @@ title: PAM Native Feature Flags
 description: Evaluate typed targeting rules and deterministic percentage rollouts with local overrides, exposure events, and bounded offline snapshots.
 ---
 
+## Start here
+
+Every PAM Native product runs on the PAM runtime. Install and verify PAM first,
+create a Native application, and add this package through PAM Composer:
+
 ```bash
-pam add feature-flags
+curl -fsSL https://push-in.github.io/pam/install.sh | sh
 pam doctor
+pam init my-app --template native
+cd my-app
+pam composer require pushinbr/pam-native-feature-flags
+pam doctor
+pam native dev
 ```
 
 ```php

@@ -9,14 +9,16 @@ PAM uses Composer without a package wrapper or alternate lockfile. It discovers 
 
 ```bash
 pam composer install
-pam composer require pushinbr/pam-api
+pam composer require pushinbr/pam-http
 pam composer update
 pam composer audit --locked
 ```
 
 PAM caches a verified Composer PHAR in the user's XDG cache. On the first automatic download, it verifies Composer's official SHA-384 installer signature. Set `PAM_COMPOSER` to use a specific trusted PHAR.
 
-The official PAM release does not require a system PHP CLI. Composer executes inside the same PHP 8.4 Embed environment used by the application, so platform requirements are checked against the relevant runtime.
+The official PAM release does not require a system PHP CLI. Composer executes
+inside the same PHP 8.5 Embed environment used by the application by default,
+so platform requirements are checked against the relevant runtime.
 
 ## Diagnose a project
 
@@ -34,7 +36,7 @@ The system CLI is diagnostic context, not a runtime dependency. A difference in 
 | Category | Current contract |
 | --- | --- |
 | Pure PHP and PSR-4 packages | Loaded by the normal Composer autoloader |
-| PSR-7, PSR-15, PSR-17 | Available through `pushinbr/pam-psr-bridge` |
+| PSR-7, PSR-15, PSR-17 | Available through `pushinbr/pam-psr` |
 | PSR-3 | Consumed when `psr/log` is installed |
 | PHPUnit and Pest | Run inside Embed through `pam test` |
 | Amp, Revolt, ReactPHP | Exercised by compatibility smoke tests |

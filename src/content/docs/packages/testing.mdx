@@ -1,11 +1,20 @@
 ---
 title: pushinbr/pam-testing
-description: Test pushinbr/pam-api applications in memory with fluent response assertions.
+description: Test pushinbr/pam-http applications in memory with fluent response assertions.
 ---
 
-`pushinbr/pam-testing` invokes a `pushinbr/pam-api` application pipeline without opening a network port.
+`pushinbr/pam-testing` invokes a `pushinbr/pam-http` application pipeline without opening a network port.
+
+## Start here
+
+Install and verify the PAM runtime first, create an HTTP application, and add
+the test helpers as a development dependency through PAM Composer:
 
 ```bash
+curl -fsSL https://push-in.github.io/pam/install.sh | sh
+pam doctor
+pam init my-api --template http
+cd my-api
 pam composer require --dev pushinbr/pam-testing
 ```
 
