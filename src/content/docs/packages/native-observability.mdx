@@ -3,16 +3,22 @@ title: PAM Native Observability
 description: Add vendor-neutral spans, structured logs, metrics, crash context, deterministic sampling, bounded batching, and pluggable telemetry export.
 ---
 
-Install through PAM — not Composer directly:
+## Start here
+
+Every PAM Native product runs on the PAM runtime. Install and verify PAM first,
+create a Native application, and add this package through PAM Composer:
 
 ```bash
-pam add observability
+curl -fsSL https://push-in.github.io/pam/install.sh | sh
 pam doctor
+pam init my-app --template native
+cd my-app
+pam composer require pushinbr/pam-native-observability
+pam doctor
+pam native dev
 ```
 
-PAM performs the Composer compatibility preflight internally, updates the
-project manifests, and refreshes native integration. Remove it with
-`pam remove observability`.
+
 
 ## Trace and flush
 

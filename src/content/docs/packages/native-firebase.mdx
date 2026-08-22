@@ -3,9 +3,19 @@ title: PAM Native Firebase
 description: Configure Firebase apps and use Analytics, Remote Config, Messaging tokens, Installations, Crashlytics, and feature-flag adapters.
 ---
 
+## Start here
+
+Every PAM Native product runs on the PAM runtime. Install and verify PAM first,
+create a Native application, and add this package through PAM Composer:
+
 ```bash
-pam add firebase
+curl -fsSL https://push-in.github.io/pam/install.sh | sh
 pam doctor
+pam init my-app --template native
+cd my-app
+pam composer require pushinbr/pam-native-firebase
+pam doctor
+pam native dev
 ```
 
 ```php

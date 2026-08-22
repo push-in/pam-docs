@@ -3,18 +3,26 @@ title: PAM Native Nitro
 description: Build model-driven, offline-first local data flows on PAM Native SQLite workers.
 ---
 
+## Start here
+
+Every PAM Native product runs on the PAM runtime. Install and verify PAM first,
+create a Native application, and add this package through PAM Composer:
+
+```bash
+curl -fsSL https://push-in.github.io/pam/install.sh | sh
+pam doctor
+pam init my-app --template native
+cd my-app
+pam composer require pushinbr/pam-native-nitro
+pam doctor
+pam native dev
+```
+
 PAM Native Nitro is the high-performance local data engine for PAM Native. It
 keeps SQLite work outside rendering, selects only bounded rows needed by the
 current screen, and moves batches across the native bridge once.
 
-```bash
-pam add nitro
-pam doctor
-```
-
-Nitro 0.3.3 requires PHP 8.4 and PAM Native 0.6.2 or newer. `pam add nitro`
-runs compatibility preflight and integrates the package with the Native
-project. Use `pam remove nitro` to uninstall it.
+Nitro 0.3.3 requires PHP 8.4 and PAM Native 0.6.2 or newer. The package is installed through `pam composer`. Remove it with `pam composer remove`.
 
 ## Define models
 

@@ -3,9 +3,19 @@ title: PAM Native Media
 description: Probe sandboxed media, generate correctly oriented thumbnails, and embed lifecycle-aware native photo/video capture.
 ---
 
+## Start here
+
+Every PAM Native product runs on the PAM runtime. Install and verify PAM first,
+create a Native application, and add this package through PAM Composer:
+
 ```bash
-pam add media
+curl -fsSL https://push-in.github.io/pam/install.sh | sh
 pam doctor
+pam init my-app --template native
+cd my-app
+pam composer require pushinbr/pam-native-media
+pam doctor
+pam native dev
 ```
 
 ```php

@@ -3,13 +3,22 @@ title: PAM Native Auth
 description: Store encrypted mobile credentials and generate OAuth 2.1 PKCE material with Android Keystore and Apple Keychain.
 ---
 
+## Start here
+
+Every PAM Native product runs on the PAM runtime. Install and verify PAM first,
+create a Native application, and add this package through PAM Composer:
+
 ```bash
-pam add auth
+curl -fsSL https://push-in.github.io/pam/install.sh | sh
 pam doctor
+pam init my-app --template native
+cd my-app
+pam composer require pushinbr/pam-native-auth
+pam doctor
+pam native dev
 ```
 
-`pam add auth` runs compatibility preflight, updates the project manifests, and
-refreshes native integration. Use `pam remove auth` to uninstall it.
+The package is installed through `pam composer`. Remove it with `pam composer remove`.
 
 ## Vault and PKCE
 

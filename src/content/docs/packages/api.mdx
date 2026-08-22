@@ -1,14 +1,25 @@
 ---
-title: pushinbr/pam-api
+title: pushinbr/pam-http
 description: Express-like routing with Laravel-style controllers, validation, resources, dependency injection, and production boundaries.
 ---
 
-`pushinbr/pam-api` is PAM's optional HTTP application layer. It combines
+`pushinbr/pam-http` is PAM's optional HTTP application layer. It combines
 Express-like route ergonomics with Laravel-style application boundaries while
 keeping the persistent PAM runtime explicit and safe.
 
+## Start here
+
+Every PAM product runs on the PAM runtime. Install the runtime once, verify the
+machine, create the project, and then use PAM's Composer passthrough to add the
+HTTP package:
+
 ```bash
-pam composer require pushinbr/pam-api
+curl -fsSL https://push-in.github.io/pam/install.sh | sh
+pam doctor
+pam init my-api --template http
+cd my-api
+pam composer require pushinbr/pam-http
+pam dev
 ```
 
 ## Register routes
@@ -321,5 +332,5 @@ and provides status, header, JSON and JSON-path assertions. Container
 diagnostics expose request-scope state for leak checks.
 
 :::note[License]
-`pushinbr/pam-api` uses the Apache License 2.0.
+`pushinbr/pam-http` uses the Apache License 2.0.
 :::

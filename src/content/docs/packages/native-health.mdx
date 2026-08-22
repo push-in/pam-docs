@@ -3,9 +3,19 @@ title: PAM Native Health
 description: Request granular Health Connect and HealthKit access and read or write typed steps, heart rate, weight, calories, and sleep samples.
 ---
 
+## Start here
+
+Every PAM Native product runs on the PAM runtime. Install and verify PAM first,
+create a Native application, and add this package through PAM Composer:
+
 ```bash
-pam add health
+curl -fsSL https://push-in.github.io/pam/install.sh | sh
 pam doctor
+pam init my-app --template native
+cd my-app
+pam composer require pushinbr/pam-native-health
+pam doctor
+pam native dev
 ```
 
 ```php

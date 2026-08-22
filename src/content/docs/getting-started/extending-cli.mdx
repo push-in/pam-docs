@@ -3,9 +3,9 @@ title: Extend the PAM CLI
 description: Register safe application and Composer-package commands in PAM without installing another global executable.
 ---
 
-Applications and Composer packages can expose PHP commands through the same PAM
-Embed lifecycle. PAM validates names, canonicalizes scripts, rejects paths
-outside their owner and prevents built-in or duplicate command shadowing.
+Applications and Composer packages can expose embedded PHP scripts or native
+executables. PAM validates names, canonicalizes targets, rejects paths outside
+their owner and prevents built-in or duplicate command shadowing.
 
 ## Application commands
 
@@ -40,7 +40,8 @@ Use a string when no custom description is needed:
 ## Package commands
 
 A Composer package registers commands under `extra.pam.commands`. Paths are
-relative to the installed package root:
+relative to the installed package root. PAM reads Composer's canonical
+`install-path` metadata and honors a custom `config.vendor-dir`:
 
 ```json
 {
@@ -58,6 +59,34 @@ relative to the installed package root:
 }
 ```
 
+Use `bin` when the package ships a native CLI:
+
+```json
+{
+  "extra": {
+    "pam": {
+      "commands": {
+        "inspector:watch": {
+          "bin": "bin/pam-inspector",
+          "arguments": ["watch"],
+          "description": "Watch application diagnostics"
+        }
+      }
+    }
+  }
+}
+```
+
+`arguments` is an optional bounded prefix added before user arguments. `script`
+runs in PAM's embedded PHP runtime. `bin` receives the project as its
+working directory, all command arguments, and the absolute PAM executable in
+`PAM_BINARY`. A definition must contain exactly one of `script` or `bin`.
+
+Installed product packages may own contextual commands such as `dev`, `build`,
+`package`, `desktop`, and `mobile`. Their command takes precedence over the
+runtime's migration adapter. Runtime-authority commands such as `start`,
+process supervision, `composer`, `exec`, and `self-update` cannot be shadowed.
+
 Command names contain lowercase ASCII letters, integers, `:`, `-`, or `_`,
 start with a letter/integer and contain at most 96 bytes. A package cannot
 shadow PAM or another registered command; `pam doctor` and discovery fail on a
@@ -67,8 +96,10 @@ duplicate.
 
 ```bash
 pam commands --json
+pam commands --names
 ```
 
 Use this output for launchers and editor integrations. Do not parse decorated
-terminal output. The project manifest follows the public
+terminal output. `--names` is the newline-delimited surface used by generated
+Bash, Zsh, Fish and PowerShell completion. The project manifest follows the public
 [`pam.schema.json`](/schemas/pam.schema.json) JSON Schema.

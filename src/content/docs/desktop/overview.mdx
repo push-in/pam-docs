@@ -41,23 +41,35 @@ collects native effects, and returns the result.
   <div><strong>Linux x86-64</strong><span>supported target</span></div>
 </div>
 
-## From zero to a real window
+## Start here
+
+PAM Desktop is a Composer ecosystem product running on the PAM runtime. Install
+the runtime first; then create the project and install the desktop package with
+PAM's Composer passthrough.
 
 <Steps>
-1. Create the application.
+1. Install and verify PAM.
+
+   ```bash
+   curl -fsSL https://push-in.github.io/pam/install.sh | sh
+   pam doctor
+   ```
+
+2. Create the application and install PAM Desktop.
 
    ```bash
    pam init notes --template desktop
    cd notes
+   pam composer require pushinbr/pam-desktop
    ```
 
-2. Validate the machine and project contract.
+3. Validate the machine and project contract.
 
    ```bash
    pam desktop doctor
    ```
 
-3. Start the persistent development session.
+4. Start the persistent development session.
 
    ```bash
    pam desktop dev

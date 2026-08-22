@@ -3,10 +3,22 @@ title: PAM Native Plugin Kit
 description: Scaffold cross-platform PAM Native packages, validate manifests, and compile one typed IDL into deterministic PHP, Kotlin, and Swift contracts.
 ---
 
-```bash
-pam add plugin-kit
-pam doctor
+## Start here
 
+Every PAM Native product runs on the PAM runtime. Install and verify PAM first,
+create a Native application, and add this package through PAM Composer:
+
+```bash
+curl -fsSL https://push-in.github.io/pam/install.sh | sh
+pam doctor
+pam init my-app --template native
+cd my-app
+pam composer require pushinbr/pam-native-plugin-kit
+pam doctor
+pam native dev
+```
+
+```bash
 vendor/bin/pam-native-plugin new acme/pam-native-biometric ./pam-native-biometric
 vendor/bin/pam-native-plugin validate ./pam-native-biometric/pam-native.plugin.json
 vendor/bin/pam-native-plugin compile ./pam-native-biometric/pam-native.idl.json ./generated
@@ -21,8 +33,8 @@ string variants fail compilation. Commit generated output, regenerate into a
 temporary directory in CI, and require a clean diff. PAM records manifest and
 IDL digests in `.pam-native/plugins.lock.json`.
 
-The `vendor/bin` commands are package tooling after `pam add plugin-kit`; package
-installation itself remains a PAM workflow.
+The `vendor/bin` commands are package tooling available after installation
+through `pam composer`.
 
 Diagnostics use integer-backed `DiagnosticSeverity`; invalid IDL raises
 `IdlException`. Apple manifest requirements are modeled by

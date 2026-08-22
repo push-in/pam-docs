@@ -3,9 +3,19 @@ title: PAM Native Payments
 description: Present Stripe PaymentSheet with native wallets and SCA/3DS while keeping secret keys, PaymentIntent creation, and fulfillment server-side.
 ---
 
+## Start here
+
+Every PAM Native product runs on the PAM runtime. Install and verify PAM first,
+create a Native application, and add this package through PAM Composer:
+
 ```bash
-pam add payments
+curl -fsSL https://push-in.github.io/pam/install.sh | sh
 pam doctor
+pam init my-app --template native
+cd my-app
+pam composer require pushinbr/pam-native-payments
+pam doctor
+pam native dev
 ```
 
 ```php

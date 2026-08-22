@@ -9,7 +9,9 @@ Security reports should be handled privately so maintainers can investigate and 
 
 Until PAM reaches `1.0`, security fixes are released only for the latest tagged version.
 
-PHP itself must remain on an upstream-supported PHP 8.4 patch release. A PAM bundle fixes the Embed runtime and extension set, but applications still need a release process for new PAM and PHP security updates.
+PHP itself must remain on an upstream-supported PHP 8.5 patch release by
+default. A PAM bundle fixes the Embed runtime and extension set, but applications
+still need a release process for new PAM and PHP security updates.
 
 ## Report a vulnerability
 
@@ -67,4 +69,3 @@ PAM Desktop is alpha. Broader public distribution still requires product-specifi
 ## Dependencies
 
 Run locked dependency audits and the release gates for the relevant repository. An audit result is evidence about known advisories in the exact dependency graph; it is not proof that the application contains no vulnerability.
-

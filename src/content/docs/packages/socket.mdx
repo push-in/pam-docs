@@ -5,7 +5,16 @@ description: Event APIs over PAM's native RFC 6455 WebSocket transport.
 
 `pushinbr/pam-socket` adds an event-oriented PHP API above PAM's native WebSocket transport.
 
+## Start here
+
+Install and verify the PAM runtime first, create an HTTP application, and add
+the Socket package through PAM's Composer passthrough:
+
 ```bash
+curl -fsSL https://push-in.github.io/pam/install.sh | sh
+pam doctor
+pam init my-api --template http
+cd my-api
 pam composer require pushinbr/pam-socket
 ```
 

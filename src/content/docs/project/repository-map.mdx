@@ -12,11 +12,11 @@ destination.
 | Repository | Role | Canonical documentation |
 | --- | --- | --- |
 | `pam` | Persistent PHP runtime, CLI, packaging and release system | [Runtime](/runtime/how-pam-works/) and [CLI](/getting-started/cli/) |
-| `pam-api` | Optional HTTP application/router layer | [Package guide](/packages/api/) |
-| `pam-core-api` | Minimal extension contracts | [Package guide](/packages/core-api/) |
+| `pam-http` | Optional HTTP application/router layer | [Package guide](/packages/http/) |
+| `pam-contracts` | Minimal extension contracts | [Package guide](/packages/contracts/) |
 | `pam-laravel` | Laravel lifecycle, operations and production tooling | [Laravel platform](/laravel/production-platform/) and [API reference](/laravel/api-reference/) |
 | `pam-socket` | Event API over native RFC 6455 WebSockets | [Package guide](/packages/socket/) |
-| `pam-psr-bridge` | PSR-7/15/17 interoperability | [Package guide](/packages/psr-bridge/) |
+| `pam-psr` | PSR-7/15/17 interoperability | [Package guide](/packages/psr/) |
 | `pam-testing` | In-memory PAM API test client | [Package guide](/packages/testing/) |
 | `pam-skeleton` | Versioned API template used by `pam init` | [Skeleton guide](/packages/skeleton/) |
 | `pam-desktop` | Native desktop shell, worker and PHP API | [Desktop](/desktop/overview/) and [API contracts](/desktop/api-contracts/) |
@@ -28,8 +28,8 @@ destination.
 | --- | --- | --- |
 | `pam-native` | Native runtime, Android/iOS renderers and PHP authoring API | [Native overview](/native/overview/) and [PHP API index](/native/php-api-index/) |
 | `pam-native-php` | Generated/distribution mirror of the Native PHP surface | [Distribution mirrors](/packages/distribution-mirrors/) |
-| `pam-mobile-ui` | Retained-native Material 3 component system | [Mobile UI](/packages/mobile-ui/) and [catalog](/packages/mobile-ui-catalog/) |
-| `pam-mobile-ui-php` | Generated/distribution mirror of Mobile UI | [Distribution mirrors](/packages/distribution-mirrors/) |
+| `pam-native-ui` | Retained-native Material 3 component system | [Native UI](/packages/mobile-ui/) and [catalog](/packages/mobile-ui-catalog/) |
+| `pam-native-ui-php` | Generated/distribution mirror of Native UI | [Distribution mirrors](/packages/distribution-mirrors/) |
 | `pam-native-nitro` | Offline-first typed local data engine | [Nitro](/packages/native-nitro/) |
 
 ## Official Native integrations
@@ -44,7 +44,7 @@ destination.
 | `pam-native-firebase` | Firebase services and messaging bridge | [Firebase](/packages/native-firebase/) |
 | `pam-native-health` | Health data permissions and queries | [Health](/packages/native-health/) |
 | `pam-native-intents` | Android intents and iOS URL activities | [Intents](/packages/native-intents/) |
-| `pam-native-laravel-sync` | Laravel-backed native synchronization | [Laravel Sync](/packages/native-laravel-sync/) |
+| `pam-native-sync-laravel` | Laravel-backed native synchronization | [Laravel Sync](/packages/native-laravel-sync/) |
 | `pam-native-live-activities` | iOS Live Activities | [Live Activities](/packages/native-live-activities/) |
 | `pam-native-maps` | Native maps, markers and camera control | [Maps](/packages/native-maps/) |
 | `pam-native-media` | Camera, picker and media processing | [Media](/packages/native-media/) |
@@ -63,15 +63,27 @@ destination.
 
 ## Installation rule
 
-Use PAM aliases for official application capabilities:
+Use PAM Composer for every ecosystem package:
 
 ```bash
-pam packages
-pam add observability
-pam add mobile-ui
+pam composer require pushinbr/pam-native-observability
+pam composer require pushinbr/pam-native-ui
 pam doctor
 ```
 
-`pam composer require` remains correct for normal server/framework packages
-such as `pushinbr/pam-api` and `pushinbr/pam-laravel`. Distribution mirrors are
-not separate installation choices.
+The same workflow applies to server, framework, native and desktop products.
+Distribution mirrors are not separate installation choices.
+
+## Compatibility repositories
+
+These repositories contain migration-only Composer metapackages. They remain
+public so existing lockfiles resolve safely, but every package is marked
+abandoned on Packagist with its canonical replacement:
+
+| Compatibility repository | Canonical repository |
+| --- | --- |
+| `pam-api` | `pam-http` |
+| `pam-core-api` | `pam-contracts` |
+| `pam-psr-bridge` | `pam-psr` |
+| `pam-mobile-ui` | `pam-native-ui` |
+| `pam-native-laravel-sync` | `pam-native-sync-laravel` |

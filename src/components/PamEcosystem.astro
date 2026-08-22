@@ -8,11 +8,11 @@ const capabilities = [
   ['firebase', 'Platform services', 'Analytics, Crashlytics, Remote Config, Messaging, and Installations.', 'pam-native-firebase'],
   ['health', 'Health', 'Health Connect and HealthKit authorization, reads, and writes.', 'pam-native-health'],
   ['intents', 'Platform integration', 'Android shortcuts and Apple App Intents for named routes.', 'pam-native-intents'],
-  ['laravel-sync', 'Data & offline', 'Authenticated Laravel delta and mutation APIs for PAM Native Sync.', 'pam-native-laravel-sync'],
+  ['laravel-sync', 'Data & offline', 'Authenticated Laravel delta and mutation APIs for PAM Native Sync.', 'pam-native-sync-laravel'],
   ['live-activities', 'Platform integration', 'ActivityKit Live Activities and Android ongoing notifications.', 'pam-native-live-activities'],
   ['maps', 'Location', 'Declarative Google Maps and MapKit cameras, markers, and overlays.', 'pam-native-maps'],
   ['media', 'Media', 'Native media inspection, thumbnails, and embedded camera capture.', 'pam-native-media'],
-  ['mobile-ui', 'Interface', 'Retained Material Design 3 components for Android and iOS.', 'pam-mobile-ui'],
+  ['mobile-ui', 'Interface', 'Retained Material Design 3 components for Android and iOS.', 'pam-native-ui'],
   ['nfc', 'Hardware', 'Lifecycle-safe NDEF reading and writing on Android and iOS.', 'pam-native-nfc'],
   ['nitro', 'Data & offline', 'Typed, reactive, offline-first data built for native workloads.', 'pam-native-nitro'],
   ['observability', 'Operations', 'Vendor-neutral spans, logs, metrics, crash context, and export.', 'pam-native-observability'],
@@ -40,10 +40,8 @@ const categories = [...new Map(
     <h2>One command between idea and native capability.</h2>
     <p>Choose what the product needs. PAM resolves compatibility, updates the project, and refreshes native integration through one predictable workflow.</p>
   </div>
-  <pre aria-label="Install a PAM capability"><code><span>$</span> pam packages
-<span>$</span> pam add observability
+  <pre aria-label="Install a PAM capability"><code><span>$</span> pam composer require pushinbr/pam-native-observability
 <strong>✓</strong> Compatibility preflight passed
-<strong>✓</strong> Native integration refreshed
 <span>$</span> pam doctor</code></pre>
 </div>
 
@@ -67,7 +65,7 @@ const categories = [...new Map(
         <h3>{alias}</h3>
         <p>{description}</p>
       </div>
-      <code>pam add {alias}</code>
+      <code>pam composer require pushinbr/{repository}</code>
       <div class="pam-catalog-links">
         <a href={`https://github.com/push-in/${repository}`}>README <span aria-hidden="true">↗</span></a>
         <a href={`https://github.com/push-in/${repository}/issues`}>Support <span aria-hidden="true">↗</span></a>
@@ -77,6 +75,6 @@ const categories = [...new Map(
 </div>
 
 <aside class="pam-catalog-note">
-  <strong>Remove safely.</strong>
-  <p>Use <code>pam remove &lt;capability&gt;</code>. PAM performs a dry-run dependency check, updates the project, refreshes native integration, and leaves diagnostics to <code>pam doctor</code>.</p>
+  <strong>Composer remains Composer.</strong>
+  <p>Use <code>pam composer remove vendor/package</code>. The normal Composer manifest and lockfile remain the only dependency authority.</p>
 </aside>

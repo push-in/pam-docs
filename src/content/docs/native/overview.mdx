@@ -3,7 +3,7 @@ title: PAM Native
 description: Build Android and iOS applications in PHP with real native controls and no JavaScript runtime.
 ---
 
-PAM Native keeps PHP 8.4 alive and renders platform controls directly. Rust owns validation, reconciliation, diffing, and layout. Kotlin applies mutation batches to Android Views; Swift applies the same protocol to UIKit.
+PAM Native runs PHP 8.5 by default and renders platform controls directly. Rust owns validation, reconciliation, diffing, and layout. Kotlin applies mutation batches to Android Views; Swift applies the same protocol to UIKit.
 
 It is not a WebView and does not ship React's JavaScript runtime.
 
@@ -40,13 +40,18 @@ Every public authoring style resolves to the same `Renderable → Element → PN
 
 Templates are parsed once, validated, and kept in memory. Expressions read component or data paths and do not use `eval`.
 
-## Create and prepare an Android app
+## Start here
 
-Install PAM once, then let the CLI own the project lifecycle:
+Every PAM product runs on the PAM runtime. Install it once, verify the machine,
+create the native application, and install the product package through PAM's
+Composer passthrough:
 
 ```bash
-pam init my-app --template mobile-ui --platform android
+curl -fsSL https://push-in.github.io/pam/install.sh | sh
+pam doctor
+pam init my-app --template native --platform android
 cd my-app
+pam composer require pushinbr/pam-native
 pam doctor --fix
 pam doctor
 pam dev
@@ -88,7 +93,7 @@ production updates without adding work to the first native frame.
 
 | Requirement | Contract |
 | --- | --- |
-| PHP | 8.4.x and 8.5.x selectable runtimes |
+| PHP | 8.5.x default; 8.4.x remains selectable |
 | Android | API 26–36 |
 | PAM Native protocol | Version 1 |
 | iOS | Generated UIKit host; PHP 8.4/8.5 simulator certification and signed IPA tooling |

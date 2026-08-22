@@ -3,9 +3,19 @@ title: PAM Native Intents
 description: Publish named PAM routes as Android Dynamic Shortcuts and Apple App Intents while preserving one deep-link navigation lifecycle.
 ---
 
+## Start here
+
+Every PAM Native product runs on the PAM runtime. Install and verify PAM first,
+create a Native application, and add this package through PAM Composer:
+
 ```bash
-pam add intents
+curl -fsSL https://push-in.github.io/pam/install.sh | sh
 pam doctor
+pam init my-app --template native
+cd my-app
+pam composer require pushinbr/pam-native-intents
+pam doctor
+pam native dev
 ```
 
 ```php

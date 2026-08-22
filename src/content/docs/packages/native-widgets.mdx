@@ -3,9 +3,19 @@ title: PAM Native Widgets
 description: Publish bounded process-safe Android App Widget and WidgetKit timeline state from PHP with stable IDs and deep links.
 ---
 
+## Start here
+
+Every PAM Native product runs on the PAM runtime. Install and verify PAM first,
+create a Native application, and add this package through PAM Composer:
+
 ```bash
-pam add widgets
+curl -fsSL https://push-in.github.io/pam/install.sh | sh
 pam doctor
+pam init my-app --template native
+cd my-app
+pam composer require pushinbr/pam-native-widgets
+pam doctor
+pam native dev
 ```
 
 ```php

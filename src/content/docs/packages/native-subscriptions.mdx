@@ -3,9 +3,19 @@ title: PAM Native Subscriptions
 description: Load, purchase, restore, verify, and acknowledge StoreKit 2 and Google Play Billing subscriptions without trusting client entitlement.
 ---
 
+## Start here
+
+Every PAM Native product runs on the PAM runtime. Install and verify PAM first,
+create a Native application, and add this package through PAM Composer:
+
 ```bash
-pam add subscriptions
+curl -fsSL https://push-in.github.io/pam/install.sh | sh
 pam doctor
+pam init my-app --template native
+cd my-app
+pam composer require pushinbr/pam-native-subscriptions
+pam doctor
+pam native dev
 ```
 
 ```php

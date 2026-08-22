@@ -3,11 +3,19 @@ title: PAM Native Laravel Sync
 description: Build authenticated Laravel push/pull sync APIs with idempotency, signed cursors, conflicts, retention, and a PAM Native transport.
 ---
 
+## Start here
+
+Every PAM Native product runs on the PAM runtime. Install and verify PAM first,
+create a Native application, and add this package through PAM Composer:
+
 ```bash
-pam add laravel-sync
-pam artisan vendor:publish --tag=pam-native-sync-config
-pam artisan migrate
+curl -fsSL https://push-in.github.io/pam/install.sh | sh
 pam doctor
+pam init my-app --template native
+cd my-app
+pam composer require pushinbr/pam-native-sync-laravel
+pam doctor
+pam native dev
 ```
 
 Register every synchronized collection explicitly:
