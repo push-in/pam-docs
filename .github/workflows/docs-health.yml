@@ -1,6 +1,7 @@
 name: Documentation health
 
 on:
+  pull_request:
   schedule:
     - cron: '17 9 * * 1'
   workflow_dispatch:
@@ -29,12 +30,13 @@ jobs:
         run: npm run validate
 
       - name: Compare docs with the latest PAM release
+        if: github.event_name != 'pull_request'
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: npm run check:freshness
 
       - name: Open or update a maintenance issue
-        if: failure()
+        if: failure() && github.event_name == 'schedule'
         uses: actions/github-script@v8
         with:
           script: |
