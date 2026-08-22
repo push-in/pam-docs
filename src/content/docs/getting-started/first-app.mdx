@@ -13,6 +13,8 @@ Every initializer and project command below depends on PAM. Complete
 ```bash
 pam init hello-pam --template http
 cd hello-pam
+mkdir -p storage && touch storage/database.sqlite
+pam composer migrate
 pam dev index.php
 ```
 
@@ -23,10 +25,27 @@ curl http://127.0.0.1:3000/api/ping
 ```
 
 ```json
-{"message":"pong"}
+{"data":{"status":1,"message":"pong","requestId":null}}
 ```
 
 This is already a persistent PHP application. PAM loaded the Composer autoloader and application once; subsequent requests execute inside isolated Fibers.
+
+The starter is structured from its first route: `PingController::show`
+orchestrates `ReadinessService`, returns a readonly snapshot through
+`PingResource`, and represents readiness with a sequential integer-backed enum.
+`index.php` validates typed port configuration and enables security headers
+before the listener starts.
+
+```bash
+pam composer test
+```
+
+The generated test invokes the same named action through PAM API's in-memory
+client and asserts the Resource envelope and request ID. It also executes a
+complete SQLite/Eloquent create-and-list flow through named
+`ProductController::store` and `ProductController::index` actions, Form Request,
+DTO, service, repository and Resource. Product creation returns `201 Created`;
+its status is transmitted as sequential integer enum value `1`.
 
 ## What `pam init` does
 
@@ -37,6 +56,11 @@ Use `--no-install` when you want source generation without dependency resolution
 ```bash
 pam init hello-pam --template http --no-install
 ```
+
+:::caution[PAM API 2 development line]
+The structured starter targets PAM API 2.0. Until its Packagist prerelease is
+published, use `--no-install` outside the PAM source workspace.
+:::
 
 ## Add WebSockets
 

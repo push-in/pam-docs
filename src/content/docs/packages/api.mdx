@@ -165,7 +165,25 @@ final readonly class UserResource extends JsonResource
 }
 ```
 
-Convenience methods exist for `GET`, `POST`, `PUT`, `PATCH`, and `DELETE`. Use `route()` for another valid HTTP method.
+Pass a valid HTTP status as the second constructor argument when the action
+creates a resource:
+
+```php
+public function store(StoreUserRequest $request): UserResource
+{
+    return new UserResource($this->users->create($request->data()), 201);
+}
+```
+
+Codes outside `100..599` are rejected during construction. Collections retain
+the normal `200` status.
+
+Convenience methods exist for `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`
+and `OPTIONS`. Use `route()` for another valid HTTP method. When no explicit
+`OPTIONS` route exists, PAM returns `204` with a deterministic `Allow` header.
+Every `GET` route advertises and matches `HEAD`; explicit handlers take
+precedence. The final `HEAD` body is suppressed after middleware and error
+handling while status and headers are preserved.
 
 Route paths must be absolute and cannot include a query string. A parameter occupies an entire segment:
 
@@ -175,11 +193,17 @@ $app->get('/teams/{team}/members/{member}', $handler);
 
 Parameter names must be unique and match `[A-Za-z_][A-Za-z0-9_]*`. Static paths are normalized for a trailing slash. `HEAD` falls back to a matching `GET` route.
 
+Route configuration has explicit resource limits: 10,000 routes by default
+(configurable up to 100,000), 2 KiB paths, 128 segments, 32 parameters and
+512-byte custom constraints. Compiled patterns carry PCRE match/depth budgets;
+oversized request paths are rejected before regex matching.
+
 ## Routing outcomes
 
 - A matching route receives decoded route parameters.
-- A path with no route returns JSON `404`.
-- A known path with the wrong method returns JSON `405` and an `Allow` header.
+- A path with no route returns Problem Details `404`.
+- A known path with the wrong method returns Problem Details `405`, code `9`,
+  and an `Allow` header.
 - Registering the same method and path twice throws during application configuration.
 
 ## Middleware
@@ -208,13 +232,17 @@ The pipeline is compiled once, in registration order, when the application first
 
 ## Error handling
 
-The default boundary logs the exception through PAM telemetry and returns:
+Routing, operational and unexpected failures share one Problem Details
+contract with `application/problem+json`. The default boundary logs the full
+exception through PAM telemetry and returns only:
 
 ```json
-{"error":"Internal Server Error"}
+{"type":"https://pam.dev/problems/8","title":"Internal Server Error","status":500,"code":8}
 ```
 
-with status `500`. It does not expose the exception message to the client.
+It does not expose the exception message to the client. Domain details attached
+to `HttpException` may add fields but cannot override `type`, `title`, `status`,
+or `code`.
 
 Customize the boundary before the application starts:
 
@@ -231,13 +259,150 @@ The custom handler must return a PAM response.
 
 Service providers implement `register()` and `boot()`. Registration happens while the application is mutable; providers boot when the route and middleware pipeline freezes.
 
+Console tools can call the idempotent `$app->boot()` method to boot providers
+and freeze configuration without dispatching a synthetic HTTP request. The
+generated migration command uses this boundary.
+
 Composer package discovery can register providers from installed package metadata. Pass `discoverPackages: false` to `new App()` when configuration must be fully explicit.
+
+## Eloquent ORM
+
+Eloquent is the official PAM API ORM. Its connection resolver creates one
+Illuminate manager per request Fiber and automatically rolls back unfinished
+transactions and disconnects connections at the request boundary.
+
+```php
+use Pam\Api\Database\DatabaseConfig;
+use Pam\Api\Database\EloquentServiceProvider;
+
+$app->provider(new EloquentServiceProvider(DatabaseConfig::fromEnvironment()));
+```
+
+`DB_CONNECTION` accepts `pgsql`, `mysql`, `sqlite`, or `sqlsrv`; PostgreSQL is
+the production default. Models, events, schema builders and anonymous-class
+Laravel migrations work normally. `MigrationManager` supports migrate,
+rollback, named connections and dry-run execution.
+
+Run schema changes as an explicit deployment step. The starter exposes
+`pam composer migrate`; it never races migrations across HTTP workers during
+application startup.
+
+The generated [`pam-skeleton`](/packages/skeleton/) is the executable reference
+architecture: thin named controller methods, Form Request and DTO, service,
+repository abstraction, Eloquent implementation, migration, Resource, SQLite
+tests, and integer-backed domain status.
+
+Use `QueryBudgetMiddleware` to fail tests or development requests that exceed
+query count, accumulated SQL time or duplicate-query limits. This turns N+1
+detection into an executable route contract instead of a manual review.
+
+For tenant-owned models, register `TenantModelGuard` during boot. It applies a
+global scope, assigns `tenant_id` on creation, rejects cross-tenant assignment
+and fails closed when no scoped `TenantContext` exists.
+
+## Typed configuration
+
+```php
+use Pam\Api\Config\ConfigDefinition;
+use Pam\Api\Config\Configuration;
+use Pam\Api\Config\ConfigType;
+
+$config = Configuration::fromEnvironment([
+    new ConfigDefinition('app.port', 'PAM_PORT', ConfigType::Integer),
+    new ConfigDefinition('auth.secret', 'AUTH_SECRET', sensitive: true),
+]);
+```
+
+Configuration is validated before the application serves requests. Diagnostics
+must use `redacted()`, which masks sensitive values. Error messages name the
+missing variable and expected type without echoing the supplied value.
+
+## Signed bearer authentication
+
+`HmacTokenCodec` issues bounded HS256 access tokens with issuer, audience,
+`iat`, `nbf`, `exp`, `jti` and abilities. `BearerTokenAuthenticator` integrates
+the codec with `AuthenticateMiddleware`.
+
+The active signing key has a bounded `kid`; up to four retiring keys may remain
+in the verification keyring for zero-downtime rotation. Unknown key IDs fail
+closed. A `TokenRevocationStore` can revoke a `jti`; the included memory store
+is bounded and intended only for development and tests. Production clusters
+must implement the contract with atomic shared state.
+
+Access tokens cannot live longer than 24 hours. Refresh-token rotation and
+OAuth/OIDC authorization-server behavior still belong to an identity provider
+or a separately audited application flow.
+
+## Request lifecycle and PAM Lens
+
+`$app->observe($observer)` registers a `RequestLifecycleObserver`. Observers
+start in registration order and finish in reverse order before request-scoped
+state is destroyed. They receive the handled failure when present; an observer
+cleanup failure is logged and cannot stop the remaining cleanup chain.
+
+`MemoryProfiler` is the bounded first PAM Lens collector. It is disabled by
+default and must be enabled with `ProfilerMode::Development` or
+`ProfilerMode::Testing`. Profiles retain only method, path, status, duration,
+memory delta and failure class. Headers, bearer tokens and request/response
+payloads are never stored.
+
+## PAM API generators
+
+Inside a PAM API project:
+
+```bash
+pam make:model User
+pam make:controller UserController
+pam make:request StoreUserRequest
+pam make:resource UserResource
+pam make:service CreateUserService
+pam make:repository UserRepository
+pam make:migration CreateUsersTable
+```
+
+Names must be bounded PascalCase identifiers. Generators create the expected
+application directories and refuse to overwrite existing files. Controllers
+use named actions and are ready for handlers such as
+`[UserController::class, 'index']`.
+
+## Job workers
+
+`JobQueue` defines an at-least-once lifecycle for durable adapters: bounded
+dispatch delay, reservation leases, acknowledgement, delayed release and
+dead-letter transitions. `JobWorker` runs the same contract against the bounded
+memory queue in development and tests. Expired leases may be reclaimed, failed
+attempts retry up to the envelope limit, and exhausted jobs move to the
+dead-letter set. Diagnostics retain the failure class, never its message.
+
+Durable adapters encode `SerializableJob` values with `JobCodec`. Its JSON
+envelope is versioned, limited to 64 KiB and depth 16, and resolves job names
+through an explicit registry. It does not accept PHP serialized objects or
+client-controlled class names.
 
 ## Configuration freeze
 
 Routes, middleware, providers, error handlers, and PSR handlers cannot be changed after the application begins handling requests. PAM throws rather than silently mutating a live long-lived pipeline.
 
+## Public API compatibility
+
+`composer verify` includes `composer api:compat`, which compares PAM API's
+public classes, interfaces, enums, methods, parameters, properties and
+constants with the committed `api-surface.json`. Unreviewed additions fail as
+baseline drift. Removals, signature changes, new interface/abstract methods,
+newly final or abstract contracts and enum changes fail as incompatibilities;
+all findings use sequential integer codes.
+
+Run `bin/api-compat update` after approving compatible additions. Updating the
+baseline for breaking changes is allowed only on an intentional major-version
+branch after its upgrade guide and changelog describe every break. Normal CI
+never regenerates the baseline.
+
 ## Public API reference
+
+The [generated 118-symbol reference](https://github.com/push-in/pam-api/blob/main/docs/PUBLIC-API.md)
+lists exact constructors, methods, parameters, return types, properties,
+constants and integer enum cases. It is generated from the same reviewed
+surface baseline used by the SemVer gate, and CI rejects stale output.
 
 | Type | Public surface |
 | --- | --- |
@@ -253,6 +418,15 @@ Routes, middleware, providers, error handlers, and PSR handlers cannot be change
 | `Route` | Method, path, compiled handler, matching metadata and route middleware |
 | `RoutingResult` | Readonly type, matched route, decoded parameters and allowed methods |
 | `PackageDiscovery` | `providers(projectRoot)` reads Composer package provider metadata |
+| `EloquentManager` | Fiber-local connections, schemas and transactions |
+| `MigrationManager` | Laravel-compatible migration and rollback execution |
+| `Configuration` | Boot-time typed configuration and secret-safe diagnostics |
+| `HmacTokenCodec` | Signed access tokens, bounded key rotation and verification |
+| `RequestLifecycleObserver` | Failure-aware request start/finish instrumentation |
+| `MemoryProfiler` | Bounded privacy-safe development request profiles |
+| `JobQueue` | Lease, acknowledgement, retry and dead-letter adapter contract |
+| `JobWorker` | Bounded one-job execution with at-least-once semantics |
+| `JobCodec` | Allowlisted and bounded JSON serialization for durable jobs |
 
 `RoutingResultType` is integer-backed: `Found=1`,
 `MethodNotAllowed=2`, `NotFound=3`.
@@ -319,6 +493,15 @@ $typescript = $contract->client(ClientLanguage::TypeScript);
 
 Kotlin and Swift clients use the same OpenAPI 3.1 contract. Compatibility
 checks report removed paths and operations through sequential integer codes.
+
+## Performance regression contract
+
+`composer benchmark` emits schema 1 JSON for 100 routes plus one constrained
+dynamic route. It performs warm-up, measures static and dynamic paths
+independently, and reports throughput, p50/p95/p99 latency and peak memory.
+`composer verify` runs the assertion mode with conservative throughput, p99 and
+memory ceilings. These gates detect severe regressions; they are not portable
+marketing comparisons because host hardware and load topology still matter.
 
 ## Production and testing contracts
 

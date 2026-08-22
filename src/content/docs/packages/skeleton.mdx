@@ -18,6 +18,8 @@ pam doctor
 pam init my-api --template http
 cd my-api
 pam composer require pushinbr/pam-http
+mkdir -p storage && touch storage/database.sqlite
+pam composer migrate
 pam doctor
 pam dev index.php
 ```
@@ -27,14 +29,45 @@ listener port.
 
 ## What the generated project contains
 
-- `GET /api/ping`, a health-sized JSON route;
-- `GET /api/users/{id}`, a route-parameter example;
+- `GET /api/ping` mapped to `[PingController::class, 'show']`;
+- a thin controller, readiness service, readonly snapshot and JSON Resource;
+- a sequential integer-backed `ReadinessStatus` enum;
+- `GET /api/products` and `POST /api/products`, mapped to named
+  `ProductController` methods;
+- a complete Eloquent flow with Form Request, readonly DTO, service, repository,
+  model, migration and JSON Resource;
+- a sequential integer-backed `ProductStatus` enum (`1` active, `2` archived);
+- boot-time typed `PAM_PORT` validation;
 - security-header middleware;
-- an in-memory application test;
+- an in-memory application test using the PAM API test client;
 - standard Composer metadata, scripts, autoloading and lockfile behavior.
 
-The examples demonstrate wiring, not a production authorization or domain
-model. Replace them before release.
+Create and list persisted products:
+
+```bash
+curl -X POST http://127.0.0.1:3000/api/products \
+  -H 'content-type: application/json' \
+  -d '{"name":"Mechanical keyboard","priceInCents":34990}'
+curl http://127.0.0.1:3000/api/products
+```
+
+The create action returns `201 Created`. Validation stays in
+`StoreProductRequest`, the use case stays in `ProductService`, persistence stays
+behind `ProductRepository`, and `ProductResource` owns the representation.
+Migrations are explicit rather than part of HTTP worker boot, so concurrent
+production workers cannot race schema changes. Re-running `pam composer migrate`
+is safe and reports when the database is already current.
+
+The CLI embeds these canonical skeleton files at build time. CI generates a
+fresh project, performs a Composer dry-run, installs the local PAM API 2.0
+candidate and executes the ping plus SQLite/Eloquent endpoint tests inside the
+Embed SAPI, preventing the
+published skeleton and `pam init` output from drifting apart.
+
+API and skeleton releases are intentionally ordered. PAM API 2 must first pass
+its public Packagist installation gate. The skeleton can then receive its own
+2.0 tag and repeat the same clean-consumer dry-run and installation proof; the
+native PAM runtime does not need a matching major version.
 
 ## Daily workflow
 
