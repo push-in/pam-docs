@@ -57,10 +57,9 @@ Use `--no-install` when you want source generation without dependency resolution
 pam init hello-pam --template http --no-install
 ```
 
-:::caution[PAM API 2 development line]
-The structured starter targets PAM API 2.0. Until its Packagist prerelease is
-published, use `--no-install` outside the PAM source workspace.
-:::
+The structured starter installs the published PAM HTTP 2 line directly from
+Packagist. Use `--no-install` only when you intentionally want to inspect or
+modify the generated sources before Composer resolves dependencies.
 
 ## Add WebSockets
 

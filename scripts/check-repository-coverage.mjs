@@ -39,17 +39,19 @@ const requiredRepositories = [
   'pam-native-testing',
   'pam-native-video',
   'pam-native-widgets',
-  'pam-psr',
+  'pam-http-psr',
+  'pam-http-testing',
   'pam-skeleton',
   'pam-socket',
-  'pam-testing',
 ];
 const compatibilityRepositories = [
   'pam-api',
   'pam-core-api',
   'pam-mobile-ui',
   'pam-native-laravel-sync',
+  'pam-psr',
   'pam-psr-bridge',
+  'pam-testing',
 ];
 const documentedRepositories = [
   ...requiredRepositories,
