@@ -1,0 +1,24 @@
+---
+title: PAM Native Camera
+description: Professional low-latency camera capture for PAM Native on Android and iOS.
+---
+
+## Start here
+
+Every PAM Native product runs on PAM. Install the runtime, create the app, then add only the camera capability:
+
+```bash
+curl -fsSL https://github.com/push-in/pam/releases/latest/download/install.sh | sh
+pam init my-app --template native
+cd my-app
+pam composer require pushinbr/pam-native-camera
+pam doctor --fix
+```
+
+The package exposes device and format discovery, photo/video capture, focus,
+zoom, torch, orientation, frame-rate and frame-processor contracts. Camera is
+independent: applications do not install a feed or product bundle.
+
+Use explicit permissions, test interruptions/background transitions, and run
+capture and thermal tests on every physical device class you support.
+

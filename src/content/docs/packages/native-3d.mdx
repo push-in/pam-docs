@@ -1,0 +1,20 @@
+---
+title: PAM Native 3D
+description: Render GLB and USDZ scenes through Filament and RealityKit from PHP 8.5.
+---
+
+## Start here
+
+```bash
+curl -fsSL https://github.com/push-in/pam/releases/latest/download/install.sh | sh
+pam init my-app --template native
+cd my-app
+pam composer require pushinbr/pam-native-3d
+pam doctor --fix
+```
+
+Declare sandboxed Android GLB and iOS USDZ assets, transforms, animation,
+background and orbit controls. Android renders with Google Filament; iOS uses
+RealityKit. Validate asset budgets, memory pressure, thermal behavior and
+fallback UX on representative physical devices.
+

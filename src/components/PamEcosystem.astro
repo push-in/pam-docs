@@ -3,6 +3,9 @@ const capabilities = [
   ['auth', 'Identity & security', 'Encrypted credentials and OAuth 2.1/PKCE primitives.', 'pam-native-auth'],
   ['background-transfer', 'Files & background', 'Durable uploads and downloads outside the PHP lifecycle.', 'pam-native-background-transfer'],
   ['bluetooth', 'Hardware', 'BLE discovery, GATT operations, and bounded native events.', 'pam-native-bluetooth'],
+  ['camera', 'Media', 'Low-latency photo and video capture with device, format, focus, zoom, torch, and frame-processor contracts.', 'pam-native-camera'],
+  ['canvas', 'Graphics', 'Retained native 2D drawing with paths, transforms, text, images, and pointer events.', 'pam-native-canvas'],
+  ['3d', 'Graphics', 'Sandboxed GLB and USDZ scenes through Filament and RealityKit.', 'pam-native-3d'],
   ['devtools', 'Developer experience', 'Timeline, state snapshots, network inspection, and performance marks.', 'pam-native-devtools'],
   ['feature-flags', 'Delivery', 'Typed targeting, deterministic rollout, and offline snapshots.', 'pam-native-feature-flags'],
   ['firebase', 'Platform services', 'Analytics, Crashlytics, Remote Config, Messaging, and Installations.', 'pam-native-firebase'],
@@ -12,6 +15,7 @@ const capabilities = [
   ['live-activities', 'Platform integration', 'ActivityKit Live Activities and Android ongoing notifications.', 'pam-native-live-activities'],
   ['maps', 'Location', 'Declarative Google Maps and MapKit cameras, markers, and overlays.', 'pam-native-maps'],
   ['media', 'Media', 'Native media inspection, thumbnails, and embedded camera capture.', 'pam-native-media'],
+  ['media-editor', 'Media', 'Native timeline composition, trimming, filters, audio mixing, HDR, and bounded export.', 'pam-native-media-editor'],
   ['mobile-ui', 'Interface', 'Retained Material Design 3 components for Android and iOS.', 'pam-native-ui'],
   ['nfc', 'Hardware', 'Lifecycle-safe NDEF reading and writing on Android and iOS.', 'pam-native-nfc'],
   ['nitro', 'Data & offline', 'Typed, reactive, offline-first data built for native workloads.', 'pam-native-nitro'],
@@ -25,6 +29,7 @@ const capabilities = [
   ['sync', 'Data & offline', 'Idempotent outbox, cursors, conflicts, and incremental synchronization.', 'pam-native-sync'],
   ['testing', 'Developer experience', 'Deterministic bridge fakes and strict native assertions.', 'pam-native-testing'],
   ['video', 'Media', 'Adaptive HLS/DASH playback through Media3 and AVPlayer.', 'pam-native-video'],
+  ['gpu', 'Graphics', 'Typed scalar uniforms and programmable OpenGL ES 3/Metal fragment rendering.', 'pam-native-gpu'],
   ['widgets', 'Platform integration', 'Android App Widgets and iOS WidgetKit timelines.', 'pam-native-widgets'],
   ['native', 'Foundation', 'The PAM Native SDK, component runtime, and renderer contracts.', 'pam-native'],
 ] as const;
@@ -36,7 +41,7 @@ const categories = [...new Map(
 
 <div class="pam-catalog-intro">
   <div class="pam-catalog-copy">
-    <p class="pam-home-kicker">27 official capabilities · one workflow</p>
+    <p class="pam-home-kicker">32 official capabilities · one workflow</p>
     <h2>One command between idea and native capability.</h2>
     <p>Choose what the product needs. PAM resolves compatibility, updates the project, and refreshes native integration through one predictable workflow.</p>
   </div>

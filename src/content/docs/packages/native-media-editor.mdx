@@ -1,0 +1,20 @@
+---
+title: PAM Native Media Editor
+description: Compose and export native photo and video timelines from typed PHP 8.5 contracts.
+---
+
+## Start here
+
+```bash
+curl -fsSL https://github.com/push-in/pam/releases/latest/download/install.sh | sh
+pam init my-app --template native
+cd my-app
+pam composer require pushinbr/pam-native-media-editor
+pam doctor --fix
+```
+
+Build immutable timelines with trim, concatenation, crop, rotation, speed,
+filters, soundtrack mixing, output size, FPS, bitrate, H.264/HEVC and HDR
+policy. Android uses Media3 Transformer; iOS uses AVFoundation and Core Image.
+Exports expose progress and cancellation and accept only sandboxed file paths.
+
