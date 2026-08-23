@@ -39,7 +39,7 @@ products built on top of that runtime—like packages around Node.js.
 Install PAM once, then use Composer through its bundled PHP runtime:
 
 ```bash
-curl -fsSL https://push-in.github.io/pam/install.sh | sh
+curl -fsSL https://github.com/push-in/pam/releases/latest/download/install.sh | sh
 pam doctor
 pam composer require pushinbr/pam-native-auth
 ```
