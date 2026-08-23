@@ -1,9 +1,9 @@
 ---
-title: pushinbr/pam-psr
+title: pushinbr/pam-http-psr
 description: Run PSR-7 requests, PSR-15 middleware and handlers, and PSR-17 factories on PAM.
 ---
 
-`pushinbr/pam-psr` provides PSR-7, PSR-15, and PSR-17 interoperability using the official PHP-FIG interfaces.
+`pushinbr/pam-http-psr` provides PSR-7, PSR-15, and PSR-17 interoperability using the official PHP-FIG interfaces.
 
 ## Start here
 
@@ -15,8 +15,14 @@ curl -fsSL https://push-in.github.io/pam/install.sh | sh
 pam doctor
 pam init my-api --template http
 cd my-api
-pam composer require pushinbr/pam-psr
+pam composer require pushinbr/pam-http-psr
 ```
+
+:::note[Migrating from the old name]
+`pushinbr/pam-psr` 2.x is an abandoned compatibility package that installs
+`pushinbr/pam-http-psr`. Existing applications keep working, but new manifests
+must use the permanent HTTP-family name shown above.
+:::
 
 ## Use a PSR-15 handler
 
@@ -106,5 +112,5 @@ detached or closed; immutable `with*()` operations clone messages rather than
 mutating the original.
 
 :::note[License]
-`pushinbr/pam-psr` uses the Apache License 2.0.
+`pushinbr/pam-http-psr` uses the Apache License 2.0.
 :::

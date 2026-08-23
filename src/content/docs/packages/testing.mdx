@@ -1,9 +1,9 @@
 ---
-title: pushinbr/pam-testing
+title: pushinbr/pam-http-testing
 description: Test pushinbr/pam-http applications in memory with fluent response assertions.
 ---
 
-`pushinbr/pam-testing` invokes a `pushinbr/pam-http` application pipeline without opening a network port.
+`pushinbr/pam-http-testing` invokes a `pushinbr/pam-http` application pipeline without opening a network port.
 
 ## Start here
 
@@ -15,14 +15,20 @@ curl -fsSL https://push-in.github.io/pam/install.sh | sh
 pam doctor
 pam init my-api --template http
 cd my-api
-pam composer require --dev pushinbr/pam-testing
+pam composer require --dev pushinbr/pam-http-testing
 ```
+
+:::note[Migrating from the old name]
+`pushinbr/pam-testing` 2.x is an abandoned compatibility package that installs
+`pushinbr/pam-http-testing` and preserves the legacy `Pam\Testing` aliases.
+New code should import `Pam\Http\Testing` and require the permanent package name.
+:::
 
 ## Create a client
 
 ```php
 use Pam\App;
-use Pam\Testing\TestClient;
+use Pam\Http\Testing\TestClient;
 
 $app = new App();
 $app->get('/users/{id}', static fn ($request, $response) =>
@@ -115,5 +121,5 @@ multiple values with `, ` and can return a supplied default. `json()` uses
 `RuntimeException` on failure and return the same response on success.
 
 :::note[License]
-`pushinbr/pam-testing` uses the Apache License 2.0.
+`pushinbr/pam-http-testing` uses the Apache License 2.0.
 :::
