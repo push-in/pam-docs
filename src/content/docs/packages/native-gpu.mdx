@@ -1,0 +1,20 @@
+---
+title: PAM Native GPU
+description: Programmable OpenGL ES 3 and Metal fragment rendering without a JavaScript bridge.
+---
+
+## Start here
+
+```bash
+curl -fsSL https://github.com/push-in/pam/releases/latest/download/install.sh | sh
+pam init my-app --template native
+cd my-app
+pam composer require pushinbr/pam-native-gpu
+pam doctor --fix
+```
+
+Provide bounded GLSL and Metal fragment programs plus typed scalar uniforms.
+The native view supplies resolution and time and supports on-demand or
+continuous rendering. Treat shader input as trusted application code, cap work
+per frame, and profile real GPUs before release.
+

@@ -1,0 +1,20 @@
+---
+title: PAM Native Canvas
+description: Retained-mode native 2D graphics controlled by bounded PHP scene contracts.
+---
+
+## Start here
+
+```bash
+curl -fsSL https://github.com/push-in/pam/releases/latest/download/install.sh | sh
+pam init my-app --template native
+cd my-app
+pam composer require pushinbr/pam-native-canvas
+pam doctor --fix
+```
+
+Canvas provides paths, fills, strokes, transforms, clipping, text, sandboxed
+images and pointer events through Android Canvas and iOS Core Graphics. Scenes
+are retained, revisioned, capped at 10,000 commands and validate balanced state
+stacks before reaching native code.
+
