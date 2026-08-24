@@ -1,27 +1,48 @@
+<!-- pam:product-page:start -->
 <div align="center">
 
 # PAM Documentation
 
-### The complete technical record for the PHP application platform.
+**The complete, honest technical record of the PAM platform.**
 
-**Server runtime, Laravel, native Android and iOS, desktop applications,
-packages, architecture, security, performance, production operations, and
-every public component contract—documented in one place.**
+Architecture, APIs, tutorials, security boundaries, production operations, compatibility, and known limits for every official PAM product.
 
-[![Documentation](https://img.shields.io/badge/read-push--in.github.io-5b50d6?style=flat-square)](https://push-in.github.io/pam-docs/introduction/)
-[![Deploy](https://img.shields.io/github/actions/workflow/status/push-in/pam-docs/pages.yml?branch=main&style=flat-square&label=Pages)](https://github.com/push-in/pam-docs/actions/workflows/pages.yml)
-![Astro](https://img.shields.io/badge/Astro-Starlight-BC52EE?style=flat-square&logo=astro&logoColor=white)
+[![Release](https://img.shields.io/github/v/release/push-in/pam-docs?style=flat-square&label=stable)](https://github.com/push-in/pam-docs/releases)
+[![CI](https://img.shields.io/github/actions/workflow/status/push-in/pam-docs/pages.yml?branch=main&style=flat-square&label=CI)](https://github.com/push-in/pam-docs/actions)
+![PHP](https://img.shields.io/badge/PHP-8.5-777BB4?style=flat-square&logo=php&logoColor=white)
+![License](https://img.shields.io/github/license/push-in/pam-docs?style=flat-square)
 
-**[Read the docs](https://push-in.github.io/pam-docs/introduction/) ·
-[Server runtime](https://push-in.github.io/pam-docs/runtime/how-pam-works/) ·
-[Laravel](https://push-in.github.io/pam-docs/laravel/overview/) ·
-[Native mobile](https://push-in.github.io/pam-docs/native/overview/) ·
-[Desktop](https://push-in.github.io/pam-docs/desktop/overview/) ·
-[Contributing](https://push-in.github.io/pam-docs/community/contributing/)**
+**[Documentation](https://push-in.github.io/pam-docs/introduction/) · [Why this exists](#why-this-exists) · [What you can build](#what-you-can-build) · [Quick start](#quick-start) · [Issues](https://github.com/push-in/pam-docs/issues)**
 
 </div>
 
 ---
+
+## Why this exists
+
+Architecture, APIs, tutorials, security boundaries, production operations, compatibility, and known limits for every official PAM product.
+
+| | |
+| --- | --- |
+| **Role** | Documentation hub |
+| **Execution path** | Astro Starlight · Executable documentation checks |
+| **This repository owns** | Canonical learning path and cross-repository product map |
+| **Boundary** | Source and issue ownership remain in each product repository |
+
+## What you can build
+
+- Choosing the right PAM product
+- Building a first production application
+- Understanding lifecycle, security, performance, and release evidence
+
+## Quick start
+
+```bash
+open https://push-in.github.io/pam-docs/introduction/
+```
+
+The **[PAM documentation](https://push-in.github.io/pam-docs/introduction/)** covers prerequisites, production setup, and the complete workflow. PAM projects keep normal manifests and lockfiles; product features stay in the package that owns them.
+<!-- pam:product-page:end -->
 
 PAM itself is the small persistent PHP runtime and process boundary. HTTP,
 Laravel, Native, Desktop, UI and integrations are independent Composer
