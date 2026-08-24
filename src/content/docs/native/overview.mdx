@@ -125,11 +125,17 @@ Android Views and UIKit are not a DOM. Every supported declaration has a documen
 | Relationship | `.screen .title`, `.toolbar > Button` | Descendant and direct child |
 | Attributes | `[role]`, `[type="email"]`, `~=`, `|=`, `^=`, `$=`, `*=` | Matches typed attributes |
 | Lists | `.title, .subtitle` | Independent cascade entries |
-| States | `:pressed`, `:focus`, `:focus-visible`, `:hover`, `:disabled`, `:checked`, `:selected`, `:active`, `:loading`, `:error`, `:empty` | Static or native interactive state |
+| States | `:pressed`, `:focus`, `:focus-visible`, `:hover`, `:disabled`, `:checked`, `:selected`, `:active`, `:loading`, `:error`, `:empty` | See the exact state contract below |
 | Priority | specificity, source order, `!important` | Deterministic per-property winner |
 | Layers | `@layer components { … }` | Declared layer order |
 
 Inherited text properties are color, font family/size/style/weight, letter spacing, line height, alignment, decoration, and transformation. Geometry never inherits accidentally.
+
+### State selectors without a PHP round trip
+
+`:pressed`, `:focus`, `:focus-visible`, and `:hover` lower to a compact native state map. Opacity, scale, translation, background color, text color, and border color are applied by Android Views or UIKit; PHP is not called between pointer/focus frames. `:disabled`, `:checked`, `:selected`, `:active`, `:loading`, `:error`, and `:empty` are reconciled from typed component properties. `:focus-visible` follows the native focus system rather than browser keyboard heuristics.
+
+Touch devices may never enter `:hover`. Android mouse/stylus/TV pointer events and the iOS pointer interaction do. Always keep the unqualified rule usable.
 
 ### Units, functions, variables, environment
 
@@ -139,29 +145,56 @@ Inherited text properties are color, font family/size/style/weight, letter spaci
 | Relative | `%`, `rem`, `vw`, `vh`, `vmin`, `vmax` |
 | Math | `calc()`, `min()`, `max()`, `clamp()`, `+`, `-`, `*`, `/` |
 | Variables | `--token`, `var(--token)`, fallback values |
-| Environment | `env(safe-area-inset-*)` plus runtime keyboard/display values |
+| Environment | `env(safe-area-inset-top)`, `-right`, `-bottom`, `-left` |
 
 Expressions compile once to a typed tree. Only nodes depending on a changed variable, state, container, viewport, theme, or environment value invalidate.
+
+Application variables can change without recompiling unrelated rules:
+
+```php
+use Pam\Native\Style\StyleVariables;
+
+StyleVariables::set('space-card', '24dp');
+StyleVariables::set('color-surface', '#10131a');
+```
+
+Only declarations containing the changed `var()` binding are recompiled. A revision change requests one reconciler render; unchanged declarations keep their compiled representation.
 
 ### Complete property surface
 
 | Group | Properties and shorthands |
 | --- | --- |
-| Size | `width`, `height`, `min-*`, `max-*`, `aspect-ratio` |
-| Spacing | `padding`, `margin`, four edges, `*-inline`, `*-block`, `gap`, `row-gap`, `column-gap` |
+| Size | `width`, `height`, `min-width`, `min-height`, `max-width`, `max-height`, `aspect-ratio` |
+| Spacing | `padding`, `padding-{top,right,bottom,left}`, `padding-inline`, `padding-block`, the same `margin` forms, `gap`, `row-gap`, `column-gap` |
 | Flex | `display: flex`, `flex`, `flex-grow`, `flex-shrink`, `flex-direction`, `flex-wrap`, `align-items`, `align-self`, `justify-content` |
 | Grid | `display: grid`, `grid-template-columns`, `grid-column: span N`, `place-items`; 1–64 tracks |
-| Position | `relative`, `absolute`, `inset`, logical inset, four edges, `z-index` |
+| Position | `position: relative | absolute`, `inset`, `inset-inline`, `inset-block`, `top`, `right`, `bottom`, `left`, `z-index` |
 | Surface | `background`, `background-color`, `opacity`, `elevation`, `box-shadow` |
-| Border | `border`, per-edge width/color, style, radius, four corner radii |
+| Border | `border`, `border-{top,right,bottom,left}`, per-edge width/color, `border-style: solid | dashed | dotted`, radius, four corner radii |
 | Text | `color`, font family/size/style/weight, letter spacing, line height, align, decoration, transform |
 | Image | `object-fit: contain | cover | fill | none | scale-down` |
-| Transform | translate X/Y, scale X/Y, rotate |
-| Visibility | `display`, `visibility`, `overflow: visible | hidden | clip` |
+| Transform | `transform` with `translateX`, `translateY`, `scale`, `scaleX`, `scaleY`, `rotate`; direct `translation-x` and `translation-y` |
+| Visibility | `display: flex | grid | none`, `visibility: visible | hidden | collapse`, `overflow: visible | hidden | clip` |
+| Native colors | `-pam-native-background-color`, `-pam-native-text-color`, `-pam-native-border-color` |
 
 Grid is native, not nested-view emulation. `repeat(N, …)` or explicit `fr`, `auto`, intrinsic, and `minmax()` tracks choose the column count; children use `grid-column: span N`.
 
 `@font-face` accepts safe packaged `asset://` TTF/OTF files, weights 100–900, and normal/italic faces.
+
+All dimensions use native border-box geometry; `box-sizing: border-box` is accepted as an explicit assertion. `content-box`, floats, fixed/sticky positioning, subgrid, multiple/inset shadows, gradients, filters, CSS transitions, and browser-generated content are rejected. They are not silently approximated.
+
+### Android resources and iOS named colors
+
+```css
+.surface {
+  background: #10131a; /* portable fallback */
+  -pam-native-background-color: colorSurface;
+  -pam-native-text-color: labelPrimary;
+  -pam-native-border-color: colorAccent;
+}
+```
+
+On Android each name resolves from the application package's `R.color`; night-qualified and theme-aware resources therefore follow the current configuration. On iOS the same name resolves with `UIColor(named:in:compatibleWith:)`, including light/dark and high-contrast Asset Catalog variants. If a named resource is unavailable, keep a portable color declaration as the cross-platform fallback.
 
 ### Responsive native queries
 
@@ -224,6 +257,18 @@ Opacity, translation, scale, and rotation keyframes are compile-time validated a
 ## Utilities use the same engine
 
 PAM utility classes are optional compiler input, not a JavaScript dependency. Utilities, recipes, component CSS, and typed styles lower to the same IR, cascade, property IDs, invalidation graph, and cost diagnostics.
+
+The built-in, versioned utility grammar is deliberately small:
+
+| Family | Syntax |
+| --- | --- |
+| Layout | `flex-1`, `w-full`, `h-full`, `items-start`, `items-center`, `items-end`, `items-stretch`, `items-baseline` |
+| Color | `bg-white`, `bg-black`, `text-white`, `text-black` |
+| Spacing/surface | `p-N`, `px-N`, `py-N`, `m-N`, `mx-N`, `my-N`, `gap-N`, `rounded-N`, `elevation-N`; `N × 4dp` |
+| Composition | `opacity-0` through `opacity-100` |
+| Grid | `grid-N`, `col-N`, `col-{sm,md,lg,xl}-N`, responsive `offset-*`, `order-*`, `gutter-x-N`, `gutter-y-N` |
+
+PAM does not claim the complete Tailwind browser catalog. Unknown utilities are ignored as ordinary component class names; supported utility grammar is visible in `pam style manifest` and produces the same PAMS IR as an equivalent CSS declaration.
 
 ## Inspect and explain
 
