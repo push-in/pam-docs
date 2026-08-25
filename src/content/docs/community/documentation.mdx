@@ -36,6 +36,30 @@ For every PAM release:
 7. run the full documentation validation; and
 8. inspect the homepage and changed guides at desktop and mobile widths.
 
+## Clean-project release gate
+
+No official PAM release may be published from build-only evidence. The release
+workflow must start from a new temporary directory and execute the same first
+run documented for the community:
+
+```bash
+pam init community-app --template mobile
+cd community-app
+pam dev
+```
+
+The gate also creates and runs the official `raw`, `http`, `laravel`, and
+`native-ui` starters. Mobile gates use a clean Android emulator, require the
+application process to remain alive, reject fatal/plugin errors from Logcat,
+and retain a screenshot. PAM itself must discover or install Composer, Gradle,
+the Android SDK/NDK, accepted licenses, the verified PHP runtime, and native
+artifacts. A missing host prerequisite must produce one actionable diagnostic;
+it may never be silently skipped to publish a release.
+
+This gate is a dependency of the publication job, not a post-release smoke
+test. A compiler-only, cached-project, or manually prepared example cannot
+replace it.
+
 ## Automated contract
 
 Every Pages publication runs:

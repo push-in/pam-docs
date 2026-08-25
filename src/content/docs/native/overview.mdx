@@ -45,6 +45,20 @@ PAM Native turns typed PHP components into real Android Views and UIKit controls
 
 `pam doctor --fix` handles SDK licenses and installs required, checksum-verified runtime artifacts. Production builds do not require a local Rust toolchain.
 
+## The first run is a release contract
+
+Every PAM and PAM Native release is blocked until CI creates a disposable
+project with `pam init --template mobile` and successfully completes `pam dev`
+on a clean Android emulator. The same release gate covers the official Native
+UI starter and the server, HTTP, and Laravel templates. It verifies automatic
+Composer/Gradle/SDK/NDK/runtime setup, installation, process liveness, Logcat,
+and a captured frame. This is the exact public workflow, not a preassembled
+fixture.
+
+If PAM can safely repair a missing tool or license, it does so. If the host
+cannot satisfy a requirement, `pam doctor --fix` reports the exact prerequisite
+and verification command; publication remains blocked.
+
 ## Native component, familiar syntax
 
 ```php
