@@ -88,6 +88,7 @@ export default defineConfig({
             { label: 'WebSockets', slug: 'runtime/websockets' },
             { label: 'Composer', slug: 'runtime/composer' },
             { label: 'Production', slug: 'runtime/production' },
+            { label: 'Performance & benchmarks', slug: 'runtime/benchmarks' },
             { label: 'Compatibility', slug: 'runtime/compatibility' },
           ],
         },

@@ -1,0 +1,131 @@
+---
+title: Performance & benchmarks
+description: Reproduce the PAM 2.1.0 HTTP comparison and 30-minute memory soak, with raw evidence and explicit limitations.
+---
+
+This page is a dated performance snapshot, not a timeless promise. It records
+what PAM `2.1.0` produced on GitHub-hosted runners on **August 25, 2026**, using
+source commit [`c9b09cfe`](https://github.com/push-in/pam/commit/c9b09cfec50f2fa893a44243131f088b443a83cf).
+
+The complete raw rounds, host metadata, runtime identities, logs, reports, and
+SHA-256 evidence manifest are attached to the public workflow runs:
+
+- [HTTP comparison: evidence suite 1](https://github.com/push-in/pam/actions/runs/32804174992)
+- [30-minute soak: evidence suite 3](https://github.com/push-in/pam/actions/runs/32804174614)
+- [PAM 2.1.0 release](https://github.com/push-in/pam/releases/tag/v2.1.0)
+
+## Headline
+
+Across the four equivalent dynamic Laravel scenarios, PAM delivered **11.3% to
+15.3% more median throughput than FrankenPHP** and **32.1% to 36.8% more than
+OpenSwoole**, with zero recorded request errors. The opt-in PAM edge cache
+served **74,620.54 requests/second** at **2.84 ms median p99**.
+
+The edge-cache result is deliberately reported separately: it avoids full
+Laravel execution and is not equivalent to an uncached dynamic request.
+
+## Dynamic Laravel results
+
+Each value is the median of five measured 15-second rounds after a 5-second
+warm-up per scenario. The load used 128 connections, four load threads, one
+application worker, two CPUs for the server, and two separate CPUs for `wrk`.
+
+| Scenario | Runtime | Median req/s | Median p99 | Errors |
+| --- | --- | ---: | ---: | ---: |
+| Uncached | PAM 2.1.0 | **1,605.83** | **84.19 ms** | 0 |
+| Uncached | FrankenPHP | 1,443.25 | 104.36 ms | 0 |
+| Uncached | OpenSwoole | 1,174.21 | 120.60 ms | 0 |
+| Blade | PAM 2.1.0 | **1,231.76** | **108.29 ms** | 0 |
+| Blade | FrankenPHP | 1,085.67 | 129.93 ms | 0 |
+| Blade | OpenSwoole | 916.31 | 150.95 ms | 0 |
+| SQLite | PAM 2.1.0 | **1,242.56** | **106.46 ms** | 0 |
+| SQLite | FrankenPHP | 1,111.64 | 141.32 ms | 0 |
+| SQLite | OpenSwoole | 940.38 | 145.57 ms | 0 |
+| Large JSON | PAM 2.1.0 | **1,508.98** | **89.59 ms** | 0 |
+| Large JSON | FrankenPHP | 1,308.18 | 109.31 ms | 0 |
+| Large JSON | OpenSwoole | 1,104.51 | 125.20 ms | 0 |
+
+PAM's throughput ratio against FrankenPHP was 1.113× uncached, 1.135× for
+Blade, 1.118× for SQLite, and 1.153× for large JSON. Against OpenSwoole it was
+1.368×, 1.344×, 1.321×, and 1.366× respectively.
+
+## Opt-in edge cache
+
+| Runtime path | Median req/s | Median p99 | Errors |
+| --- | ---: | ---: | ---: |
+| PAM edge cache | **74,620.54** | **2.84 ms** | 0 |
+| FrankenPHP full Laravel execution | 1,249.12 | 113.72 ms | 0 |
+| OpenSwoole full Laravel execution | 1,029.33 | 133.64 ms | 0 |
+
+This result passed the repository's 5× edge-cache gate. It shows the value of
+explicitly cacheable responses; it must not be presented as a general 59× or
+72× runtime claim.
+
+## 30-minute stability soak
+
+The soak ran PAM 2.1.0 with four workers, four load threads, and 256
+connections for 30 minutes.
+
+| Measurement | Result | Budget |
+| --- | ---: | ---: |
+| Throughput | 3,680.25 req/s | Informational |
+| Request errors | **0** | 0 |
+| Resource samples | 1,432 | — |
+| Baseline RSS | 493.98 MiB | — |
+| Final RSS | 514.22 MiB | — |
+| RSS growth | **20.23 MiB** | ≤ 64 MiB |
+| Soak gate | **Passed** | Required |
+
+RSS covers the supervised runtime process tree on the runner; it is not the
+memory cost of a single idle worker.
+
+## Test environment
+
+The HTTP comparison ran on a four-vCPU GitHub-hosted Ubuntu runner backed by an
+AMD EPYC 7763 with approximately 16 GiB RAM. PAM used embedded PHP `8.5.9`,
+OPcache, and JIT. The pinned FrankenPHP and OpenSwoole comparison images used
+PHP `8.4.24`, also with OPcache and JIT.
+
+The soak ran on another four-vCPU GitHub-hosted runner backed by an AMD EPYC
+9V74 with approximately 16 GiB RAM. Cloud-runner results naturally contain
+host variance; use the raw rounds and relative MAD values rather than treating
+a single number as guaranteed capacity.
+
+:::caution[Read the limitations before quoting]
+The comparison is transparent but not a same-PHP-version certification: PAM
+used PHP 8.5.9 while the two pinned competitor images used PHP 8.4.24. The
+workflow metadata also records the source tree as dirty because the pinned PAM
+Native SDK is checked out inside the workspace during CI. The measured PAM
+binary and report are nevertheless tied to commit `c9b09cfe` and its SHA-256.
+
+Two PAM scenarios, Blade and SQLite, exceeded the repository's aspirational
+100 ms dynamic-p99 gate at 108.29 ms and 106.46 ms. Therefore the evidence run
+succeeded and produced valid artifacts, but the report's complete measurement
+gate did **not** pass. Do not describe this run as if every performance budget
+passed.
+:::
+
+## Reproduce it
+
+From a checkout of `push-in/pam` at the measured commit:
+
+```bash
+# Five-round PAM, FrankenPHP, and OpenSwoole comparison
+PAM_EVIDENCE_SUITE_ID=1 benchmarks/octane/run.sh
+
+# Thirty-minute PAM stability run
+PAM_SOAK_DURATION=30m benchmarks/octane/soak.sh
+```
+
+The CI workflow also installs the pinned tools, builds the measured release
+binary, verifies the evidence manifest, and retains the result bundle:
+
+```bash
+gh workflow run evidence.yml --repo push-in/pam --ref main -f suite_id=1
+gh workflow run evidence.yml --repo push-in/pam --ref main -f suite_id=3
+```
+
+For capacity planning, rerun on the intended production CPU, kernel, PHP
+extensions, application code, database, and concurrency. See the
+[Laravel benchmark laboratory](/laravel/benchmarks/) for the broader fairness
+contract and captured metrics.
