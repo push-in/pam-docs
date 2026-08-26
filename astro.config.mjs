@@ -115,6 +115,7 @@ export default defineConfig({
           label: 'Native mobile',
           items: [
             { label: 'Overview', slug: 'native/overview' },
+            { label: 'Build hygiene', slug: 'native/build-hygiene' },
             { label: 'iOS renderer', slug: 'native/ios-renderer' },
             {
               label: 'Components',

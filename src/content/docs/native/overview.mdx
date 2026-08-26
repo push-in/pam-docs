@@ -43,6 +43,11 @@ PAM Native turns typed PHP components into real Android Views and UIKit controls
    ```
 </Steps>
 
+Builds are project-clean by contract: PAM preserves declared APK/AAB/IPA/app
+outputs and evidence, then removes regenerable Gradle, Xcode, SwiftPM, Rust, and
+generated-host intermediates even when the command fails. Read the mandatory
+[build hygiene contract](../build-hygiene/) for the exact retention boundary.
+
 `pam doctor --fix` handles SDK licenses and installs required, checksum-verified runtime artifacts. Production builds do not require a local Rust toolchain.
 
 ## The first run is a release contract

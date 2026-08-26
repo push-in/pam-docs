@@ -1,0 +1,56 @@
+---
+title: Build hygiene
+description: The mandatory cleanup contract for every PAM build, package, plugin, CI job, and release.
+---
+
+PAM treats build cleanup as part of correctness. Every local build, development
+session, CI job, plugin certification, and release job must remove regenerable
+outputs after it finishes — on success **and** on failure.
+
+## What PAM keeps
+
+Declared deliverables are copied out before cleanup:
+
+- checksummed APK and AAB files;
+- signed or simulator IPA and `.app` products;
+- release archives, checksums, SBOMs, attestations, screenshots, and bounded
+  test evidence;
+- project source, configuration, Composer dependencies, credentials, and
+  application data.
+
+Final application products live under the project's `dist` directory unless a
+command documents a different output path.
+
+## What PAM removes
+
+PAM removes project-local, reproducible build material such as Android
+`app/build` and root build trees, project Gradle homes and daemons, Xcode
+DerivedData and export workspaces, SwiftPM `.build`, Rust `target`, generated
+temporary hosts, hot-reload staging data, and temporary package assembly trees.
+
+`pam dev` performs a complete project-scoped cleanup when the session exits.
+`pam mobile build` and `pam mobile package` first persist their declared output
+in `dist`, then clean their intermediates. Official workflows call the same
+allowlisted cleanup contract from an unconditional `if: always()` final step.
+A workflow that builds native code without this final step is not eligible to
+publish a PAM release.
+
+## Shared caches are different
+
+PAM does not automatically erase the user's global Android SDK, installed NDKs,
+emulator images, Xcode installation, or shared Composer download cache. They are
+reusable toolchains rather than project build output; deleting them after every
+build would cause multi-gigabyte downloads and make development slower.
+
+Cleanup is fail-closed and scoped to recognized project paths. It refuses
+ambiguous or symlinked artifact roots and never recursively targets a home
+directory or workspace root.
+
+## Package author requirement
+
+Every official PAM library and third-party native plugin inherits this
+contract. Package-specific build scripts must either use PAM's generated host
+and cleanup lifecycle or add their own unconditional, allowlisted cleanup step
+after uploading the declared artifacts. Plugins must not preserve private
+intermediates as an implicit API or delete another package's outputs.
+
