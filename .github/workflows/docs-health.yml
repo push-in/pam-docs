@@ -70,3 +70,7 @@ jobs:
                 body,
               });
             }
+
+      - name: Remove regenerable build artifacts
+        if: always()
+        run: node scripts/cleanup-build-artifacts.mjs
