@@ -138,6 +138,7 @@ export default defineConfig({
               items: [
                 { label: 'State & lifecycle', slug: 'native/state-and-lifecycle' },
                 { label: 'Component runtime', slug: 'native/component-runtime' },
+                { label: 'Visual DOM', slug: 'native/visual-dom' },
                 { label: 'Global store', slug: 'native/global-store' },
               ],
             },

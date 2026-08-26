@@ -1,0 +1,292 @@
+---
+title: Visual DOM
+description: Typed selectors, atomic native-tree mutations, events, motion, observation, measurement, performance guarantees, and the complete PAM Native Visual DOM API.
+---
+
+import { Aside, Card, CardGrid, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+The PAM Native Visual DOM gives PHP a precise imperative handle over the real
+Android and iOS view tree. It is a retained-tree facade—not a browser, WebView,
+JavaScript runtime, second renderer, or replacement for components and signals.
+
+<CardGrid>
+  <Card title="Indexed, not scanned">Right-most ids, classes, element kinds, and data values use bounded document indexes.</Card>
+  <Card title="One native pipeline">Every edit still crosses the existing binary patch protocol, Rust engine, and Android/UIKit renderer.</Card>
+  <Card title="Atomic by default">Transactions coalesce rendering and observation, and restore the exact immutable tree after an exception.</Card>
+  <Card title="No work per frame">Motion, resize, intersection, and platform mounting remain UI-thread/native driven.</Card>
+</CardGrid>
+
+## Start here
+
+Install PAM, create a native application, and install the core package:
+
+```bash
+curl --proto '=https' --proto-redir '=https' --tlsv1.2 \
+  --connect-timeout 15 --max-time 60 --max-filesize 1048576 \
+  -fsSL https://github.com/push-in/pam/releases/latest/download/install.sh | sh
+
+pam init my-app --template native
+cd my-app
+pam composer require pushinbr/pam-native
+pam doctor --fix
+```
+
+Create a document once, keep it as your mutation handle, and pass it directly
+to `App::run()`:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+use Pam\Native\App;
+use Pam\Native\Dom\Document;
+use Pam\Native\EventKind;
+use Pam\Native\UI\Button;
+use Pam\Native\UI\Text;
+use Pam\Native\UI\View;
+
+$document = App::document(
+    View::make(
+        Text::make('Loki')->id('title')->class('heading'),
+        Button::make('Play')
+            ->id('play')
+            ->class('primary')
+            ->data('media-id', '42'),
+    )->id('screen')->class('detail-screen'),
+);
+
+$document->id('play')->on(EventKind::Press, function () use ($document): void {
+    $document->transaction(function (Document $dom): void {
+        $dom->id('title')->text('Playing');
+        $dom->all('.primary')
+            ->addClass('active')
+            ->style('opacity', 0.92);
+    });
+});
+
+App::run($document);
+```
+
+## The same metadata in `.pam.php`
+
+`id`, `class`, and `data-*` compile into the same document model. `class` still
+drives native CSS lowering; `id` also maps to the platform test identifier.
+
+```xml
+<View id="movie" class="card featured" data-media-id="42">
+    <Text id="movie-title">{{ $movie->title }}</Text>
+    <Button class="action" @press="play">Play</Button>
+</View>
+```
+
+<Aside type="note" title="Metadata has bounded cost">
+  `data-*` stays in PHP's retained document and is not reflected into Android or
+  UIKit. IDs and classes are limited to 128 bytes, data names to 64 bytes, and
+  data values to 4 KiB.
+</Aside>
+
+## Query reference
+
+```php
+$nullable = $document->getElementById('movie-title');
+$title = $document->id('movie-title'); // fails clearly when absent
+$play = $document->querySelector('#movie > Button.action');
+$cards = $document->querySelectorAll('View.card[data-media-id="42"]');
+$sameCards = $document->all('.card');
+
+$play?->parent();
+$play?->children();
+$play?->firstChild();
+$play?->lastChild();
+$play?->previousSibling();
+$play?->nextSibling();
+$play?->closest('.card');
+$play?->matches('.action');
+$play?->contains($title);
+$play?->connected();
+```
+
+| Syntax | Supported | Execution |
+| --- | --- | --- |
+| `Text`, `Button`, `View` | Yes | Right-most type index |
+| `#movie` | Yes | Unique id index |
+| `.card.featured` | Yes | Right-most class index + compound check |
+| `[data-state]` | Yes | Bounded attribute check |
+| `[data-state="ready"]` | Yes | Data value index |
+| `.card > .title` | Yes | Direct-parent relationship |
+| `.screen .title` | Yes | Bounded ancestor traversal |
+| comma, `+`, `~`, pseudo/selectors | No | Rejected with an explicit exception |
+
+Selectors are limited to 512 bytes and 16 compounds. Up to 256 compiled
+selectors are cached per document. This is intentionally smaller and more
+predictable than browser CSS selector semantics.
+
+## Structural and property mutations
+
+<Tabs>
+  <TabItem label="Tree">
+
+```php
+$card->append(Text::make('Last'));
+$card->prepend(Text::make('First'));
+$card->replaceChildren(Text::make('Empty'));
+$card->before(View::make());
+$card->after(View::make());
+$card->replaceWith(View::make());
+$card->remove();
+```
+
+  </TabItem>
+  <TabItem label="Class & data">
+
+```php
+$card->classList()->add('selected');
+$card->classList()->remove('loading');
+$card->classList()->toggle('expanded');
+$card->classList()->replace('old', 'new');
+$card->data('state', 'ready')->removeData('stale');
+```
+
+  </TabItem>
+  <TabItem label="Style & content">
+
+```php
+$title->text('Updated');
+$card->style()->set('opacity', 0.8);
+$card->style()->set(\Pam\Native\PropKey::Width, 320.0);
+$card->style()->get('opacity');
+$card->style()->remove('opacity');
+```
+
+  </TabItem>
+</Tabs>
+
+Inserted subtrees always receive fresh internal identities. Existing handles
+remain stable across sibling insertion and movement; a detached handle reports
+`connected() === false` and refuses unsafe reads or writes.
+
+## Collections and one-pass bulk changes
+
+```php
+$visible = $document->all('.row')
+    ->filter(fn ($row, int $index): bool => $index < 20)
+    ->each(fn ($row, int $index) => inspect($row->id(), $index));
+
+$document->transaction(function (Document $dom): void {
+    $dom->all('.selected')
+        ->addClass('ready')
+        ->style('opacity', 1.0)
+        ->animate(\Pam\Native\MotionPreset::FadeIn, 180);
+});
+```
+
+Bulk class, style, event, and motion changes use a single tree traversal—not
+one full reindex per element.
+
+## Events, motion, focus, and layout
+
+```php
+$button
+    ->on(\Pam\Native\EventKind::Press, $play)
+    ->animate(\Pam\Native\MotionPreset::ScaleIn, 180)
+    ->pauseAnimation()
+    ->resumeAnimation();
+
+$button->focus();
+$button->blur();
+
+$button->observeResize(function (array $frame) use ($button): void {
+    // x, y, width, height — reported by the native UI thread
+    inspect($frame, $button->measure());
+});
+
+$button->observeIntersection(function (mixed $entry): void {
+    // Visibility data uses the existing native intersection event.
+});
+```
+
+`measure()` returns the last resize observation. It intentionally returns
+`null` before the first observation instead of blocking PHP with a synchronous
+bridge round-trip. Animation frames, focus execution, layout, resize, and
+intersection remain native-authoritative.
+
+## Mutation observation and rollback
+
+```php
+$subscription = $document->observe(
+    function (\Pam\Native\Dom\MutationRecord $record): void {
+        inspect($record->version, $record->identities);
+    },
+    '.card',
+);
+
+try {
+    $document->transaction(function (Document $dom): void {
+        $dom->id('movie')->append(Text::make('Optimistic'));
+        updateDomainModel(); // if this throws, the DOM tree is restored
+    });
+} finally {
+    $subscription->disconnect();
+}
+```
+
+One successful outer transaction emits one mutation record and requests one
+render. Nested transactions participate in the outer commit. Observer failures
+are reported through PAM diagnostics without corrupting the committed tree.
+
+## DevTools snapshot
+
+```php
+$snapshot = $document->snapshot();
+
+inspect(
+    $snapshot->rootIdentity,
+    $snapshot->nodeCount,
+    $snapshot->idCount,
+    $snapshot->classCount,
+    $snapshot->cachedSelectorCount,
+    $snapshot->mutationVersion,
+    $snapshot->transactionDepth,
+);
+```
+
+The snapshot is immutable and contains metrics, not application text or data
+values, so it is suitable for diagnostics without leaking UI content.
+
+## Performance evidence and guarantees
+
+The repository gate is reproducible:
+
+```bash
+php packages/native/tests/visual_dom_performance.php
+```
+
+It builds a 5,001-node document, executes 4,000 indexed selectors, applies
+5,000 class/property mutations, and prints timings plus peak memory as JSON.
+The implementation run that introduced the gate measured approximately 15 ms
+for the queries, 16 ms for the mutation batch, and 16 MiB peak memory on the
+development machine. Treat those as evidence, not universal device promises;
+CI enforces generous regression ceilings of 500 ms, 500 ms, and 5,000 ms.
+
+<Steps>
+  1. DOM identities become `TreeEncoder` identities, so sibling insertion does not remount unaffected platform views.
+  2. PHP emits the ordinary compact incremental patch; there is no Visual DOM-specific bridge.
+  3. Rust validates, diffs, and lays out the retained tree transactionally.
+  4. Android and iOS consume the existing bounded UI-thread mutation batch.
+</Steps>
+
+Use `FlatList`, `SectionList`, `VirtualizedList`, or `NativeList` for heavy
+feeds. Visual DOM is for precise retained UI manipulation, not for mounting
+thousands of off-screen rows.
+
+## What it does not duplicate
+
+- Navigation stays in PAM Navigation.
+- HTTP and realtime stay in their existing packages.
+- Storage, global state, signals, and component lifecycle keep their current APIs.
+- Platform capabilities stay modular Composer packages.
+- No `history`, browser location, cookies, HTML parsing, or browser layout model is added.
+
+That boundary keeps the API elegant: JavaScript-like element manipulation where
+it helps, with PAM Native semantics everywhere else.
