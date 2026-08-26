@@ -42,6 +42,10 @@ jobs:
         with:
           path: dist/client
 
+      - name: Remove regenerable build artifacts
+        if: always()
+        run: node scripts/cleanup-build-artifacts.mjs
+
   deploy:
     runs-on: ubuntu-latest
     needs: build
