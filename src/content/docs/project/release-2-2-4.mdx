@@ -1,0 +1,70 @@
+---
+title: PAM 2.2.4
+description: Verified PHP 8.5-first runtime release with clean Native starters, complete platform artifacts, and mandatory build cleanup.
+---
+
+PAM 2.2.4 is the current stable runtime release. It keeps PAM focused on its
+core role—a persistent PHP runtime, process supervisor, contextual CLI, and
+distribution toolchain—while making the first Native project experience
+reproducible from generation through launch.
+
+## Install
+
+```bash
+curl --proto '=https' --tlsv1.2 --fail --silent --show-error --location \
+  --output pam-install.sh \
+  https://github.com/push-in/pam/releases/download/v2.2.4/install.sh
+sh pam-install.sh
+rm pam-install.sh
+
+pam --version
+pam doctor
+```
+
+The installer and every runtime archive have SHA-256 companions. The release
+workflow also publishes GitHub attestations for the platform archives and
+verifies the immutable tag against the version embedded in the binary.
+
+## What this release proves
+
+- PHP 8.5 is the default runtime and Composer validation target.
+- Generated `mobile` and `native-ui` projects use the stable PAM Native UI 1.x
+  component surface instead of obsolete starter markup.
+- The release gate creates every documented server and mobile starter outside
+  the repository, runs `pam dev`, launches both Android applications on API 36,
+  inspects logcat, and captures valid screenshots.
+- Linux x86_64/ARM64 and macOS Intel/Apple Silicon distributions are rebuilt,
+  compared, inventoried, signed, and certified independently.
+- The Android payload contains PHP 8.4 and 8.5 runtimes plus prebuilt Native
+  engines for ARM64 and x86_64.
+- Runtime, release, ecosystem, iOS host, and clean-project jobs remove
+  regenerable build intermediates on success and failure.
+
+## Public artifacts
+
+The immutable release publishes:
+
+- `install.sh` and its checksum;
+- self-contained PAM archives for Linux x86_64 and ARM64;
+- self-contained PAM archives for macOS Intel and Apple Silicon;
+- signed update manifests for every desktop/server architecture;
+- certified runtime-distribution archives for all four architectures; and
+- `pam-android-runtime.tar.gz` with its checksum.
+
+The release does not combine optional application capabilities into the PAM
+runtime. PAM HTTP, PAM Native, PAM Native UI, Laravel integration, and Native
+plugins retain independent repositories and release lines.
+
+## Verification record
+
+- [PAM v2.2.4 release](https://github.com/push-in/pam/releases/tag/v2.2.4)
+- [PAM 2.2.4 release run](https://github.com/push-in/pam/actions/runs/33012541550)
+- [Runtime CI](https://github.com/push-in/pam/actions/workflows/ci.yml)
+- [Ecosystem compatibility](https://github.com/push-in/pam/actions/workflows/ecosystem-compatibility.yml)
+- [Required release gates](https://github.com/push-in/pam/actions/workflows/required-gates.yml)
+
+The release run completed all 46 jobs, including platform builds, package
+compatibility, distribution verification, and the clean community journey.
+Application owners must still certify their own credentials, production data,
+physical-device matrix, stores, and workloads as described in the
+[compatibility guide](../../runtime/compatibility/).

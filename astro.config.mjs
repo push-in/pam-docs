@@ -73,7 +73,7 @@ export default defineConfig({
             { label: 'Extend the CLI', slug: 'getting-started/extending-cli' },
             { label: 'Project status', slug: 'project/status' },
             { label: 'Public repository map', slug: 'project/repository-map' },
-            { label: 'Release 1.0.2', slug: 'project/release-1-0-2' },
+            { label: 'Release 2.2.4', slug: 'project/release-2-2-4' },
           ],
         },
         {

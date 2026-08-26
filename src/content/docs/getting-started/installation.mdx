@@ -7,7 +7,7 @@ Every PAM product starts with the `pam` command. Install the CLI first; it then
 manages the private PHP runtime, verified Composer toolchain, project creation,
 development, diagnostics, generators, native hosts, and release builds.
 
-PAM 1.0 ships prebuilt Linux and macOS releases for x86_64 and ARM64. Linux
+PAM 2.2.4 ships prebuilt Linux and macOS releases for x86_64 and ARM64. Linux
 archives target glibc 2.35 or newer. The Apple Silicon archive also includes
 the verified iOS PHP and engine XCFrameworks.
 
@@ -31,7 +31,7 @@ The `latest` URL follows the current public tag. Pin a release in CI or a
 reproducible image:
 
 ```text
-https://github.com/push-in/pam/releases/download/v1.0.2/install.sh
+https://github.com/push-in/pam/releases/download/v2.2.4/install.sh
 ```
 
 An official bundle includes:
@@ -75,5 +75,5 @@ cargo build --locked --release
 
 Use `PHP_CONFIG` and `PAM_PHP_LIB_DIR` when working with a custom build toolchain. These are build-time settings, not end-user requirements.
 
-See [release 1.0](../../project/release-1-0-0/) for the shipped production
-operations, verification commands, and public package records.
+See [release 2.2.4](../../project/release-2-2-4/) for the exact artifacts,
+clean-project evidence, verification commands, and public package records.
