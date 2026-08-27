@@ -1,9 +1,9 @@
 ---
 title: PAM Native
-description: PHP 8.5, real Android and iOS controls, and the complete PAM CSS-to-native reference.
+description: "The complete PAM Native capability map: PHP 8.5, Android and iOS, UI, Visual DOM, state, navigation, media, device APIs, tooling, plugins, performance, and CSS-to-native."
 ---
 
-import { Aside, Card, CardGrid, Steps } from '@astrojs/starlight/components';
+import { Aside, Card, CardGrid, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
 
 PAM Native turns typed PHP components into real Android Views and UIKit controls. Rust owns validation, reconciliation, diffing, and layout; Kotlin and Swift apply compact mutation batches. There is no WebView, JavaScript runtime, or browser CSS engine.
 
@@ -13,6 +13,13 @@ PAM Native turns typed PHP components into real Android Views and UIKit controls
   <Card title="One style compiler">CSS-like source, utilities, recipes, and typed styles lower to the same IR.</Card>
   <Card title="Explainable speed">Every property declares its layout, paint, or composition cost.</Card>
 </CardGrid>
+
+<Aside type="tip" title="Everything is discoverable from this page">
+This overview is the canonical map of the PAM Native platform. Core features ship
+with `pushinbr/pam-native`; optional capabilities are small, independent Composer
+packages. Follow any link for its complete API, limits, platform behavior, and
+production example.
+</Aside>
 
 ## Start here
 
@@ -114,6 +121,477 @@ final class ProductCard
 ```
 
 Use `{{ }}` for text, `:property="$path"` for native properties, and `p-model` for two-way input/toggle binding. PHP attributes remain the typed prop/action contract.
+
+## Everything PAM Native gives you
+
+PAM Native is more than a renderer. It is a retained-native application platform:
+PHP describes typed intent, Rust validates and reconciles it, and Kotlin/Swift keep
+interaction, scrolling, media, animation, and platform work on the native side.
+The following catalog covers the complete supported surface.
+
+## Choose your syntax: tree or tags
+
+Every core visual component has two first-class authoring forms. The typed tree
+is ideal for builders, libraries, generated UI, and explicit refactoring. Tags
+are ideal for application screens and keep PHP state/actions beside a concise
+template. They compile to the same retained tree, native node kinds, properties,
+events, style IR, and performance path; mixing both forms is supported.
+
+### Layout and text
+
+<Tabs syncKey="native-syntax">
+  <TabItem label="Typed PHP tree">
+    ```php
+    use Pam\Native\Style;
+    use Pam\Native\UI\{Column, Row, SafeAreaView, Screen, Text, View};
+
+    return Screen::make(
+        SafeAreaView::make(
+            Column::make(
+                Text::make('Dashboard')->style(new Style(fontSize: 28)),
+                Row::make(
+                    View::make(Text::make('Revenue'))->key('revenue'),
+                    View::make(Text::make('Orders'))->key('orders'),
+                )->style(new Style(gap: 12)),
+            )->style(new Style(flexGrow: 1, padding: 24, gap: 16)),
+        ),
+    );
+    ```
+  </TabItem>
+  <TabItem label="Declarative tags">
+    ```xml
+    <Screen>
+      <SafeAreaView>
+        <Column class="flex-1 p-6 gap-4">
+          <Text fontSize="28">Dashboard</Text>
+          <Row class="gap-3">
+            <View key="revenue"><Text>Revenue</Text></View>
+            <View key="orders"><Text>Orders</Text></View>
+          </Row>
+        </Column>
+      </SafeAreaView>
+    </Screen>
+    ```
+  </TabItem>
+</Tabs>
+
+### Input, binding, buttons, and toggles
+
+<Tabs syncKey="native-syntax">
+  <TabItem label="Typed PHP tree">
+    ```php
+    use Pam\Native\KeyboardType;
+    use Pam\Native\UI\{Button, Column, Input, Toggle};
+
+    return Column::make(
+        Input::make($this->email)
+            ->placeholder('you@example.com')
+            ->keyboard(KeyboardType::Email)
+            ->onChange(fn (string $value) => $this->email = $value),
+        Toggle::make($this->newsletter)
+            ->onToggle(fn (bool $value) => $this->newsletter = $value),
+        Button::make('Continue')->onPress(fn () => $this->submit()),
+    );
+    ```
+  </TabItem>
+  <TabItem label="Declarative tags">
+    ```xml
+    <Column>
+      <Input
+        p-model="$email"
+        keyboardType="email"
+        placeholder="you@example.com"
+      />
+      <Toggle p-model="$newsletter" />
+      <Button on:press="submit">Continue</Button>
+    </Column>
+    ```
+  </TabItem>
+</Tabs>
+
+### Images and cached media
+
+<Tabs syncKey="native-syntax">
+  <TabItem label="Typed PHP tree">
+    ```php
+    use Pam\Native\ImageFit;
+    use Pam\Native\MediaCachePolicy;
+    use Pam\Native\UI\Image;
+
+    return Image::make($this->user->avatarUrl)
+        ->fit(ImageFit::Cover)
+        ->defaultSource('asset://avatar-placeholder.png')
+        ->cache(MediaCachePolicy::StaleWhileRevalidate)
+        ->cacheKey("avatar:{$this->user->id}")
+        ->pinOffline()
+        ->onError(fn ($event) => $this->report($event->error));
+    ```
+  </TabItem>
+  <TabItem label="Declarative tags">
+    ```xml
+    <Image
+      :source="$user->avatarUrl"
+      fit="cover"
+      defaultSource="asset://avatar-placeholder.png"
+      cache="stale-while-revalidate"
+      :cacheKey="'avatar:' . $user->id"
+      pin-offline
+      on:imageError="imageFailed"
+    />
+    ```
+  </TabItem>
+</Tabs>
+
+### Recycled lists and rich cells
+
+<Tabs syncKey="native-syntax">
+  <TabItem label="Typed PHP tree">
+    ```php
+    use Pam\Native\UI\VirtualizedList;
+
+    return VirtualizedList::make(
+        ...array_map(
+            fn (Post $post) => PostCard::make($post)->key("post:{$post->id}"),
+            $this->posts,
+        ),
+    )
+        ->estimatedRowHeight(604)
+        ->prefetch(6)
+        ->onEndReached(fn () => $this->loadNextPage());
+    ```
+  </TabItem>
+  <TabItem label="Declarative tags">
+    ```xml
+    <VirtualizedList
+      estimatedRowHeight="604"
+      prefetch="6"
+      on:endReached="loadNextPage"
+    >
+      <PostCard
+        p-for="$post in $posts"
+        :key="'post:' . $post->id"
+        :post="$post"
+      />
+    </VirtualizedList>
+    ```
+  </TabItem>
+</Tabs>
+
+### Gestures and compositor motion
+
+<Tabs syncKey="native-syntax">
+  <TabItem label="Typed PHP tree">
+    ```php
+    use Pam\Native\GestureDirection;
+    use Pam\Native\GestureType;
+    use Pam\Native\UI\GestureDetector;
+
+    return GestureDetector::make(GestureType::Pan, $card)
+        ->direction(GestureDirection::Horizontal)
+        ->minimumDistance(12)
+        ->onUpdate(fn ($event) => $this->dragX = $event->translationX)
+        ->onEnd(fn ($event) => $this->finishDrag($event->velocityX));
+    ```
+  </TabItem>
+  <TabItem label="Declarative tags">
+    ```xml
+    <GestureDetector
+      gestureType="pan"
+      gestureDirection="horizontal"
+      gestureMinDistance="12"
+      on:gestureUpdate="drag"
+      on:gestureEnd="finishDrag"
+    >
+      <Card :style="{ translationX: $dragX }" />
+    </GestureDetector>
+    ```
+  </TabItem>
+</Tabs>
+
+### Modals, sheets, and system UI
+
+<Tabs syncKey="native-syntax">
+  <TabItem label="Typed PHP tree">
+    ```php
+    use App\UI\Filters;
+    use Pam\Native\BottomSheetKeyboardBehavior;
+    use Pam\Native\UI\BottomSheet;
+
+    return BottomSheet::make(
+        Filters::make(),
+        snapPoints: [0.35, 0.7, 1.0],
+        index: $this->sheetIndex,
+    )
+        ->dismissible()
+        ->keyboardBehavior(BottomSheetKeyboardBehavior::Interactive)
+        ->onDismiss(fn () => $this->filtersOpen = false);
+    ```
+  </TabItem>
+  <TabItem label="Declarative tags">
+    ```xml
+    <BottomSheet
+      :snapPoints="[0.35, 0.7, 1.0]"
+      :index="$sheetIndex"
+      keyboardBehavior="interactive"
+      on:sheetDismiss="closeFilters"
+    >
+      <Filters />
+    </BottomSheet>
+    ```
+  </TabItem>
+</Tabs>
+
+### Video and audio
+
+<Tabs syncKey="native-syntax">
+  <TabItem label="Typed PHP tree">
+    ```php
+    use Pam\Native\MediaCachePolicy;
+    use Pam\Native\MediaType;
+    use Pam\Native\UI\MediaPlayer;
+
+    return MediaPlayer::make($this->episodeUrl, MediaType::Video)
+        ->controls()
+        ->streamingCache()
+        ->cache(MediaCachePolicy::Disk)
+        ->onProgress(fn ($current, $duration) => $this->progress($current, $duration))
+        ->onEnd(fn () => $this->playNext());
+    ```
+  </TabItem>
+  <TabItem label="Declarative tags">
+    ```xml
+    <Video
+      :source="$episodeUrl"
+      controls
+      streaming-cache
+      cache="disk"
+      on:mediaProgress="progress"
+      on:end="playNext"
+    />
+    ```
+  </TabItem>
+</Tabs>
+
+### Controlled web content
+
+<Tabs syncKey="native-syntax">
+  <TabItem label="Typed PHP tree">
+    ```php
+    use Pam\Native\UI\WebView;
+
+    return WebView::make('https://app.example.com/embedded')
+        ->allowedHosts(['app.example.com'])
+        ->javaScriptEnabled()
+        ->onMessage(fn (string $json) => $this->handleMessage($json));
+    ```
+  </TabItem>
+  <TabItem label="Declarative tags">
+    ```xml
+    <WebView
+      source="https://app.example.com/embedded"
+      allowedHosts="app.example.com"
+      javaScriptEnabled
+      on:message="handleMessage"
+    />
+    ```
+  </TabItem>
+</Tabs>
+
+### Visual plugin surfaces
+
+Official visual packages provide a high-level typed `Renderable`. Templates can
+mount the same registered host view through the built-in `CustomView` tag. Keep
+the typed wrapper when you want package enums and decoded events; use the tag
+when the property map already belongs to declarative component state.
+
+<Tabs syncKey="native-syntax">
+  <TabItem label="Typed PHP tree">
+    ```php
+    use Pam\Native\Camera\{CameraEventKind, CameraFacing, CameraMode, CameraView};
+
+    return CameraView::make()
+        ->facing(CameraFacing::Back)
+        ->mode(CameraMode::PhotoAndVideo)
+        ->fps(60)
+        ->pinchToZoom()
+        ->onEvent(function ($event): void {
+            if ($event->kind === CameraEventKind::PhotoCaptured) {
+                $this->savePhoto($event->capture);
+            }
+        });
+    ```
+  </TabItem>
+  <TabItem label="Declarative tags">
+    ```php
+    // Typed state consumed by the template; enum values remain integers.
+    public array $cameraProperties = [
+        'active' => true,
+        'facing' => CameraFacing::Back->value,
+        'mode' => CameraMode::PhotoAndVideo->value,
+        'fps' => 60,
+        'pinchToZoom' => true,
+    ];
+    ```
+
+    ```xml
+    <CustomView
+      name="camera.preview"
+      :properties="$cameraProperties"
+      on:event="cameraEvent"
+    />
+    ```
+  </TabItem>
+</Tabs>
+
+The same tag boundary mounts `media.camera`, `video.player`, `scanner.camera`,
+`canvas.view`, `gpu.surface`, `three-d.scene`, and `maps.map`. Their package
+wrappers remain the preferred typed tree API because they validate limits and
+decode native events before application code receives them.
+
+<Aside type="note" title="When there is no tag">
+Tags represent retained visual nodes. Services such as Auth, Sync, Firebase,
+Observability, Feature Flags, Background Transfer, Testing, and subscription
+verification intentionally expose typed PHP APIs instead of fake invisible
+elements. Packages that render a surface—Camera preview, Maps, Video, Scanner,
+Canvas, GPU, and 3D—can expose both a typed node and its declarative tag through
+the plugin manifest.
+</Aside>
+
+### Authoring and component model
+
+| Capability | What you can build | Complete reference |
+| --- | --- | --- |
+| Three authoring styles | Typed PHP trees, class components with templates, or single-file `.pam` components | [Components](../components/) |
+| Vue-like templates | `{{ expression }}`, `:prop`, `@event`, `on:event`, `p-model`, conditionals, loops, slots, refs, and safe expressions | [Template syntax](../components/#template-syntax) |
+| Typed contracts | `#[Prop]`, `#[State]`, `#[Action]`, `#[Computed]`, `#[Watch]`, `#[Effect]`, `#[Expose]`, lifecycle hooks, context, and error boundaries | [Component runtime](../component-runtime/) |
+| Retained rendering | Stable native identity, keyed reconciliation, compact mutation batches, and subtree invalidation | [State and lifecycle](../state-and-lifecycle/) |
+| Visual DOM | Typed selectors, traversal, `classList`, attributes, dataset, inline/computed styles, atomic mutations, observers, focus, measurement, and motion | [Visual DOM](../visual-dom/) |
+| Scoped styling | Scoped/module/global styles, imports, cascade, selectors, variables, tokens, recipes, responsive queries, keyframes, and strict diagnostics | [PAM Style Language](#pam-style-language-10) |
+| Responsive UI | Flex, native grid, twelve-column layouts, breakpoints, safe areas, fold posture, TV/remote input, and container queries | [Responsive layout](../responsive-layout/) |
+| Forms | Typed fields, validation attributes, touched/dirty state, server errors, submission state, drafts, reset, and `p-model` | [Forms and validation](../forms/) |
+
+### Native UI surface
+
+These are retained Android Views and UIKit controls—not HTML elements painted in a
+WebView.
+
+| Family | Included surface | Complete reference |
+| --- | --- | --- |
+| Layout | `Screen`, `View`, rows, columns, grids, safe areas, spacers, wrapping, clipping, and custom chrome | [Layout and views](../components/layout-and-views/) |
+| Text and input | Text, headings, rich text, packaged fonts, inputs, text areas, buttons, pressables, switches, checkboxes, radio controls, sliders, keyboard events, and accessories | [Text, input, and controls](../components/text-input-controls/) |
+| Images and drawing | Packaged/remote/authenticated images, resize modes, progressive loading, cache policy, prefetch, offline pinning, backgrounds, thumbnails, and drawing canvas | [Images and cache](../components/images-and-cache/) |
+| Scrolling and large data | Scroll views, recycled/virtualized lists, sections, grids, pagination, snapping, restoration, pull-to-refresh, and imperative jumps | [Scroll and lists](../components/scroll-and-lists/) |
+| Interaction and motion | Press feedback, taps, long press, pan, pinch, rotation, drag/drop, context menus, native-state selectors, and compositor animation | [Interaction and motion](../components/interaction-and-motion/) |
+| Overlays and system UI | Modals, bottom sheets, drawers, progress indicators, status/navigation bars, safe keyboard handling, and input accessories | [Overlays and system UI](../components/overlays-and-system-ui/) |
+| Audio and video | Native playback, controls, lifecycle events, streaming cache, bounded downloads, and offline pinning | [Video and audio](../components/video-and-audio/) |
+| Web content | Host-allowlisted WebView, bounded JavaScript injection, inline media, navigation policy, and native message bridge | [WebView](../components/webview/) |
+| Design system | Retained-native Material 3 components, themes, typed facades, directives, accessibility, and Android/iOS parity | [PAM Native UI](../../packages/mobile-ui/) · [complete component catalog](../../packages/mobile-ui-catalog/) |
+| App-owned controls | Register application-owned Android Views and generated custom views without leaving the retained tree | [Custom native views](../native-views/) |
+
+### Application architecture
+
+| Capability | Included surface | Complete reference |
+| --- | --- | --- |
+| Local and scoped state | Typed local state, computed values, effects, watchers, context, persistence, memoization, and render control | [State and lifecycle](../state-and-lifecycle/) |
+| Global store | Vuex-style actions, selectors, computed values, transactions, persistence/migrations, optimistic updates, undo, middleware, replicas, and DevTools | [Global store](../global-store/) |
+| Navigation | Named stacks, tabs, top tabs, drawers, nested navigators, typed parameters, groups, deep links, notifications, shared content, persistence, transitions, shared elements, and predictive back | [Navigation](../navigation/) |
+| Networking | Bounded GET/POST/PUT/PATCH/DELETE and JSON requests, typed responses, headers, cancellation, timeouts, and explicit transport failures | [HTTP networking](../networking/) |
+| Files and galleries | File, image, video, audio, and filtered mixed-gallery pickers | [Files and media picker](../files-and-media/) |
+| Platform runtime | Typed IDL bridge, priority lanes, async work, native worklets, virtualization, background jobs, offline sync, Canvas, and bounded server-driven UI | [Platform runtime](../platform-runtime/) |
+| Device capabilities | Permissions, contacts, location, recording, files, links, notifications, background work, SQLite, sensors, and device state | [Platform capabilities](../capabilities/) |
+
+### Official capability packages
+
+Install only what an application needs. Every package below is independently
+versioned, usable without a bundle such as “feed” or “social”, and talks to PAM
+Native through the same typed plugin contract.
+
+```bash
+pam composer require pushinbr/pam-native-camera
+# Replace camera with any capability listed below.
+```
+
+#### Camera, media, graphics, and immersive UI
+
+| Package | Capability | Reference |
+| --- | --- | --- |
+| `pushinbr/pam-native-camera` | Low-latency professional capture, devices, formats, focus, exposure, zoom, flash/torch, frame processors, photo, and video | [Camera](../../packages/native-camera/) |
+| `pushinbr/pam-native-media` | Sandboxed media probing, correctly oriented thumbnails, and lifecycle-aware photo/video capture | [Media](../../packages/native-media/) |
+| `pushinbr/pam-native-video` | Adaptive HLS/DASH and local playback with Media3/AVPlayer, tracks, controls, seek, and progress | [Video](../../packages/native-video/) |
+| `pushinbr/pam-native-media-editor` | Typed photo/video timelines, transforms, filters, audio, composition, progress, and native export | [Media Editor](../../packages/native-media-editor/) |
+| `pushinbr/pam-native-scanner` | Realtime QR/barcode scanning through CameraX/ML Kit and AVFoundation/Vision | [Scanner](../../packages/native-scanner/) |
+| `pushinbr/pam-native-canvas` | Retained-mode native 2D scene graphs with bounded PHP commands | [Canvas](../../packages/native-canvas/) |
+| `pushinbr/pam-native-gpu` | Programmable OpenGL ES 3 and Metal fragment rendering without a JavaScript bridge | [GPU](../../packages/native-gpu/) |
+| `pushinbr/pam-native-3d` | GLB and USDZ scenes through Filament and RealityKit | [3D](../../packages/native-3d/) |
+
+#### Device, proximity, health, and system surfaces
+
+| Package | Capability | Reference |
+| --- | --- | --- |
+| `pushinbr/pam-native-bluetooth` | BLE scan, connect, discovery, read, write, subscribe, opaque IDs, and lifecycle-safe events | [Bluetooth](../../packages/native-bluetooth/) |
+| `pushinbr/pam-native-nfc` | Bounded NDEF read/write with Android reader mode and iOS system sessions | [NFC](../../packages/native-nfc/) |
+| `pushinbr/pam-native-health` | Health Connect/HealthKit permissions and typed steps, heart rate, weight, calories, and sleep | [Health](../../packages/native-health/) |
+| `pushinbr/pam-native-maps` | Google Maps/MapKit camera, styles, user location, gestures, markers, overlays, and events | [Maps](../../packages/native-maps/) |
+| `pushinbr/pam-native-intents` | Android Dynamic Shortcuts and Apple App Intents mapped to named PAM routes | [Intents](../../packages/native-intents/) |
+| `pushinbr/pam-native-live-activities` | ActivityKit Live Activities and Android ongoing notifications | [Live Activities](../../packages/native-live-activities/) |
+| `pushinbr/pam-native-widgets` | Android App Widgets and WidgetKit timelines with stable IDs and deep links | [Widgets](../../packages/native-widgets/) |
+| `pushinbr/pam-native-share-extension` | Text, URL, and sandboxed-file intake from Android shares and iOS Share Extensions | [Share Extension](../../packages/native-share-extension/) |
+
+#### Identity, commerce, cloud, and realtime
+
+| Package | Capability | Reference |
+| --- | --- | --- |
+| `pushinbr/pam-native-auth` | Keystore/Keychain encrypted credentials and OAuth 2.1 PKCE material | [Auth](../../packages/native-auth/) |
+| `pushinbr/pam-native-payments` | Stripe PaymentSheet, native wallets, and SCA/3DS with server-owned secrets | [Payments](../../packages/native-payments/) |
+| `pushinbr/pam-native-subscriptions` | StoreKit 2 and Play Billing products, purchase, restore, verification, acknowledgement, and entitlement safety | [Subscriptions](../../packages/native-subscriptions/) |
+| `pushinbr/pam-native-firebase` | Firebase apps, Analytics, Remote Config, Messaging tokens, Installations, Crashlytics, and flag adapters | [Firebase](../../packages/native-firebase/) |
+| `pushinbr/pam-native-realtime` | Native-owned RFC 6455 WebSockets that survive PHP renders/reloads with bounded queues | [Realtime](../../packages/native-realtime/) |
+| `pushinbr/pam-native-background-transfer` | OS-scheduled durable HTTPS upload/download with constraints, progress, and relaunch recovery | [Background Transfer](../../packages/native-background-transfer/) |
+
+#### Offline data, delivery, quality, and operations
+
+| Package | Capability | Reference |
+| --- | --- | --- |
+| `pushinbr/pam-native-nitro` | Model-driven, offline-first data flows on native SQLite workers | [Nitro](../../packages/native-nitro/) |
+| `pushinbr/pam-native-sync` | Idempotent outbox, ordered batches, cursors, tombstones, retries, and deterministic conflicts | [Sync](../../packages/native-sync/) |
+| `pushinbr/pam-native-sync-laravel` | Authenticated Laravel push/pull API with signed cursors, idempotency, conflicts, and retention | [Laravel Sync](../../packages/native-laravel-sync/) |
+| `pushinbr/pam-native-feature-flags` | Typed targeting, deterministic rollouts, overrides, exposure events, and offline snapshots | [Feature Flags](../../packages/native-feature-flags/) |
+| `pushinbr/pam-native-observability` | Vendor-neutral traces, logs, metrics, crash context, sampling, batching, and exporters | [Observability](../../packages/native-observability/) |
+| `pushinbr/pam-native-devtools` | Redacted snapshots, performance measures, errors, network recording, and deterministic diagnostics | [DevTools package](../../packages/native-devtools/) |
+| `pushinbr/pam-native-testing` | Strict deterministic native-module fakes, deferred responses, recorded calls, and completion assertions | [Testing](../../packages/native-testing/) |
+| `pushinbr/pam-native-plugin-kit` | Package scaffolding, manifest validation, and IDL generation for PHP, Kotlin, and Swift | [Plugin Kit](../../packages/native-plugin-kit/) |
+
+### Tooling and development experience
+
+| Capability | What it does | Complete reference |
+| --- | --- | --- |
+| One project console | `pam init`, contextual Composer, `pam dev`, `pam run android`, `pam run ios`, tests, diagnostics, builds, and releases | [CLI and project console](../../getting-started/cli/) |
+| Zero-setup doctor | Detects and safely repairs PHP, Composer, Android SDK/NDK/licenses, Gradle, runtime artifacts, and project requirements | [Start here](#start-here) |
+| Hot reload | Atomic PHP source reload without frozen UI, stale processes, or duplicate server bindings | [Hot reload](../hot-reload/) |
+| Editor intelligence | Formatting, completion, hover, diagnostics, go-to-definition, and navigation for `.pam` in LSP editors | [Editor setup](../editor-tooling/) |
+| Runtime DevTools | FPS, render/commit cost, native nodes, batches, heap, and device profiling | [DevTools](../devtools/) |
+| Style diagnostics | Strict compiler, source maps, compatibility/render-cost reports, token generation, and machine-readable manifests | [Inspect and explain](#inspect-and-explain) |
+| Production certification | Tests source/protocol, PHP 8.5, Rust, UIKit, Android API 26/36, official packages, clean starters, artifacts, and checksums | [Platform and verification](#platform-and-verification-boundary) |
+| Automatic cleanup | Preserves declared products/evidence and removes regenerable Gradle, Xcode, SwiftPM, Rust, and host intermediates | [Build hygiene](../build-hygiene/) |
+
+### Extension and compatibility boundaries
+
+| Surface | Contract | Complete reference |
+| --- | --- | --- |
+| Composer-first plugins | PHP components plus Android modules/views/resources/AAR/JNI/Maven and Swift packages through one manifest | [Plugin SDK](../plugins/) |
+| Typed cross-platform IDL | One bounded schema generates deterministic PHP, Kotlin, and Swift contracts | [Plugin Kit](../../packages/native-plugin-kit/) |
+| Wire protocol | Versioned PNT1/PNP1 frames, compatibility negotiation, hard bounds, and fail-closed validation | [Protocol and limits](../protocol/) |
+| Public PHP surface | Namespace-by-namespace index of runtime, rendering, state, navigation, capabilities, bridge, and style APIs | [PHP API index](../php-api-index/) |
+| Android | Real Views, API 26–36 contract, generated Gradle host, emulator/device testing, APK and AAB | [Components](../components/#platform-renderer-mapping) |
+| iOS | UIKit controls, generated Xcode host, extensions, simulator/device diagnostics, signed IPA | [iOS runtime and host](../ios-renderer/) |
+
+<Aside type="note" title="Core versus optional packages">
+`pushinbr/pam-native` owns rendering, component state, templates, styling,
+navigation, the Visual DOM, bridge/protocol, core platform APIs, and generated
+Android/iOS hosts. Specialized hardware, media, commerce, cloud, and operational
+features stay in independent `pushinbr/pam-native-*` packages so applications do
+not pay for capabilities they do not use.
+</Aside>
 
 ## PAM Style Language 1.0
 
