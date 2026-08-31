@@ -1,0 +1,87 @@
+---
+const modules = import.meta.glob('../assets/mobile-ui/components/p-*.png', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+});
+
+const images = Object.entries(modules)
+  .map(([path, url]) => ({
+    tag: path.split('/').pop()?.replace(/\.png$/, '') ?? '',
+    url: String(url),
+  }))
+  .sort((left, right) => left.tag.localeCompare(right.tag));
+---
+
+<div class="pam-native-ui-gallery" aria-label="PAM Native UI Android component screenshots">
+  {images.map(({ tag, url }) => (
+    <figure>
+      <a href={url} aria-label={`Open the full ${tag} Android screenshot`}>
+        <img
+          src={url}
+          alt={`${tag} rendered by PAM Native UI on Android`}
+          width="1080"
+          height="2400"
+          loading="lazy"
+          decoding="async"
+        />
+      </a>
+      <figcaption><code>{tag}</code></figcaption>
+    </figure>
+  ))}
+</div>
+
+<style>
+  .pam-native-ui-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+    gap: 1rem;
+    margin-block: 1.5rem 2rem;
+  }
+
+  figure {
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.75rem;
+    background: var(--sl-color-bg-nav);
+    box-shadow: 0 0.5rem 1.5rem color-mix(in srgb, var(--sl-color-black) 10%, transparent);
+  }
+
+  a {
+    display: block;
+    overflow: hidden;
+    height: 18rem;
+    background: #f7f9fc;
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    object-fit: cover;
+    object-position: top center;
+    transition: transform 160ms ease;
+  }
+
+  a:hover img,
+  a:focus-visible img {
+    transform: scale(1.025);
+  }
+
+  a:focus-visible {
+    outline: 3px solid var(--sl-color-accent-high);
+    outline-offset: -3px;
+  }
+
+  figcaption {
+    padding: 0.7rem 0.8rem 0.8rem;
+    text-align: center;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    img {
+      transition: none;
+    }
+  }
+</style>

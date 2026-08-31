@@ -3,12 +3,35 @@ title: PAM Native UI component catalog
 description: Complete verified catalog of PAM Native UI retained-native Material 3 tags for Android and iOS.
 ---
 
+import PamNativeUiGallery from '../../../components/PamNativeUiGallery.astro';
+import overviewUrl from '../../../assets/mobile-ui/screens/overview.png?url';
+import workbenchUrl from '../../../assets/mobile-ui/screens/screen-all.png?url';
+import formsUrl from '../../../assets/mobile-ui/screens/screen-forms.png?url';
+import expansionGif from '../../../assets/mobile-ui/gifs/expansion-panels.gif?url';
+import dialogGif from '../../../assets/mobile-ui/gifs/dialog.gif?url';
+import sliderGif from '../../../assets/mobile-ui/gifs/slider.gif?url';
+import timePickerGif from '../../../assets/mobile-ui/gifs/time-picker.gif?url';
+
 Every tag below creates or configures retained native UI. The release parity
 manifest is the source of truth for this verified surface: **62 modules and 84
 component parts**, on both Android and iOS.
 
 The README, generated map, parity schema and executable release gate all use
 this same 62/84 contract.
+
+## Android showcase application
+
+The catalog below is also a real Android application. These images come from
+the production renderer on an API 36 emulator at 420 dpi—not from HTML or a
+design mockup. The capture gate verified **90/90 screens**, including a direct
+route for every public component part, with no blank render, invalid viewport,
+or overlapping text.
+
+<div class="pam-showcase-strip">
+  <a href={overviewUrl}><img src={overviewUrl} alt="PAM Studio showcase home on Android" width="1080" height="2400" /></a>
+  <a href={workbenchUrl}><img src={workbenchUrl} alt="Complete PAM Native UI workbench on Android" width="1080" height="2400" /></a>
+  <a href={formsUrl}><img src={formsUrl} alt="PAM Native UI forms showcase on Android" width="1080" height="2400" /></a>
+</div>
 
 ## Actions, feedback and status
 
@@ -67,3 +90,36 @@ content inside those destinations.
 For app-owned reusable tags, register a PHP component with
 `TemplateRegistry`. Keep public tag inputs serializable and treat native events
 as an explicit, versioned contract.
+
+## Native interaction recordings
+
+The touch markers in these GIFs are emitted by Android while the catalog is
+running. The examples exercise local native state, overlays, gestures and a
+system picker instead of replaying a prepared animation.
+
+<div class="pam-interaction-grid">
+  <figure>
+    <img src={expansionGif} alt="Switching the active PAM Native UI expansion panel" width="360" height="800" loading="lazy" />
+    <figcaption>Expansion panels</figcaption>
+  </figure>
+  <figure>
+    <img src={dialogGif} alt="Opening and dismissing a PAM Native UI dialog" width="360" height="800" loading="lazy" />
+    <figcaption>Dialog and focus-safe overlay</figcaption>
+  </figure>
+  <figure>
+    <img src={sliderGif} alt="Dragging a PAM Native UI native slider" width="360" height="800" loading="lazy" />
+    <figcaption>UI-thread slider gesture</figcaption>
+  </figure>
+  <figure>
+    <img src={timePickerGif} alt="Opening the Android system time picker from PAM Native UI" width="360" height="800" loading="lazy" />
+    <figcaption>Android system time picker</figcaption>
+  </figure>
+</div>
+
+## Complete Android visual catalog
+
+Every card opens the original full-device capture. Anatomy tags remain listed
+separately even when they intentionally share the same composed example as
+their parent component.
+
+<PamNativeUiGallery />
