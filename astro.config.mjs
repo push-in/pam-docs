@@ -3,13 +3,16 @@ import starlight from '@astrojs/starlight';
 
 const site = process.env.SITE_URL ?? 'https://pam.dev';
 const base = process.env.BASE_PATH ?? '/';
+const basePath = base === '/' ? '' : `/${base.replace(/^\/+|\/+$/g, '')}`;
 const socialImage = new URL(`${base.replace(/\/$/, '')}/og-pam.png`, site).href;
 
 export default defineConfig({
   site,
   base,
   redirects: {
-    '/introduction/getting-started/choose-a-target': '/getting-started/choose-a-target',
+    '/introduction/getting-started/choose-a-target': `${basePath}/getting-started/choose-a-target`,
+    '/mobile-ui': `${basePath}/packages/mobile-ui`,
+    '/mobile-ui/overview': `${basePath}/packages/mobile-ui`,
   },
   integrations: [
     starlight({
