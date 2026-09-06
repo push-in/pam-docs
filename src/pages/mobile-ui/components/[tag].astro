@@ -50,7 +50,8 @@ const title = tag
   .split('-')
   .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
   .join(' ');
-const componentBase = `${import.meta.env.BASE_URL}mobile-ui/components`;
+const siteBase = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/`;
+const componentBase = `${siteBase}mobile-ui/components`;
 ---
 
 <StarlightPage frontmatter={{
@@ -89,15 +90,15 @@ const componentBase = `${import.meta.env.BASE_URL}mobile-ui/components`;
     <h2 id="usage-heading">Template entry point</h2>
     <pre><code>{`<${tag}>…</${tag}>`}</code></pre>
     <p>
-      See the <a href={`${import.meta.env.BASE_URL}packages/mobile-ui/`}>PAM Native UI guide</a> for event,
-      state and styling conventions, and the <a href={`${import.meta.env.BASE_URL}packages/mobile-ui-architecture/`}>quality contract</a>
+      See the <a href={`${siteBase}packages/mobile-ui/`}>PAM Native UI guide</a> for event,
+      state and styling conventions, and the <a href={`${siteBase}packages/mobile-ui-architecture/`}>quality contract</a>
       for native behavior requirements.
     </p>
   </section>
 
   <nav class="component-pagination" aria-label="Component catalog pagination">
     {previous ? <a href={`${componentBase}/${previous}/`}>← <code>{previous}</code></a> : <span></span>}
-    <a href={`${import.meta.env.BASE_URL}packages/mobile-ui-catalog/`}>All components</a>
+    <a href={`${siteBase}packages/mobile-ui-catalog/`}>All components</a>
     {next ? <a href={`${componentBase}/${next}/`}><code>{next}</code> →</a> : <span></span>}
   </nav>
 </StarlightPage>
