@@ -5,16 +5,30 @@ const modules = import.meta.glob('../assets/mobile-ui/components/p-*.png', {
   import: 'default',
 });
 
+const gifModules = import.meta.glob('../assets/mobile-ui/gifs/p-*.gif', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+});
+
+const gifs = new Map(
+  Object.entries(gifModules).map(([path, url]) => [
+    path.split('/').pop()?.replace(/\.gif$/, '') ?? '',
+    String(url),
+  ]),
+);
+
 const images = Object.entries(modules)
   .map(([path, url]) => ({
     tag: path.split('/').pop()?.replace(/\.png$/, '') ?? '',
     url: String(url),
+    gifUrl: gifs.get(path.split('/').pop()?.replace(/\.png$/, '') ?? ''),
   }))
   .sort((left, right) => left.tag.localeCompare(right.tag));
 ---
 
 <div class="pam-native-ui-gallery" aria-label="PAM Native UI Android component screenshots">
-  {images.map(({ tag, url }) => (
+  {images.map(({ tag, url, gifUrl }) => (
     <figure>
       <a href={url} aria-label={`Open the full ${tag} Android screenshot`}>
         <img
@@ -26,7 +40,14 @@ const images = Object.entries(modules)
           decoding="async"
         />
       </a>
-      <figcaption><code>{tag}</code></figcaption>
+      <figcaption>
+        <code>{tag}</code>
+        {gifUrl && (
+          <a class="interaction-link" href={gifUrl} aria-label={`Open the verified ${tag} Android interaction GIF`}>
+            Interaction GIF <span aria-hidden="true">↗</span>
+          </a>
+        )}
+      </figcaption>
     </figure>
   ))}
 </div>
@@ -41,25 +62,22 @@ const images = Object.entries(modules)
 
   figure {
     margin: 0;
-    overflow: hidden;
-    border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.75rem;
-    background: var(--sl-color-bg-nav);
-    box-shadow: 0 0.5rem 1.5rem color-mix(in srgb, var(--sl-color-black) 10%, transparent);
+    padding-block-end: 0.9rem;
+    border-block-end: 1px solid var(--sl-color-gray-5);
   }
 
   a {
     display: block;
     overflow: hidden;
     height: 18rem;
-    background: #f7f9fc;
+    background: var(--sl-color-bg-nav);
   }
 
   img {
     width: 100%;
     height: 100%;
     margin: 0;
-    object-fit: cover;
+    object-fit: contain;
     object-position: top center;
     transition: transform 160ms ease;
   }
@@ -75,8 +93,27 @@ const images = Object.entries(modules)
   }
 
   figcaption {
-    padding: 0.7rem 0.8rem 0.8rem;
-    text-align: center;
+    display: flex;
+    min-height: 2.75rem;
+    padding-block-start: 0.7rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .interaction-link {
+    display: inline-flex;
+    height: auto;
+    color: var(--sl-color-text-accent);
+    background: transparent;
+    font-size: 0.78rem;
+    font-weight: 650;
+    text-decoration: none;
+  }
+
+  .interaction-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
   }
 
   @media (prefers-reduced-motion: reduce) {
