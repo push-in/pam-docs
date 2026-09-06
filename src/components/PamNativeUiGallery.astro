@@ -25,12 +25,13 @@ const images = Object.entries(modules)
     gifUrl: gifs.get(path.split('/').pop()?.replace(/\.png$/, '') ?? ''),
   }))
   .sort((left, right) => left.tag.localeCompare(right.tag));
+const componentBase = `${import.meta.env.BASE_URL}mobile-ui/components`;
 ---
 
 <div class="pam-native-ui-gallery" aria-label="PAM Native UI Android component screenshots">
   {images.map(({ tag, url, gifUrl }) => (
     <figure>
-      <a href={url} aria-label={`Open the full ${tag} Android screenshot`}>
+      <a href={`${componentBase}/${tag}/`} aria-label={`Open the ${tag} component documentation`}>
         <img
           src={url}
           alt={`${tag} rendered by PAM Native UI on Android`}
@@ -41,7 +42,7 @@ const images = Object.entries(modules)
         />
       </a>
       <figcaption>
-        <code>{tag}</code>
+        <a class="component-link" href={`${componentBase}/${tag}/`}><code>{tag}</code></a>
         {gifUrl && (
           <a class="interaction-link" href={gifUrl} aria-label={`Open the verified ${tag} Android interaction GIF`}>
             Interaction GIF <span aria-hidden="true">↗</span>
@@ -109,6 +110,18 @@ const images = Object.entries(modules)
     font-size: 0.78rem;
     font-weight: 650;
     text-decoration: none;
+  }
+
+  .component-link {
+    display: inline-flex;
+    height: auto;
+    color: var(--sl-color-text);
+    background: transparent;
+    text-decoration: none;
+  }
+
+  .component-link:hover {
+    color: var(--sl-color-text-accent);
   }
 
   .interaction-link:hover {

@@ -1,0 +1,121 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+
+export function getStaticPaths() {
+  const screenshots = import.meta.glob('../../../assets/mobile-ui/components/p-*.png', {
+    eager: true,
+    query: '?url',
+    import: 'default',
+  });
+  const recordings = import.meta.glob('../../../assets/mobile-ui/gifs/p-*.gif', {
+    eager: true,
+    query: '?url',
+    import: 'default',
+  });
+  const gifByTag = new Map(
+    Object.entries(recordings).map(([path, url]) => [
+      path.split('/').pop()?.replace(/\.gif$/, '') ?? '',
+      String(url),
+    ]),
+  );
+  const entries = Object.entries(screenshots)
+    .map(([path, url]) => ({
+      tag: path.split('/').pop()?.replace(/\.png$/, '') ?? '',
+      screenshotUrl: String(url),
+    }))
+    .sort((left, right) => left.tag.localeCompare(right.tag));
+
+  return entries.map((entry, index) => ({
+    params: { tag: entry.tag },
+    props: {
+      ...entry,
+      gifUrl: gifByTag.get(entry.tag),
+      previous: entries[index - 1]?.tag,
+      next: entries[index + 1]?.tag,
+    },
+  }));
+}
+
+interface Props {
+  tag: string;
+  screenshotUrl: string;
+  gifUrl?: string;
+  previous?: string;
+  next?: string;
+}
+
+const { tag, screenshotUrl, gifUrl, previous, next } = Astro.props as Props;
+const title = tag
+  .replace(/^p-/, '')
+  .split('-')
+  .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+  .join(' ');
+const componentBase = `${import.meta.env.BASE_URL}mobile-ui/components`;
+---
+
+<StarlightPage frontmatter={{
+  title: `${title} — PAM Native UI`,
+  description: `${tag} rendered and validated on the retained-native Android showcase.`,
+}}>
+  <p class="eyebrow">PAM Native UI · Android evidence</p>
+  <h1>{title}</h1>
+  <p class="lead">
+    <code>{tag}</code> rendered by the production retained-native pipeline. The specimen below is a real
+    API 36 Android capture at 420 dpi, not an HTML recreation.
+  </p>
+
+  <div class="status-line" role="status">
+    <span aria-hidden="true"></span>
+    Emulator layout and component route verified
+  </div>
+
+  <section aria-labelledby="visual-heading">
+    <h2 id="visual-heading">Android specimen</h2>
+    <a class="device-shot" href={screenshotUrl} aria-label={`Open the full-size ${tag} Android screenshot`}>
+      <img src={screenshotUrl} alt={`${tag} running in the PAM Native UI Android catalog`} width="1080" height="2400" />
+    </a>
+  </section>
+
+  {gifUrl && (
+    <section aria-labelledby="interaction-heading">
+      <h2 id="interaction-heading">Interaction recording</h2>
+      <p>The touch trace was captured from the Android application while exercising the native component.</p>
+      <a class="device-shot" href={gifUrl} aria-label={`Open the full-size ${tag} interaction recording`}>
+        <img src={gifUrl} alt={`${tag} native Android interaction`} width="360" height="800" loading="lazy" />
+      </a>
+    </section>
+  )}
+
+  <section aria-labelledby="usage-heading">
+    <h2 id="usage-heading">Template entry point</h2>
+    <pre><code>{`<${tag}>…</${tag}>`}</code></pre>
+    <p>
+      See the <a href={`${import.meta.env.BASE_URL}packages/mobile-ui/`}>PAM Native UI guide</a> for event,
+      state and styling conventions, and the <a href={`${import.meta.env.BASE_URL}packages/mobile-ui-architecture/`}>quality contract</a>
+      for native behavior requirements.
+    </p>
+  </section>
+
+  <nav class="component-pagination" aria-label="Component catalog pagination">
+    {previous ? <a href={`${componentBase}/${previous}/`}>← <code>{previous}</code></a> : <span></span>}
+    <a href={`${import.meta.env.BASE_URL}packages/mobile-ui-catalog/`}>All components</a>
+    {next ? <a href={`${componentBase}/${next}/`}><code>{next}</code> →</a> : <span></span>}
+  </nav>
+</StarlightPage>
+
+<style>
+  .eyebrow { margin: 0 0 0.5rem; color: var(--sl-color-text-accent); font-size: 0.82rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+  h1 { margin-top: 0; }
+  .lead { max-width: 46rem; font-size: 1.08rem; }
+  .status-line { display: flex; align-items: center; gap: 0.65rem; margin-block: 1.5rem 2.5rem; color: var(--sl-color-text); font-weight: 650; }
+  .status-line span { width: 0.7rem; height: 0.7rem; border-radius: 999px; background: #16803c; box-shadow: 0 0 0 0.25rem color-mix(in srgb, #16803c 18%, transparent); }
+  section { margin-block: 2.75rem; }
+  .device-shot { display: block; width: min(100%, 27rem); padding: 0; border: 1px solid var(--sl-color-gray-5); border-radius: 1.25rem; overflow: hidden; background: var(--sl-color-bg-nav); box-shadow: 0 0.9rem 2.4rem color-mix(in srgb, #0f172a 14%, transparent); }
+  .device-shot img { display: block; width: 100%; height: auto; margin: 0; }
+  pre { max-width: 46rem; }
+  .component-pagination { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem; margin-top: 4rem; padding-top: 1.25rem; border-top: 1px solid var(--sl-color-gray-5); }
+  .component-pagination a { text-decoration: none; }
+  .component-pagination a:last-child { text-align: right; }
+  @media (max-width: 40rem) { .component-pagination { grid-template-columns: 1fr 1fr; } .component-pagination > :nth-child(2) { order: 3; grid-column: 1 / -1; text-align: center; } }
+  @media (prefers-reduced-motion: reduce) { .device-shot { scroll-behavior: auto; } }
+</style>
