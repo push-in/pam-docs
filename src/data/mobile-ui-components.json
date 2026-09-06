@@ -35,6 +35,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PAlert preview\""
+                    ]
+                },
+                {
                     "name": "border",
                     "types": [
                         "bool",
@@ -92,6 +101,15 @@
                     ]
                 },
                 {
+                    "name": "text",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Everything is ready to continue.\""
+                    ]
+                },
+                {
                     "name": "type",
                     "types": [
                         "string"
@@ -142,6 +160,15 @@
                 "Flat"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PAppBar preview\""
+                    ]
+                },
                 {
                     "name": "color",
                     "types": [
@@ -225,6 +252,7 @@
                         "string"
                     ],
                     "examples": [
+                        "\"Open navigation\"",
                         "\"Navigate back\"",
                         "\"Close current screen\""
                     ]
@@ -256,6 +284,7 @@
                         "string"
                     ],
                     "examples": [
+                        "\"MenuIcon\"",
                         "\"ChevronLeftIcon\"",
                         "\"close\""
                     ]
@@ -310,6 +339,15 @@
                 "No Data"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PAutocomplete preview\""
+                    ]
+                },
                 {
                     "name": "chips",
                     "types": [
@@ -383,6 +421,15 @@
                     "examples": []
                 },
                 {
+                    "name": "label",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PAutocomplete\""
+                    ]
+                },
+                {
                     "name": "loading",
                     "types": [
                         "bool"
@@ -397,6 +444,7 @@
                         "string"
                     ],
                     "examples": [
+                        "\"Design\"",
                         "\"Clear this value\""
                     ]
                 },
@@ -416,6 +464,15 @@
                     ],
                     "examples": [
                         "true"
+                    ]
+                },
+                {
+                    "name": "placeholder",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Choose a team\""
                     ]
                 },
                 {
@@ -501,6 +558,15 @@
                 "Bordered"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PAvatar preview\""
+                    ]
+                },
                 {
                     "name": "border",
                     "types": [
@@ -615,6 +681,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PBadge preview\""
+                    ]
+                },
+                {
                     "name": "border",
                     "types": [
                         "bool"
@@ -703,6 +778,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PBanner preview\""
+                    ]
+                },
+                {
                     "name": "closable",
                     "types": [
                         "bool"
@@ -743,6 +827,15 @@
                     ]
                 },
                 {
+                    "name": "text",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Everything is ready to continue.\""
+                    ]
+                },
+                {
                     "name": "type",
                     "types": [
                         "string"
@@ -774,7 +867,17 @@
                 "Long Labels",
                 "Independent Pair"
             ],
-            "props": [],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PBannerActions preview\""
+                    ]
+                }
+            ],
             "related": [
                 "p-banner"
             ]
@@ -797,6 +900,15 @@
                 "Keyboard form"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PBottomSheet preview\""
+                    ]
+                },
                 {
                     "name": "defaultSnapIndex",
                     "types": [
@@ -873,6 +985,15 @@
                 "Loading"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PBtn preview\""
+                    ]
+                },
                 {
                     "name": "block",
                     "types": [
@@ -997,6 +1118,15 @@
                 "Success color"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PBtnGroup preview\""
+                    ]
+                },
                 {
                     "name": "block",
                     "types": [
@@ -1131,6 +1261,24 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PBtnToggle preview\""
+                    ]
+                },
+                {
+                    "name": "active",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
                     "name": "block",
                     "types": [
                         "bool"
@@ -1243,6 +1391,15 @@
                 "Success color"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PCalendar preview\""
+                    ]
+                },
                 {
                     "name": "color",
                     "types": [
@@ -1406,6 +1563,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PCalendarDay preview\""
+                    ]
+                },
+                {
                     "name": "color",
                     "types": [
                         "string"
@@ -1505,6 +1671,7 @@
                         "string"
                     ],
                     "examples": [
+                        "\"PCard preview\"",
                         "\"Open native experience card\"",
                         "\"Archived workspace card\""
                     ]
@@ -1577,7 +1744,17 @@
                 "Long Labels",
                 "Three Actions"
             ],
-            "props": [],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PCardActions preview\""
+                    ]
+                }
+            ],
             "related": [
                 "p-card"
             ]
@@ -1601,6 +1778,24 @@
                 "Crossfade"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PCarousel preview\""
+                    ]
+                },
+                {
+                    "name": "active",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
                 {
                     "name": "continuous",
                     "types": [
@@ -1647,6 +1842,13 @@
                     ]
                 },
                 {
+                    "name": "items",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
                     "name": "reverse",
                     "types": [
                         "bool"
@@ -1674,6 +1876,15 @@
                     ]
                 },
                 {
+                    "name": "value",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"overview\""
+                    ]
+                },
+                {
                     "name": "vertical",
                     "types": [
                         "bool"
@@ -1698,7 +1909,17 @@
             "profiles": [
                 "Default"
             ],
-            "props": [],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PCarouselItem preview\""
+                    ]
+                }
+            ],
             "related": [
                 "p-carousel"
             ]
@@ -1733,13 +1954,22 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PCheckbox preview\""
+                    ]
+                },
+                {
                     "name": "checked",
                     "types": [
                         "bool"
                     ],
                     "examples": [
-                        "false",
-                        "true"
+                        "true",
+                        "false"
                     ]
                 },
                 {
@@ -1810,6 +2040,15 @@
                     ]
                 },
                 {
+                    "name": "label",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PCheckbox\""
+                    ]
+                },
+                {
                     "name": "readonly",
                     "types": [
                         "bool"
@@ -1850,6 +2089,15 @@
                 "Long Label"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PChip preview\""
+                    ]
+                },
                 {
                     "name": "closable",
                     "types": [
@@ -1941,6 +2189,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PChipGroup preview\""
+                    ]
+                },
+                {
                     "name": "direction",
                     "types": [
                         "string"
@@ -1997,6 +2254,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PColorInput preview\""
+                    ]
+                },
+                {
                     "name": "disabled",
                     "types": [
                         "bool"
@@ -2038,6 +2304,7 @@
                         "string"
                     ],
                     "examples": [
+                        "\"PColorInput\"",
                         "\"HEX value\""
                     ]
                 },
@@ -2056,6 +2323,7 @@
                         "string"
                     ],
                     "examples": [
+                        "\"#5CBBF6\"",
                         "\"#6750A4\""
                     ]
                 },
@@ -2104,6 +2372,15 @@
                 "No Data"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PCombobox preview\""
+                    ]
+                },
                 {
                     "name": "chips",
                     "types": [
@@ -2177,6 +2454,15 @@
                     "examples": []
                 },
                 {
+                    "name": "label",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PCombobox\""
+                    ]
+                },
+                {
                     "name": "loading",
                     "types": [
                         "bool"
@@ -2191,6 +2477,7 @@
                         "string"
                     ],
                     "examples": [
+                        "\"Design\"",
                         "\"Clear this value\""
                     ]
                 },
@@ -2210,6 +2497,15 @@
                     ],
                     "examples": [
                         "true"
+                    ]
+                },
+                {
+                    "name": "placeholder",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Choose a team\""
                     ]
                 },
                 {
@@ -2285,6 +2581,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PDataTable preview\""
+                    ]
+                },
+                {
                     "name": "density",
                     "types": [
                         "string"
@@ -2299,6 +2604,15 @@
                         "array"
                     ],
                     "examples": []
+                },
+                {
+                    "name": "itemHeight",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        52
+                    ]
                 },
                 {
                     "name": "itemValue",
@@ -2402,6 +2716,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PDataTableVirtual preview\""
+                    ]
+                },
+                {
                     "name": "density",
                     "types": [
                         "string"
@@ -2442,6 +2765,15 @@
                     ],
                     "examples": [
                         280
+                    ]
+                },
+                {
+                    "name": "itemHeight",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        52
                     ]
                 },
                 {
@@ -2583,6 +2915,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PDateInput preview\""
+                    ]
+                },
+                {
                     "name": "disabled",
                     "types": [
                         "bool"
@@ -2601,6 +2942,15 @@
                     ]
                 },
                 {
+                    "name": "format",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"DD/MM/YYYY\""
+                    ]
+                },
+                {
                     "name": "helper",
                     "types": [
                         "string"
@@ -2608,6 +2958,15 @@
                     "examples": [
                         "\"This value needs attention\"",
                         "\"Required field\""
+                    ]
+                },
+                {
+                    "name": "label",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PDateInput\""
                     ]
                 },
                 {
@@ -2626,6 +2985,24 @@
                     ],
                     "examples": [
                         "true"
+                    ]
+                },
+                {
+                    "name": "locale",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"pt-BR\""
+                    ]
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"2026-07-15\""
                     ]
                 },
                 {
@@ -2697,6 +3074,15 @@
                         "\"solo-inverted\"",
                         "\"solo-filled\""
                     ]
+                },
+                {
+                    "name": "visibleDate",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"2026-07-01\""
+                    ]
                 }
             ],
             "related": []
@@ -2721,6 +3107,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PDatePicker preview\""
+                    ]
+                },
+                {
                     "name": "disabled",
                     "types": [
                         "bool"
@@ -2736,6 +3131,24 @@
                     ],
                     "examples": [
                         "true"
+                    ]
+                },
+                {
+                    "name": "locale",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"pt-BR\""
+                    ]
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"2026-07-15\""
                     ]
                 },
                 {
@@ -2775,6 +3188,15 @@
                     "examples": [
                         "true"
                     ]
+                },
+                {
+                    "name": "visibleDate",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"2026-07-01\""
+                    ]
                 }
             ],
             "related": []
@@ -2805,6 +3227,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PDialog preview\""
+                    ]
+                },
+                {
                     "name": "elevation",
                     "types": [
                         "int"
@@ -2825,6 +3256,15 @@
                     ],
                     "examples": [
                         "true"
+                    ]
+                },
+                {
+                    "name": "open",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "false"
                     ]
                 },
                 {
@@ -2875,6 +3315,15 @@
                 "Primary"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PDivider preview\""
+                    ]
+                },
                 {
                     "name": "color",
                     "types": [
@@ -2943,6 +3392,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PEmptyState preview\""
+                    ]
+                },
+                {
                     "name": "closable",
                     "types": [
                         "bool"
@@ -2970,6 +3428,15 @@
                     ],
                     "examples": [
                         "\"compact\""
+                    ]
+                },
+                {
+                    "name": "text",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Everything is ready to continue.\""
                     ]
                 },
                 {
@@ -3006,6 +3473,15 @@
                 "Disabled"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PExpansionPanel preview\""
+                    ]
+                },
                 {
                     "name": "disabled",
                     "types": [
@@ -3080,6 +3556,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PExpansionPanelText preview\""
+                    ]
+                },
+                {
                     "name": "disabled",
                     "types": [
                         "bool"
@@ -3152,6 +3637,15 @@
                 "Disabled"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PExpansionPanelTitle preview\""
+                    ]
+                },
                 {
                     "name": "disabled",
                     "types": [
@@ -3226,6 +3720,24 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PExpansionPanels preview\""
+                    ]
+                },
+                {
+                    "name": "active",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
                     "name": "disabled",
                     "types": [
                         "bool"
@@ -3233,6 +3745,13 @@
                     "examples": [
                         "true"
                     ]
+                },
+                {
+                    "name": "items",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
                 },
                 {
                     "name": "mandatory",
@@ -3259,6 +3778,15 @@
                     ],
                     "examples": [
                         "true"
+                    ]
+                },
+                {
+                    "name": "value",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"details\""
                     ]
                 },
                 {
@@ -3312,6 +3840,15 @@
                 "Bottom End"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PFab preview\""
+                    ]
+                },
                 {
                     "name": "border",
                     "types": [
@@ -3423,6 +3960,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PForm preview\""
+                    ]
+                },
+                {
                     "name": "disabled",
                     "types": [
                         "bool"
@@ -3529,9 +4075,11 @@
                 {
                     "name": "color",
                     "types": [
+                        "int",
                         "string"
                     ],
                     "examples": [
+                        4278916906,
                         "\"info\"",
                         "\"success\"",
                         "\"warning\""
@@ -3581,12 +4129,30 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PIconBtn preview\""
+                    ]
+                },
+                {
                     "name": "disabled",
                     "types": [
                         "bool"
                     ],
                     "examples": [
                         "true"
+                    ]
+                },
+                {
+                    "name": "icon",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"SettingsIcon\""
                     ]
                 },
                 {
@@ -3627,6 +4193,15 @@
                 "Loading"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PImg preview\""
+                    ]
+                },
                 {
                     "name": "aspectRatio",
                     "types": [
@@ -3697,6 +4272,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PInfiniteScroll preview\""
+                    ]
+                },
+                {
                     "name": "empty",
                     "types": [
                         "bool"
@@ -3752,6 +4336,15 @@
                 "Primary"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PItem preview\""
+                    ]
+                },
                 {
                     "name": "active",
                     "types": [
@@ -3812,6 +4405,15 @@
                 "Disabled"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PItemGroup preview\""
+                    ]
+                },
                 {
                     "name": "direction",
                     "types": [
@@ -3884,6 +4486,15 @@
                 "Active"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PList preview\""
+                    ]
+                },
                 {
                     "name": "active",
                     "types": [
@@ -3976,6 +4587,15 @@
                 "Active"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PListItem preview\""
+                    ]
+                },
                 {
                     "name": "active",
                     "types": [
@@ -4079,6 +4699,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PMenu preview\""
+                    ]
+                },
+                {
                     "name": "elevation",
                     "types": [
                         "int"
@@ -4104,6 +4733,15 @@
                         "\"bottom\"",
                         "\"bottom start\"",
                         "\"bottom end\""
+                    ]
+                },
+                {
+                    "name": "open",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "false"
                     ]
                 },
                 {
@@ -4182,6 +4820,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PNumberInput preview\""
+                    ]
+                },
+                {
                     "name": "controlVariant",
                     "types": [
                         "string"
@@ -4228,6 +4875,42 @@
                     "examples": [
                         "\"This value needs attention\"",
                         "\"Required field\""
+                    ]
+                },
+                {
+                    "name": "label",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PNumberInput\""
+                    ]
+                },
+                {
+                    "name": "max",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        20
+                    ]
+                },
+                {
+                    "name": "min",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        0
+                    ]
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        8
                     ]
                 },
                 {
@@ -4278,9 +4961,11 @@
                 {
                     "name": "step",
                     "types": [
+                        "int",
                         "float"
                     ],
                     "examples": [
+                        1,
                         "0.25"
                     ]
                 },
@@ -4322,6 +5007,15 @@
                 "Focused"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"POtpInput preview\""
+                    ]
+                },
                 {
                     "name": "disabled",
                     "types": [
@@ -4368,13 +5062,22 @@
                     ]
                 },
                 {
+                    "name": "label",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"POtpInput\""
+                    ]
+                },
+                {
                     "name": "length",
                     "types": [
                         "int"
                     ],
                     "examples": [
-                        4,
-                        6
+                        6,
+                        4
                     ]
                 },
                 {
@@ -4384,6 +5087,15 @@
                     ],
                     "examples": [
                         "true"
+                    ]
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"482915\""
                     ]
                 },
                 {
@@ -4425,12 +5137,30 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"POverlay preview\""
+                    ]
+                },
+                {
                     "name": "fullscreen",
                     "types": [
                         "bool"
                     ],
                     "examples": [
                         "true"
+                    ]
+                },
+                {
+                    "name": "open",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "false"
                     ]
                 },
                 {
@@ -4496,6 +5226,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PProgressCircular preview\""
+                    ]
+                },
+                {
                     "name": "bufferValue",
                     "types": [
                         "int"
@@ -4543,6 +5282,7 @@
                         "int"
                     ],
                     "examples": [
+                        64,
                         42
                     ]
                 },
@@ -4644,6 +5384,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PProgressLinear preview\""
+                    ]
+                },
+                {
                     "name": "bufferValue",
                     "types": [
                         "int"
@@ -4691,6 +5440,7 @@
                         "int"
                     ],
                     "examples": [
+                        64,
                         42
                     ]
                 },
@@ -4781,13 +5531,22 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PRadio preview\""
+                    ]
+                },
+                {
                     "name": "checked",
                     "types": [
                         "bool"
                     ],
                     "examples": [
-                        "false",
-                        "true"
+                        "true",
+                        "false"
                     ]
                 },
                 {
@@ -4849,6 +5608,15 @@
                     ]
                 },
                 {
+                    "name": "label",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PRadio\""
+                    ]
+                },
+                {
                     "name": "readonly",
                     "types": [
                         "bool"
@@ -4889,6 +5657,15 @@
                 "Disabled"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PRadioGroup preview\""
+                    ]
+                },
                 {
                     "name": "direction",
                     "types": [
@@ -4966,6 +5743,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PRangeSlider preview\""
+                    ]
+                },
+                {
                     "name": "color",
                     "types": [
                         "string"
@@ -4984,6 +5770,33 @@
                     ],
                     "examples": [
                         "true"
+                    ]
+                },
+                {
+                    "name": "helper",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Choose the allowed range\""
+                    ]
+                },
+                {
+                    "name": "max",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        100
+                    ]
+                },
+                {
+                    "name": "min",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        0
                     ]
                 },
                 {
@@ -5109,6 +5922,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PRating preview\""
+                    ]
+                },
+                {
                     "name": "clearable",
                     "types": [
                         "bool"
@@ -5164,16 +5986,36 @@
                         "int"
                     ],
                     "examples": [
+                        5,
                         10
+                    ]
+                },
+                {
+                    "name": "max",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        5
+                    ]
+                },
+                {
+                    "name": "min",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        0
                     ]
                 },
                 {
                     "name": "modelValue",
                     "types": [
-                        "float",
-                        "int"
+                        "int",
+                        "float"
                     ],
                     "examples": [
+                        4,
                         "3.5",
                         7
                     ]
@@ -5202,9 +6044,11 @@
                 {
                     "name": "step",
                     "types": [
+                        "int",
                         "float"
                     ],
                     "examples": [
+                        1,
                         "0.5"
                     ]
                 }
@@ -5244,6 +6088,15 @@
                 "No Data"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PSelect preview\""
+                    ]
+                },
                 {
                     "name": "chips",
                     "types": [
@@ -5317,6 +6170,15 @@
                     "examples": []
                 },
                 {
+                    "name": "label",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PSelect\""
+                    ]
+                },
+                {
                     "name": "loading",
                     "types": [
                         "bool"
@@ -5331,6 +6193,7 @@
                         "string"
                     ],
                     "examples": [
+                        "\"Design\"",
                         "\"Clear this value\""
                     ]
                 },
@@ -5350,6 +6213,15 @@
                     ],
                     "examples": [
                         "true"
+                    ]
+                },
+                {
+                    "name": "placeholder",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Choose a team\""
                     ]
                 },
                 {
@@ -5443,6 +6315,15 @@
                 "Horizontal"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PSheet preview\""
+                    ]
+                },
                 {
                     "name": "border",
                     "types": [
@@ -5565,6 +6446,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PSkeletonLoader preview\""
+                    ]
+                },
+                {
                     "name": "boilerplate",
                     "types": [
                         "bool"
@@ -5589,6 +6479,15 @@
                     ],
                     "examples": [
                         "true"
+                    ]
+                },
+                {
+                    "name": "pulseDuration",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        1400
                     ]
                 },
                 {
@@ -5625,6 +6524,24 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PSlideGroup preview\""
+                    ]
+                },
+                {
+                    "name": "active",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
                     "name": "direction",
                     "types": [
                         "string"
@@ -5643,6 +6560,13 @@
                     ]
                 },
                 {
+                    "name": "items",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
                     "name": "mandatory",
                     "types": [
                         "bool"
@@ -5658,6 +6582,15 @@
                     ],
                     "examples": [
                         "true"
+                    ]
+                },
+                {
+                    "name": "value",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"overview\""
                     ]
                 }
             ],
@@ -5680,6 +6613,15 @@
                 "Long label"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PSlideGroupItem preview\""
+                    ]
+                },
                 {
                     "name": "disabled",
                     "types": [
@@ -5746,6 +6688,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PSlider preview\""
+                    ]
+                },
+                {
                     "name": "color",
                     "types": [
                         "string"
@@ -5777,11 +6728,48 @@
                     ]
                 },
                 {
+                    "name": "helper",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Drag to adjust the value\""
+                    ]
+                },
+                {
+                    "name": "label",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PSlider\""
+                    ]
+                },
+                {
+                    "name": "max",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        100
+                    ]
+                },
+                {
+                    "name": "min",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        0
+                    ]
+                },
+                {
                     "name": "modelValue",
                     "types": [
                         "int"
                     ],
                     "examples": [
+                        64,
                         0,
                         100,
                         60
@@ -5903,6 +6891,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PSnackbar preview\""
+                    ]
+                },
+                {
                     "name": "color",
                     "types": [
                         "string"
@@ -5946,12 +6943,30 @@
                     ]
                 },
                 {
+                    "name": "open",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "false"
+                    ]
+                },
+                {
                     "name": "persistent",
                     "types": [
                         "bool"
                     ],
                     "examples": [
                         "true"
+                    ]
+                },
+                {
+                    "name": "text",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Everything is ready to continue.\""
                     ]
                 },
                 {
@@ -5995,6 +7010,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PSparkline preview\""
+                    ]
+                },
+                {
                     "name": "autoDraw",
                     "types": [
                         "bool"
@@ -6010,6 +7034,15 @@
                     ],
                     "examples": [
                         "true"
+                    ]
+                },
+                {
+                    "name": "lineWidth",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        3
                     ]
                 },
                 {
@@ -6039,6 +7072,15 @@
                         "\"trend\"",
                         "\"bar\""
                     ]
+                },
+                {
+                    "name": "values",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"12,18,14,26,22,34,31,42,38,52,48,64\""
+                    ]
                 }
             ],
             "related": []
@@ -6061,6 +7103,15 @@
                 "Persistent"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PSpeedDial preview\""
+                    ]
+                },
                 {
                     "name": "direction",
                     "types": [
@@ -6114,6 +7165,24 @@
                 "Complete Step"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PStepper preview\""
+                    ]
+                },
+                {
+                    "name": "active",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
                 {
                     "name": "altLabels",
                     "types": [
@@ -6169,6 +7238,13 @@
                     ]
                 },
                 {
+                    "name": "items",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
                     "name": "mobile",
                     "types": [
                         "bool"
@@ -6184,6 +7260,15 @@
                     ],
                     "examples": [
                         "true"
+                    ]
+                },
+                {
+                    "name": "value",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"account\""
                     ]
                 }
             ],
@@ -6215,6 +7300,15 @@
                 "Complete Step"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PStepperActions preview\""
+                    ]
+                },
                 {
                     "name": "altLabels",
                     "types": [
@@ -6317,6 +7411,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PStepperHeader preview\""
+                    ]
+                },
+                {
                     "name": "altLabels",
                     "types": [
                         "bool"
@@ -6417,6 +7520,15 @@
                 "Complete Step"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PStepperItem preview\""
+                    ]
+                },
                 {
                     "name": "altLabels",
                     "types": [
@@ -6519,6 +7631,24 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PStepperVertical preview\""
+                    ]
+                },
+                {
+                    "name": "active",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
                     "name": "altLabels",
                     "types": [
                         "bool"
@@ -6573,6 +7703,13 @@
                     ]
                 },
                 {
+                    "name": "items",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
                     "name": "mobile",
                     "types": [
                         "bool"
@@ -6588,6 +7725,15 @@
                     ],
                     "examples": [
                         "true"
+                    ]
+                },
+                {
+                    "name": "value",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"account\""
                     ]
                 }
             ],
@@ -6616,6 +7762,15 @@
                 "Complete Step"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PStepperVerticalActions preview\""
+                    ]
+                },
                 {
                     "name": "altLabels",
                     "types": [
@@ -6715,6 +7870,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PStepperVerticalItem preview\""
+                    ]
+                },
+                {
                     "name": "altLabels",
                     "types": [
                         "bool"
@@ -6812,6 +7976,15 @@
                 "Complete Step"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PStepperWindow preview\""
+                    ]
+                },
                 {
                     "name": "altLabels",
                     "types": [
@@ -6913,6 +8086,15 @@
                 "Complete Step"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PStepperWindowItem preview\""
+                    ]
+                },
                 {
                     "name": "altLabels",
                     "types": [
@@ -7025,6 +8207,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PSwitch preview\""
+                    ]
+                },
+                {
                     "name": "checked",
                     "types": [
                         "bool"
@@ -7095,6 +8286,15 @@
                     ]
                 },
                 {
+                    "name": "label",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Enabled\""
+                    ]
+                },
+                {
                     "name": "readonly",
                     "types": [
                         "bool"
@@ -7143,6 +8343,15 @@
                 "Hide Slider"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PTab preview\""
+                    ]
+                },
                 {
                     "name": "active",
                     "types": [
@@ -7273,6 +8482,24 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PTabs preview\""
+                    ]
+                },
+                {
+                    "name": "active",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
                     "name": "alignTabs",
                     "types": [
                         "string"
@@ -7329,12 +8556,28 @@
                     ]
                 },
                 {
+                    "name": "items",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
                     "name": "stacked",
                     "types": [
                         "bool"
                     ],
                     "examples": [
                         "true"
+                    ]
+                },
+                {
+                    "name": "value",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"overview\""
                     ]
                 }
             ],
@@ -7375,6 +8618,15 @@
                 "Single Line"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PTextField preview\""
+                    ]
+                },
                 {
                     "name": "appendIcon",
                     "types": [
@@ -7436,6 +8688,7 @@
                         "string"
                     ],
                     "examples": [
+                        "\"Rendered by the platform\"",
                         "\"This value needs attention\"",
                         "\"Required field\"",
                         "\"Maximum 40 characters\""
@@ -7448,6 +8701,15 @@
                     ],
                     "examples": [
                         "true"
+                    ]
+                },
+                {
+                    "name": "label",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PTextField\""
                     ]
                 },
                 {
@@ -7465,6 +8727,7 @@
                         "string"
                     ],
                     "examples": [
+                        "\"Native field\"",
                         "\"Clear this value\"",
                         "\"120\"",
                         "\"Native value\""
@@ -7486,6 +8749,15 @@
                     ],
                     "examples": [
                         "true"
+                    ]
+                },
+                {
+                    "name": "placeholder",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Type here\""
                     ]
                 },
                 {
@@ -7596,6 +8868,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PTextarea preview\""
+                    ]
+                },
+                {
                     "name": "appendIcon",
                     "types": [
                         "string"
@@ -7665,6 +8946,7 @@
                         "string"
                     ],
                     "examples": [
+                        "\"Up to 280 characters\"",
                         "\"This value needs attention\"",
                         "\"Required field\"",
                         "\"Maximum 40 characters\""
@@ -7680,11 +8962,21 @@
                     ]
                 },
                 {
+                    "name": "label",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PTextarea\""
+                    ]
+                },
+                {
                     "name": "maxLength",
                     "types": [
                         "int"
                     ],
                     "examples": [
+                        280,
                         40
                     ]
                 },
@@ -7694,6 +8986,7 @@
                         "string"
                     ],
                     "examples": [
+                        "\"Built for Android and iOS.\"",
                         "\"Clear this value\"",
                         "\"120\"",
                         "\"Native value\""
@@ -7724,6 +9017,15 @@
                     ],
                     "examples": [
                         "true"
+                    ]
+                },
+                {
+                    "name": "placeholder",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Write a message\""
                     ]
                 },
                 {
@@ -7768,6 +9070,7 @@
                         "int"
                     ],
                     "examples": [
+                        3,
                         2,
                         4
                     ]
@@ -7826,6 +9129,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PTimePicker preview\""
+                    ]
+                },
+                {
                     "name": "disabled",
                     "types": [
                         "bool"
@@ -7851,6 +9163,15 @@
                     ],
                     "examples": [
                         "true"
+                    ]
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"14:35\""
                     ]
                 },
                 {
@@ -7892,6 +9213,15 @@
                 "Success"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PTimeline preview\""
+                    ]
+                },
                 {
                     "name": "color",
                     "types": [
@@ -7953,6 +9283,15 @@
                 "Success"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PTimelineItem preview\""
+                    ]
+                },
                 {
                     "name": "color",
                     "types": [
@@ -8018,6 +9357,15 @@
                 "Flat"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PToolbar preview\""
+                    ]
+                },
                 {
                     "name": "color",
                     "types": [
@@ -8095,6 +9443,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PTooltip preview\""
+                    ]
+                },
+                {
                     "name": "location",
                     "types": [
                         "string"
@@ -8106,6 +9463,15 @@
                         "\"bottom\"",
                         "\"bottom start\"",
                         "\"bottom end\""
+                    ]
+                },
+                {
+                    "name": "open",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "false"
                     ]
                 },
                 {
@@ -8167,6 +9533,15 @@
             ],
             "props": [
                 {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PTreeview preview\""
+                    ]
+                },
+                {
                     "name": "density",
                     "types": [
                         "string"
@@ -8174,6 +9549,29 @@
                     "examples": [
                         "\"compact\""
                     ]
+                },
+                {
+                    "name": "items",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"applications/mobile/android\""
+                    ]
+                },
+                {
+                    "name": "opened",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
                 }
             ],
             "related": [
@@ -8193,6 +9591,15 @@
                 "Compact"
             ],
             "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PTreeviewItem preview\""
+                    ]
+                },
                 {
                     "name": "density",
                     "types": [
