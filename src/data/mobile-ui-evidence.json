@@ -1,0 +1,24 @@
+{
+  "expectedComponentCount": 84,
+  "staticComponents": [
+    "p-alert",
+    "p-avatar",
+    "p-badge",
+    "p-banner",
+    "p-card",
+    "p-data-table",
+    "p-divider",
+    "p-empty-state",
+    "p-expansion-panel-text",
+    "p-icon",
+    "p-img",
+    "p-progress-circular",
+    "p-progress-linear",
+    "p-sheet",
+    "p-skeleton-loader",
+    "p-sparkline",
+    "p-stepper-header",
+    "p-stepper-window-item",
+    "p-timeline"
+  ]
+}
