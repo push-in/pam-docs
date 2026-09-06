@@ -11,6 +11,10 @@ import expansionGif from '../../../assets/mobile-ui/gifs/expansion-panels.gif?ur
 import dialogGif from '../../../assets/mobile-ui/gifs/dialog.gif?url';
 import sliderGif from '../../../assets/mobile-ui/gifs/slider.gif?url';
 import timePickerGif from '../../../assets/mobile-ui/gifs/time-picker.gif?url';
+import appBarGif from '../../../assets/mobile-ui/gifs/p-app-bar.gif?url';
+import bottomSheetGif from '../../../assets/mobile-ui/gifs/p-bottom-sheet.gif?url';
+import calendarDayGif from '../../../assets/mobile-ui/gifs/p-calendar-day.gif?url';
+import carouselGif from '../../../assets/mobile-ui/gifs/p-carousel.gif?url';
 
 Every tag below creates or configures retained native UI. The release parity
 manifest is the source of truth for this verified surface: **62 modules and 84
@@ -113,6 +117,31 @@ system picker instead of replaying a prepared animation.
   <figure>
     <img src={timePickerGif} alt="Opening the Android system time picker from PAM Native UI" width="360" height="800" loading="lazy" />
     <figcaption>Android system time picker</figcaption>
+  </figure>
+</div>
+
+## Verified navigation and surface flows
+
+These captures exercise the retained Android views themselves. Navigation state
+survives configuration changes, overlays use native windows and safe areas, and
+gesture-driven controls update without a WebView or JavaScript bridge.
+
+<div class="pam-interaction-grid">
+  <figure>
+    <img src={appBarGif} alt="Using the navigation and overflow actions in a PAM Native UI app bar" width="360" height="800" loading="lazy" />
+    <figcaption>Adaptive app bar and persistent navigation state</figcaption>
+  </figure>
+  <figure>
+    <img src={bottomSheetGif} alt="Opening and interacting with a native PAM Native UI bottom sheet" width="360" height="800" loading="lazy" />
+    <figcaption>Native bottom sheet, scrim, focus and safe-area handling</figcaption>
+  </figure>
+  <figure>
+    <img src={calendarDayGif} alt="Selecting a Material calendar day in PAM Native UI" width="360" height="800" loading="lazy" />
+    <figcaption>48 dp calendar-day target and controlled selection</figcaption>
+  </figure>
+  <figure>
+    <img src={carouselGif} alt="Swiping between native PAM Native UI carousel pages" width="360" height="800" loading="lazy" />
+    <figcaption>Native carousel gestures, indicators and continuous wrap</figcaption>
   </figure>
 </div>
 
