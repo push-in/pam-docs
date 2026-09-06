@@ -54,6 +54,9 @@ for (const tag of components) {
     if (!Array.isArray(docs.profiles) || docs.profiles.length === 0) {
       failures.push(`${tag} has no documented showcase profiles`);
     }
+    if (!Array.isArray(docs.props) || docs.props.length === 0) {
+      failures.push(`${tag} has no documented effective component properties`);
+    }
     if (docs.interactive !== !staticComponents.has(tag)) {
       failures.push(`${tag} interaction classification disagrees with the evidence contract`);
     }
