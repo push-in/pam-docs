@@ -1,6 +1,9 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import evidenceContract from '../../../data/mobile-ui-evidence.json';
+import componentContract from '../../../data/mobile-ui-components.json';
+
+type ComponentContract = (typeof componentContract.components)[number];
 
 export function getStaticPaths() {
   const screenshots = import.meta.glob('../../../assets/mobile-ui/components/p-*.png', {
@@ -23,6 +26,7 @@ export function getStaticPaths() {
     .map(([path, url]) => ({
       tag: path.split('/').pop()?.replace(/\.png$/, '') ?? '',
       screenshotUrl: String(url),
+      component: componentContract.components.find((entry) => entry.tag === path.split('/').pop()?.replace(/\.png$/, '')),
     }))
     .sort((left, right) => left.tag.localeCompare(right.tag));
 
@@ -43,9 +47,10 @@ interface Props {
   gifUrl?: string;
   previous?: string;
   next?: string;
+  component: ComponentContract;
 }
 
-const { tag, screenshotUrl, gifUrl, previous, next } = Astro.props as Props;
+const { tag, screenshotUrl, gifUrl, previous, next, component } = Astro.props as Props;
 const isStatic = evidenceContract.staticComponents.includes(tag);
 const title = tag
   .replace(/^p-/, '')
@@ -54,6 +59,25 @@ const title = tag
   .join(' ');
 const siteBase = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/`;
 const componentBase = `${siteBase}mobile-ui/components`;
+const exampleProps = component.props
+  .filter((prop) => prop.examples.length > 0)
+  .sort((left, right) => Number(right.name === 'variant') - Number(left.name === 'variant'))
+  .slice(0, 3);
+const usage = [
+  `use ${component.namespace};`,
+  'use Pam\\Native\\UI\\Text;',
+  '',
+  `${component.class}::make(`,
+  ...(exampleProps.length > 0
+    ? [
+        '    [',
+        ...exampleProps.map((prop) => `        '${prop.name}' => ${prop.examples[0]},`),
+        '    ],',
+      ]
+    : ['    [],']),
+  `    Text::make('${title}'),`,
+  ');',
+].join('\n');
 ---
 
 <StarlightPage frontmatter={{
@@ -70,6 +94,15 @@ const componentBase = `${siteBase}mobile-ui/components`;
     <span aria-hidden="true"></span>
     {isStatic ? 'Emulator layout and component route verified' : 'Emulator layout, route and native interaction verified'}
   </div>
+
+  <dl class="component-facts">
+    <div><dt>Family</dt><dd>{component.family}</dd></div>
+    <div><dt>Module</dt><dd><code>{component.module}</code></dd></div>
+    <div><dt>PHP facade</dt><dd><code>{component.class}</code></dd></div>
+    <div><dt>Native targets</dt><dd>Android · UIKit</dd></div>
+  </dl>
+
+  <p class="summary">{component.summary}</p>
 
   <section aria-labelledby="visual-heading">
     <h2 id="visual-heading">Android specimen</h2>
@@ -95,15 +128,55 @@ const componentBase = `${siteBase}mobile-ui/components`;
     </p>
   )}
 
+  <section aria-labelledby="profiles-heading">
+    <h2 id="profiles-heading">Showcase profiles</h2>
+    <p>Every profile below is rendered by the Android catalog route shown above.</p>
+    <ul class="profile-list">
+      {component.profiles.map((profile) => <li>{profile}</li>)}
+    </ul>
+  </section>
+
   <section aria-labelledby="usage-heading">
-    <h2 id="usage-heading">Template entry point</h2>
-    <pre><code>{`<${tag}>…</${tag}>`}</code></pre>
+    <h2 id="usage-heading">PHP usage</h2>
+    <pre><code>{usage}</code></pre>
+    <p>The equivalent PAM template entry point is <code>{`<${tag}>…</${tag}>`}</code>.</p>
     <p>
       See the <a href={`${siteBase}packages/mobile-ui/`}>PAM Native UI guide</a> for event,
       state and styling conventions, and the <a href={`${siteBase}packages/mobile-ui-architecture/`}>quality contract</a>
       for native behavior requirements.
     </p>
   </section>
+
+  <section aria-labelledby="props-heading">
+    <h2 id="props-heading">Component properties</h2>
+    {component.props.length > 0 ? (
+      <div class="table-scroll" tabindex="0" role="region" aria-label={`${tag} properties`}>
+        <table>
+          <thead><tr><th scope="col">Property</th><th scope="col">Observed type</th><th scope="col">Showcase values</th></tr></thead>
+          <tbody>
+            {component.props.map((prop) => (
+              <tr>
+                <th scope="row"><code>{prop.name}</code></th>
+                <td>{prop.types.join(' | ')}</td>
+                <td>{prop.examples.length > 0 ? prop.examples.join(', ') : 'Structured value'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    ) : (
+      <p>This anatomical component uses content and inherited theme/style properties.</p>
+    )}
+  </section>
+
+  {component.related.length > 0 && (
+    <section aria-labelledby="related-heading">
+      <h2 id="related-heading">Related component parts</h2>
+      <ul class="related-list">
+        {component.related.map((related) => <li><a href={`${componentBase}/${related}/`}><code>{related}</code></a></li>)}
+      </ul>
+    </section>
+  )}
 
   <nav class="component-pagination" aria-label="Component catalog pagination">
     {previous ? <a href={`${componentBase}/${previous}/`}>← <code>{previous}</code></a> : <span></span>}
@@ -118,10 +191,22 @@ const componentBase = `${siteBase}mobile-ui/components`;
   .status-line { display: flex; align-items: center; gap: 0.65rem; margin-block: 1.5rem 2.5rem; color: var(--sl-color-text); font-weight: 650; }
   .status-line span { width: 0.7rem; height: 0.7rem; border-radius: 999px; background: #16803c; box-shadow: 0 0 0 0.25rem color-mix(in srgb, #16803c 18%, transparent); }
   .static-note { max-width: 46rem; color: var(--sl-color-gray-2); }
+  .summary { max-width: 46rem; }
   section { margin-block: 2.75rem; }
   .device-shot { display: block; width: min(100%, 27rem); padding: 0; border: 1px solid var(--sl-color-gray-5); border-radius: 1.25rem; overflow: hidden; background: var(--sl-color-bg-nav); box-shadow: 0 0.9rem 2.4rem color-mix(in srgb, #0f172a 14%, transparent); }
   .device-shot img { display: block; width: 100%; height: auto; margin: 0; }
   pre { max-width: 46rem; }
+  .component-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 0; max-width: 52rem; margin-block: 1.5rem 2rem; border-block: 1px solid var(--sl-color-gray-5); }
+  .component-facts div { padding: 0.9rem 1rem 0.9rem 0; }
+  .component-facts dt { color: var(--sl-color-gray-2); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+  .component-facts dd { margin: 0.25rem 0 0; font-weight: 650; }
+  .profile-list, .related-list { display: flex; flex-wrap: wrap; gap: 0.55rem; margin: 1rem 0 0; padding: 0; list-style: none; }
+  .profile-list li { padding: 0.35rem 0.7rem; border: 1px solid var(--sl-color-gray-5); border-radius: 999px; color: var(--sl-color-gray-1); font-size: 0.84rem; }
+  .related-list a { display: inline-flex; min-height: 2.75rem; align-items: center; padding-inline: 0.7rem; }
+  .table-scroll { max-width: 52rem; overflow-x: auto; border-block: 1px solid var(--sl-color-gray-5); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th, td { padding: 0.8rem 1rem 0.8rem 0; border-block-end: 1px solid var(--sl-color-gray-6); text-align: left; vertical-align: top; }
+  thead th { color: var(--sl-color-gray-2); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
   .component-pagination { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem; margin-top: 4rem; padding-top: 1.25rem; border-top: 1px solid var(--sl-color-gray-5); }
   .component-pagination a { text-decoration: none; }
   .component-pagination a:last-child { text-align: right; }
