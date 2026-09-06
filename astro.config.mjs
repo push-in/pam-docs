@@ -9,6 +9,12 @@ const socialImage = new URL(`${base.replace(/\/$/, '')}/og-pam.png`, site).href;
 export default defineConfig({
   site,
   base,
+  // Keep Vite's regenerable cache outside node_modules. Local/containerized
+  // builds can otherwise leave a root-owned node_modules/.vite directory and
+  // prevent the next documentation deployment from starting.
+  vite: {
+    cacheDir: '.astro/vite-cache',
+  },
   redirects: {
     '/introduction/getting-started/choose-a-target': `${basePath}/getting-started/choose-a-target`,
     '/mobile-ui': `${basePath}/packages/mobile-ui`,
