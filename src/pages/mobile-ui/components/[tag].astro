@@ -1,5 +1,6 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import evidenceContract from '../../../data/mobile-ui-evidence.json';
 
 export function getStaticPaths() {
   const screenshots = import.meta.glob('../../../assets/mobile-ui/components/p-*.png', {
@@ -45,6 +46,7 @@ interface Props {
 }
 
 const { tag, screenshotUrl, gifUrl, previous, next } = Astro.props as Props;
+const isStatic = evidenceContract.staticComponents.includes(tag);
 const title = tag
   .replace(/^p-/, '')
   .split('-')
@@ -66,7 +68,7 @@ const componentBase = `${siteBase}mobile-ui/components`;
 
   <div class="status-line" role="status">
     <span aria-hidden="true"></span>
-    Emulator layout and component route verified
+    {isStatic ? 'Emulator layout and component route verified' : 'Emulator layout, route and native interaction verified'}
   </div>
 
   <section aria-labelledby="visual-heading">
@@ -84,6 +86,13 @@ const componentBase = `${siteBase}mobile-ui/components`;
         <img src={gifUrl} alt={`${tag} native Android interaction`} width="360" height="800" loading="lazy" />
       </a>
     </section>
+  )}
+
+  {isStatic && (
+    <p class="static-note">
+      This is a static or anatomical component. Its Android evidence is the rendered specimen; no synthetic
+      interaction recording is published.
+    </p>
   )}
 
   <section aria-labelledby="usage-heading">
@@ -108,6 +117,7 @@ const componentBase = `${siteBase}mobile-ui/components`;
   .lead { max-width: 46rem; font-size: 1.08rem; }
   .status-line { display: flex; align-items: center; gap: 0.65rem; margin-block: 1.5rem 2.5rem; color: var(--sl-color-text); font-weight: 650; }
   .status-line span { width: 0.7rem; height: 0.7rem; border-radius: 999px; background: #16803c; box-shadow: 0 0 0 0.25rem color-mix(in srgb, #16803c 18%, transparent); }
+  .static-note { max-width: 46rem; color: var(--sl-color-gray-2); }
   section { margin-block: 2.75rem; }
   .device-shot { display: block; width: min(100%, 27rem); padding: 0; border: 1px solid var(--sl-color-gray-5); border-radius: 1.25rem; overflow: hidden; background: var(--sl-color-bg-nav); box-shadow: 0 0.9rem 2.4rem color-mix(in srgb, #0f172a 14%, transparent); }
   .device-shot img { display: block; width: 100%; height: auto; margin: 0; }
