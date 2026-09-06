@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "component": "p-fab",
+  "candidateOnly": true,
+  "sourceReportSha256": "1f0b219e283a6e2f7c59454c6f9ae9c3f875dc268f53f9f5372c89a20ff1f5a5",
+  "baselineSha256": "b9925cfb14750e18b47409a82e2478282df62a77d37e09f18a91cd8d5d875556",
+  "interactedSha256": "8d8159bf06f542002169f4c63a73d0c318f304b1ce17f4438cdce794671540cb",
+  "gif": "p-fab.gif",
+  "gifSha256": "27597e97f95a2cf19253e1b345308003050558d6a9777e0e08c1017fb4fa1627",
+  "width": 360,
+  "derivedFromRealInteraction": true
+}
