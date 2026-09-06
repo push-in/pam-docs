@@ -1849,7 +1849,80 @@
                 "Disabled",
                 "Long Label"
             ],
-            "props": [],
+            "props": [
+                {
+                    "name": "closable",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "closeLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Remove filter\""
+                    ]
+                },
+                {
+                    "name": "disabled",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "filter",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "icon",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"arrow-right\""
+                    ]
+                },
+                {
+                    "name": "selected",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "text",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"View release\""
+                    ]
+                },
+                {
+                    "name": "variant",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"tonal\""
+                    ]
+                }
+            ],
             "related": []
         },
         {
@@ -1866,7 +1939,44 @@
                 "Vertical",
                 "Disabled"
             ],
-            "props": [],
+            "props": [
+                {
+                    "name": "direction",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"horizontal\""
+                    ]
+                },
+                {
+                    "name": "disabled",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "multiple",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "value",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"android\""
+                    ]
+                }
+            ],
             "related": []
         },
         {
@@ -1885,7 +1995,80 @@
                 "Invalid",
                 "Disabled"
             ],
-            "props": [],
+            "props": [
+                {
+                    "name": "disabled",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "error",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "errorMessage",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Enter a valid HEX color\""
+                    ]
+                },
+                {
+                    "name": "helper",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Six-digit hexadecimal color\""
+                    ]
+                },
+                {
+                    "name": "label",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"HEX value\""
+                    ]
+                },
+                {
+                    "name": "mode",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"hex\""
+                    ]
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"#6750A4\""
+                    ]
+                },
+                {
+                    "name": "variant",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"outlined\""
+                    ]
+                }
+            ],
             "related": []
         },
         {
@@ -2100,7 +2283,101 @@
                 "Empty",
                 "Mobile"
             ],
-            "props": [],
+            "props": [
+                {
+                    "name": "density",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"compact\""
+                    ]
+                },
+                {
+                    "name": "headers",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
+                    "name": "itemValue",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"id\""
+                    ]
+                },
+                {
+                    "name": "items",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
+                    "name": "loading",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "loadingText",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Syncing inventory\""
+                    ]
+                },
+                {
+                    "name": "mobile",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
+                    "name": "noDataText",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"No products found\""
+                    ]
+                },
+                {
+                    "name": "showSelect",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "striped",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                }
+            ],
             "related": [
                 "p-data-table-virtual"
             ]
@@ -2123,7 +2400,155 @@
                 "Empty",
                 "Mobile"
             ],
-            "props": [],
+            "props": [
+                {
+                    "name": "density",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"compact\""
+                    ]
+                },
+                {
+                    "name": "endReachedThreshold",
+                    "types": [
+                        "float"
+                    ],
+                    "examples": [
+                        "0.25"
+                    ]
+                },
+                {
+                    "name": "fixedHeader",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "headers",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
+                    "name": "height",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        280
+                    ]
+                },
+                {
+                    "name": "itemValue",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"id\""
+                    ]
+                },
+                {
+                    "name": "items",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
+                    "name": "loading",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "loadingText",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Refreshing builds\""
+                    ]
+                },
+                {
+                    "name": "mobile",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
+                    "name": "noDataText",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"No builds found\""
+                    ]
+                },
+                {
+                    "name": "prefetch",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        6
+                    ]
+                },
+                {
+                    "name": "removeClippedSubviews",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "showSelect",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "showsScrollIndicator",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "striped",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                }
+            ],
             "related": [
                 "p-data-table"
             ]
