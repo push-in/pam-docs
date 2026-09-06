@@ -7,15 +7,29 @@ const gifDirectory = join(root, 'src', 'assets', 'mobile-ui', 'gifs');
 const contract = JSON.parse(
   readFileSync(join(root, 'src', 'data', 'mobile-ui-evidence.json'), 'utf8'),
 );
+const componentDocs = JSON.parse(
+  readFileSync(join(root, 'src', 'data', 'mobile-ui-components.json'), 'utf8'),
+);
 
 const components = tags(componentDirectory, '.png');
 const gifs = tags(gifDirectory, '.gif');
 const staticComponents = new Set(contract.staticComponents);
 const failures = [];
+const documentedComponents = new Map(
+  componentDocs.components.map((component) => [component.tag, component]),
+);
 
 if (components.size !== contract.expectedComponentCount) {
   failures.push(
     `expected ${contract.expectedComponentCount} component screenshots, found ${components.size}`,
+  );
+}
+if (
+  componentDocs.componentCount !== contract.expectedComponentCount
+  || documentedComponents.size !== contract.expectedComponentCount
+) {
+  failures.push(
+    `expected ${contract.expectedComponentCount} component API records, found ${documentedComponents.size}`,
   );
 }
 
@@ -30,6 +44,24 @@ for (const tag of components) {
   if (!staticComponents.has(tag) && !gifs.has(tag)) {
     failures.push(`${tag} is interactive but has no Android interaction GIF`);
   }
+  const docs = documentedComponents.get(tag);
+  if (!docs) {
+    failures.push(`${tag} has no generated component API record`);
+  } else {
+    if (!docs.class || !docs.namespace || !docs.module || !docs.family) {
+      failures.push(`${tag} has incomplete class, namespace, module or family metadata`);
+    }
+    if (!Array.isArray(docs.profiles) || docs.profiles.length === 0) {
+      failures.push(`${tag} has no documented showcase profiles`);
+    }
+    if (docs.interactive !== !staticComponents.has(tag)) {
+      failures.push(`${tag} interaction classification disagrees with the evidence contract`);
+    }
+  }
+}
+
+for (const tag of documentedComponents.keys()) {
+  if (!components.has(tag)) failures.push(`${tag} API record has no matching screenshot/page`);
 }
 
 for (const tag of gifs) {
@@ -45,7 +77,8 @@ if (failures.length > 0) {
 
 console.log(
   `PAM Native UI evidence complete: ${components.size}/${contract.expectedComponentCount} screenshots, ` +
-    `${components.size - staticComponents.size} interactive GIFs, ${staticComponents.size} static specimens.`,
+    `${components.size - staticComponents.size} interactive GIFs, ${staticComponents.size} static specimens, ` +
+    `${documentedComponents.size} component API records.`,
 );
 
 function tags(directory, extension) {
