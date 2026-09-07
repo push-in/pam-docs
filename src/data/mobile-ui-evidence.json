@@ -1,5 +1,14 @@
 {
   "expectedComponentCount": 84,
+  "capture": {
+    "device": "Samsung SM-G973F",
+    "platform": "Android 12",
+    "api": 31,
+    "densityDpi": 420,
+    "screenCount": 90,
+    "interactionComponentCount": 84,
+    "capturedAt": "2026-09-07T15:07:25Z"
+  },
   "staticComponents": [
     "p-alert",
     "p-avatar",

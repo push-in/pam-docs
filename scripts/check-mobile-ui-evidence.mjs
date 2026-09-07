@@ -19,6 +19,17 @@ const documentedComponents = new Map(
   componentDocs.components.map((component) => [component.tag, component]),
 );
 
+if (
+  contract.capture?.device !== 'Samsung SM-G973F'
+  || contract.capture?.platform !== 'Android 12'
+  || contract.capture?.api !== 31
+  || contract.capture?.densityDpi !== 420
+  || contract.capture?.screenCount !== 90
+  || contract.capture?.interactionComponentCount !== contract.expectedComponentCount
+) {
+  failures.push('physical Android capture provenance is missing or incomplete');
+}
+
 if (components.size !== contract.expectedComponentCount) {
   failures.push(
     `expected ${contract.expectedComponentCount} component screenshots, found ${components.size}`,
