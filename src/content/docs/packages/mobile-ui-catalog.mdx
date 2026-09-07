@@ -6,7 +6,10 @@ description: Complete verified catalog of PAM Native UI retained-native Material
 import PamNativeUiGallery from '../../../components/PamNativeUiGallery.astro';
 import overviewUrl from '../../../assets/mobile-ui/screens/overview.png?url';
 import workbenchUrl from '../../../assets/mobile-ui/screens/screen-all.png?url';
+import actionsUrl from '../../../assets/mobile-ui/screens/screen-actions.png?url';
 import formsUrl from '../../../assets/mobile-ui/screens/screen-forms.png?url';
+import dataUrl from '../../../assets/mobile-ui/screens/screen-data.png?url';
+import overlaysUrl from '../../../assets/mobile-ui/screens/screen-overlays.png?url';
 import expansionGif from '../../../assets/mobile-ui/gifs/expansion-panels.gif?url';
 import dialogGif from '../../../assets/mobile-ui/gifs/dialog.gif?url';
 import sliderGif from '../../../assets/mobile-ui/gifs/slider.gif?url';
@@ -34,9 +37,12 @@ overlay flows. No blank render, invalid viewport or overlapping text is
 accepted into this page.
 
 <div class="pam-showcase-strip">
-  <a href={overviewUrl}><img src={overviewUrl} alt="PAM Native UI showcase home on a physical Samsung Android device" width="1080" height="2280" /></a>
-  <a href={workbenchUrl}><img src={workbenchUrl} alt="Complete PAM Native UI component workbench on a physical Samsung Android device" width="1080" height="2280" /></a>
-  <a href={formsUrl}><img src={formsUrl} alt="PAM Native UI forms showcase on a physical Samsung Android device" width="1080" height="2280" /></a>
+  <figure><a href={overviewUrl}><img src={overviewUrl} alt="PAM Native UI showcase home on a physical Samsung Android device" width="1080" height="2280" /></a><figcaption>Showcase home</figcaption></figure>
+  <figure><a href={workbenchUrl}><img src={workbenchUrl} alt="Complete PAM Native UI component workbench on a physical Samsung Android device" width="1080" height="2280" /></a><figcaption>84 components</figcaption></figure>
+  <figure><a href={actionsUrl}><img src={actionsUrl} alt="PAM Native UI actions showcase on a physical Samsung Android device" width="1080" height="2280" /></a><figcaption>Actions</figcaption></figure>
+  <figure><a href={formsUrl}><img src={formsUrl} alt="PAM Native UI forms showcase on a physical Samsung Android device" width="1080" height="2280" /></a><figcaption>Forms</figcaption></figure>
+  <figure><a href={dataUrl}><img src={dataUrl} alt="PAM Native UI data showcase on a physical Samsung Android device" width="1080" height="2280" /></a><figcaption>Data</figcaption></figure>
+  <figure><a href={overlaysUrl}><img src={overlaysUrl} alt="PAM Native UI overlays showcase on a physical Samsung Android device" width="1080" height="2280" /></a><figcaption>Overlays</figcaption></figure>
 </div>
 
 ## Actions, feedback and status
