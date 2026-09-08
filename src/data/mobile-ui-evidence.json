@@ -1,5 +1,5 @@
 {
-  "expectedComponentCount": 84,
+  "expectedComponentCount": 114,
   "capture": {
     "device": "Samsung SM-G973F",
     "platform": "Android 12",
@@ -9,6 +9,48 @@
     "interactionComponentCount": 84,
     "capturedAt": "2026-09-07T15:07:25Z"
   },
+  "candidateCapture": {
+    "device": "Google sdk_gphone64_x86_64",
+    "platform": "Android 16",
+    "api": 36,
+    "densityDpi": 420,
+    "viewport": "1080x2400",
+    "componentCount": 30,
+    "buildSha256": "b74a742c75f67b39edc7ff5cb1b57420f2c2c14b26d459ba37004184dfc55b5a",
+    "capturedAt": "2026-09-08T12:59:44Z"
+  },
+  "candidateComponents": [
+    "p-app-scaffold",
+    "p-bottom-app-bar",
+    "p-chart",
+    "p-command-palette",
+    "p-currency-field",
+    "p-data-grid",
+    "p-date-range-picker",
+    "p-file-input",
+    "p-filter-bar",
+    "p-masked-field",
+    "p-multi-select",
+    "p-navigation-bar",
+    "p-navigation-drawer",
+    "p-navigation-rail",
+    "p-pagination",
+    "p-password-field",
+    "p-popover",
+    "p-progress-button",
+    "p-pull-to-refresh",
+    "p-reorderable-list",
+    "p-responsive-grid",
+    "p-result-state",
+    "p-search-bar",
+    "p-section-list",
+    "p-segmented-button",
+    "p-swipe-actions",
+    "p-tag-input",
+    "p-time-range-picker",
+    "p-tree-select",
+    "p-virtual-list"
+  ],
   "staticComponents": [
     "p-alert",
     "p-avatar",
@@ -28,6 +70,10 @@
     "p-sparkline",
     "p-stepper-header",
     "p-stepper-window-item",
-    "p-timeline"
+    "p-timeline",
+    "p-app-scaffold",
+    "p-chart",
+    "p-responsive-grid",
+    "p-result-state"
   ]
 }

@@ -14,6 +14,7 @@ const componentDocs = JSON.parse(
 const components = tags(componentDirectory, '.png');
 const gifs = tags(gifDirectory, '.gif');
 const staticComponents = new Set(contract.staticComponents);
+const candidateComponents = new Set(contract.candidateComponents ?? []);
 const failures = [];
 const documentedComponents = new Map(
   componentDocs.components.map((component) => [component.tag, component]),
@@ -25,9 +26,17 @@ if (
   || contract.capture?.api !== 31
   || contract.capture?.densityDpi !== 420
   || contract.capture?.screenCount !== 90
-  || contract.capture?.interactionComponentCount !== contract.expectedComponentCount
+  || contract.capture?.interactionComponentCount !== contract.expectedComponentCount - candidateComponents.size
 ) {
   failures.push('physical Android capture provenance is missing or incomplete');
+}
+if (
+  contract.candidateCapture?.api !== 36
+  || contract.candidateCapture?.densityDpi !== 420
+  || contract.candidateCapture?.componentCount !== candidateComponents.size
+  || !/^[a-f0-9]{64}$/.test(contract.candidateCapture?.buildSha256 ?? '')
+) {
+  failures.push('emulator candidate capture provenance is missing or incomplete');
 }
 
 if (components.size !== contract.expectedComponentCount) {
@@ -52,7 +61,7 @@ for (const tag of staticComponents) {
 for (const tag of components) {
   const image = readFileSync(join(componentDirectory, `${tag}.png`));
   if (!isPng(image)) failures.push(`${tag}.png is not a valid PNG asset`);
-  if (!staticComponents.has(tag) && !gifs.has(tag)) {
+  if (!staticComponents.has(tag) && !candidateComponents.has(tag) && !gifs.has(tag)) {
     failures.push(`${tag} is interactive but has no Android interaction GIF`);
   }
   const docs = documentedComponents.get(tag);
@@ -74,6 +83,10 @@ for (const tag of components) {
   }
 }
 
+for (const tag of candidateComponents) {
+  if (!components.has(tag)) failures.push(`${tag} candidate has no screenshot`);
+}
+
 for (const tag of documentedComponents.keys()) {
   if (!components.has(tag)) failures.push(`${tag} API record has no matching screenshot/page`);
 }
@@ -91,7 +104,9 @@ if (failures.length > 0) {
 
 console.log(
   `PAM Native UI evidence complete: ${components.size}/${contract.expectedComponentCount} screenshots, ` +
-    `${components.size - staticComponents.size} interactive GIFs, ${staticComponents.size} static specimens, ` +
+    `${gifs.size} physical interaction GIFs, ` +
+    `${[...candidateComponents].filter((tag) => !staticComponents.has(tag)).length} emulator interactions awaiting physical GIFs, ` +
+    `${staticComponents.size} static specimens, ` +
     `${documentedComponents.size} component API records.`,
 );
 

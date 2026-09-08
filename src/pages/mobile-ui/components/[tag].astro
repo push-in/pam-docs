@@ -52,6 +52,7 @@ interface Props {
 
 const { tag, screenshotUrl, gifUrl, previous, next, component } = Astro.props as Props;
 const isStatic = evidenceContract.staticComponents.includes(tag);
+const isCandidate = evidenceContract.candidateComponents.includes(tag);
 const title = tag
   .replace(/^p-/, '')
   .split('-')
@@ -86,14 +87,19 @@ const usage = [
 }}>
   <p class="eyebrow">PAM Native UI · Android evidence</p>
   <p class="lead">
-    <code>{tag}</code> rendered by the production retained-native pipeline. The specimen below is a real
-    Physical Samsung SM-G973F Android 12 (API 31) capture at 420 dpi, not an
-    HTML recreation.
+    <code>{tag}</code> rendered by the production retained-native pipeline. The specimen below is a real{' '}
+    {isCandidate
+      ? 'Android 16 (API 36) emulator candidate at 420 dpi'
+      : 'Physical Samsung SM-G973F Android 12 (API 31) capture at 420 dpi'}, not an HTML recreation.
   </p>
 
   <div class="status-line" role="status">
     <span aria-hidden="true"></span>
-    {isStatic ? 'Physical Samsung layout and component route verified' : 'Physical Samsung layout, route and native interaction verified'}
+    {isCandidate
+      ? 'Android emulator candidate verified; physical Samsung approval pending'
+      : isStatic
+        ? 'Physical Samsung layout and component route verified'
+        : 'Physical Samsung layout, route and native interaction verified'}
   </div>
 
   <dl class="component-facts">
@@ -108,7 +114,7 @@ const usage = [
   <section aria-labelledby="visual-heading">
     <h2 id="visual-heading">Android specimen</h2>
     <a class="device-shot" href={screenshotUrl} aria-label={`Open the full-size ${tag} Android screenshot`}>
-      <img src={screenshotUrl} alt={`${tag} running in the PAM Native UI Android catalog`} width="1080" height="2280" />
+      <img src={screenshotUrl} alt={`${tag} running in the PAM Native UI Android catalog`} width="1080" height={isCandidate ? "2400" : "2280"} />
     </a>
   </section>
 
