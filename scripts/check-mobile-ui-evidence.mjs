@@ -103,7 +103,7 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `PAM Native UI evidence complete: ${components.size}/${contract.expectedComponentCount} screenshots, ` +
+  `PAM Native UI asset inventory validated (not release approval): ${components.size}/${contract.expectedComponentCount} screenshots, ` +
     `${gifs.size} physical interaction GIFs, ` +
     `${[...candidateComponents].filter((tag) => !staticComponents.has(tag)).length} emulator interactions awaiting physical GIFs, ` +
     `${staticComponents.size} static specimens, ` +
