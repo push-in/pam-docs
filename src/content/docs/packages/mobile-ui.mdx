@@ -41,18 +41,19 @@ Author with declarative `p-*` tags:
 </p-screen-scroll>
 ```
 
-Or compose the same native tree with typed PHP facades:
+Or compose controls with typed PHP facades. Inside your component's render
+method, bind the existing `shipOrder` method as a closure:
 
 ```php
 use Pam\MobileUi\Component\Button;
 use Pam\MobileUi\Component\Card;
+use Pam\MobileUi\Enum\ColorToken;
 
-$content = Card::make()
-    ->class('p-4 gap-3')
+$content = Card::make(['class' => 'p-4 gap-3'])
     ->child(
         Button::make('Ship order')
-            ->onPress('shipOrder')
-            ->color('primary'),
+            ->onPress($this->shipOrder(...))
+            ->color(ColorToken::Primary),
     );
 ```
 
