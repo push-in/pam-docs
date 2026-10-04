@@ -38,9 +38,13 @@ publish a PAM release.
 ## Shared caches are different
 
 PAM does not automatically erase the user's global Android SDK, installed NDKs,
-emulator images, Xcode installation, or shared Composer download cache. They are
-reusable toolchains rather than project build output; deleting them after every
-build would cause multi-gigabyte downloads and make development slower.
+emulator images, Xcode installation, shared Composer download cache, or the
+PAM Native Gradle dependency cache. They are reusable toolchains rather than
+project build output; deleting them after every build would cause large
+downloads and make development slower. PAM Native shares Gradle downloads at
+`$XDG_CACHE_HOME/pam-native/gradle` or `$HOME/.cache/pam-native/gradle` by
+default. Set `PAM_NATIVE_GRADLE_HOME` or `GRADLE_USER_HOME` to choose another
+cache.
 
 Cleanup is fail-closed and scoped to recognized project paths. It refuses
 ambiguous or symlinked artifact roots and never recursively targets a home
@@ -53,4 +57,3 @@ contract. Package-specific build scripts must either use PAM's generated host
 and cleanup lifecycle or add their own unconditional, allowlisted cleanup step
 after uploading the declared artifacts. Plugins must not preserve private
 intermediates as an implicit API or delete another package's outputs.
-
