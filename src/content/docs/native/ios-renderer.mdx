@@ -76,6 +76,13 @@ The bridge detaches recognizers when event properties change or the node is remo
 
 `PamInputField` owns editable text, cursor, selection, and native keyboard behavior. Detailed callbacks are opt-in:
 
+The iOS field maps keyboard and input modes, secure text, content hints, return
+key traits, readonly state, maximum length, and controlled selection to UIKit.
+It preserves the current text through submit and blur, applies authored values
+after editing ends, and honors autofocus and software-keyboard suppression when
+the view mounts. Paste and committed composition text obey the same length
+limit as ordinary typing.
+
 | Event | Native source |
 | --- | --- |
 | `onInputEndEditing` | End editing or return/submit |

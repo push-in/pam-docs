@@ -38,7 +38,6 @@ production example.
    ```bash
    pam init my-app --template native
    cd my-app
-   pam composer require pushinbr/pam-native
    pam doctor --fix
    ```
 
@@ -60,12 +59,11 @@ generated-host intermediates even when the command fails. Read the mandatory
 ## The first run is a release contract
 
 Every PAM and PAM Native release is blocked until CI creates a disposable
-project with `pam init --template mobile` and successfully completes `pam dev`
+project with `pam init community-app --template native` and successfully completes `pam dev`
 on a clean Android emulator. The same release gate covers the official Native
 UI starter and the server, HTTP, and Laravel templates. It verifies automatic
 Composer/Gradle/SDK/NDK/runtime setup, installation, process liveness, Logcat,
-and a captured frame. This is the exact public workflow, not a preassembled
-fixture.
+and rendered starter content in a captured frame.
 
 If PAM can safely repair a missing tool or license, it does so. If the host
 cannot satisfy a requirement, `pam doctor --fix` reports the exact prerequisite
@@ -96,11 +94,11 @@ final class ProductCard
 ?>
 
 <template language="2">
-  <Card class="product-card">
+  <View class="product-card">
     <Image :source="$product.cover" decorative="true" />
-    <Heading>{{ $product.name }}</Heading>
-    <Button on:press="toggleFavorite">Favorite</Button>
-  </Card>
+    <Text>{{ $product.name }}</Text>
+    <Button label="Favorite" on:press="toggleFavorite" />
+  </View>
 </template>
 
 <style scoped>
