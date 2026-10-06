@@ -1,0 +1,70 @@
+---
+title: PAM Native Charts
+description: Line, area, bar, donut, sparkline and progress-ring charts drawn natively on PAM Native Canvas from PHP builders or template tags.
+---
+
+## Start here
+
+```bash
+pam composer require pushinbr/pam-native-canvas pushinbr/pam-native-charts
+pam doctor --fix
+```
+
+Charts is a Composer **library** on top of the Canvas plugin (PAM plugins may only depend on the
+core SDK). Register the template tags once in `index.php`:
+
+```php
+use Pam\Native\Charts\Charts;
+
+Charts::register(); // before App::run()
+```
+
+## Template tags
+
+```html
+<BarChart :width="$chartWidth" :height="150"
+    :series="[['label' => 'Entradas', 'values' => $credits, 'color' => '#19c5ff'], ['label' => 'Saídas', 'values' => $debits, 'color' => '#7b8ea6']]"
+    :labels="['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom']"
+    grouped="true" legend="bottom" :highlight="$highlight" @select="select" />
+
+<LineChart :width="328" :height="160" :series="[['label' => 'Saldo', 'values' => $balance]]" curve="monotone" area="true" grid="3" />
+<DonutChart size="160" :slices="[['label' => 'Pix', 'value' => 70], ['label' => 'Boleto', 'value' => 20]]" thickness="18" title="R$ 1.234" subtitle="este mês" />
+<Sparkline :width="96" :height="32" :values="$trend" color="#cdf0ff" area="true" curve="monotone" />
+<ProgressRing size="56" :progress="0.42" label="42%" />
+```
+
+Charts need an explicit `width`/`height` in dp (for example
+`App::windowMetrics()->width - page padding - card padding`). `@select` receives the nearest point
+index (or `null`) so the screen can re-render with `:highlight`.
+
+## PHP builders
+
+```php
+use Pam\Native\Charts\{ChartTheme, Curve, LineChart, Series};
+
+LineChart::make(width: 328, height: 160)
+    ->theme(ChartTheme::dark(primary: '#19c5ff', ink: '#f2f7ff', muted: '#8496b0', grid: '#2c3947', surface: '#101a2c'))
+    ->series(Series::make('Entradas', [120.5, 80, 140, 90, 200]))
+    ->labels(['seg', 'ter', 'qua', 'qui', 'sex'])
+    ->curve(Curve::Monotone)->area()->grid(3)
+    ->valueFormatter(fn (float $v): string => 'R$ '.number_format($v, 0, ',', '.'))
+    ->highlight(2)
+    ->onSelect(fn (?int $index) => $this->highlight($index));
+```
+
+Every builder is a `Renderable`; `->view()` exposes the `CanvasView` and `->scene()` the display
+list for tests. `BarChart` adds `grouped()/stacked()/barRadius()`, `DonutChart` takes `Slice`s with
+`thickness()/gap()/center()`, `Sparkline` and `ProgressRing` are the compact variants.
+
+## Design rules
+
+Thin marks (2 dp lines, 4 dp rounded bar ends anchored to the baseline), one value axis with
+"nice" 1-2-5 ticks, fixed-order categorical palette, status colors never reused for series,
+legends and value labels carrying identity in text, muted "Sem dados" empty state. Themes
+(`ChartTheme`, `ChartPalette`) carry ink, grid and surface colors so charts read in dark and light.
+
+## Reference
+
+- [README with every chart type, props and API guide](https://github.com/push-in/pam-native-charts#readme)
+- [Examples](https://github.com/push-in/pam-native-charts/tree/main/examples) (`.pam` component and PHP builders)
+- Requires PHP 8.5+, PAM Native 1.13.x and [PAM Native Canvas](/packages/native-canvas/) 0.2.x.

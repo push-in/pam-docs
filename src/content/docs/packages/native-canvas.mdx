@@ -1,6 +1,6 @@
 ---
 title: PAM Native Canvas
-description: Retained-mode native 2D graphics controlled by bounded PHP scene contracts.
+description: Retained-mode native 2D graphics (paths, gradients, arcs, labels, pointer events) controlled by bounded PHP scene contracts.
 ---
 
 ## Start here
@@ -13,8 +13,59 @@ pam composer require pushinbr/pam-native-canvas
 pam doctor --fix
 ```
 
-Canvas provides paths, fills, strokes, transforms, clipping, text, sandboxed
-images and pointer events through Android Canvas and iOS Core Graphics. Scenes
-are retained, revisioned, capped at 10,000 commands and validate balanced state
-stacks before reaching native code.
+PHP builds an immutable display list once; Android Canvas and Core Graphics replay it on the UI
+thread without calling PHP per frame. Scenes are revisioned, capped at 10,000 commands and
+validated (balanced `save`/`restore`, finite numbers, CSS colors) before they reach native code.
 
+```php
+use Pam\Native\Canvas\Canvas;
+use Pam\Native\Canvas\CanvasView;
+use Pam\Native\Canvas\Path;
+use Pam\Native\Canvas\PathMode;
+use Pam\Native\Canvas\TextAlign;
+
+$line = Path::start(0, 120)->curveTo(40, 120, 60, 40, 100, 40)->curveTo(240, 90, 260, 20, 300, 20);
+$area = $line->lineTo(300, 160)->lineTo(0, 160)->close();
+
+$scene = (new Canvas())
+    ->dashedLine(0, 160, 300, 160, '#2c3947', 1, 4, 4)
+    ->save()->alpha(0.35)->gradientPath($area, 0, 20, 0, 160, '#19c5ff', '#19c5ff00')->restore()
+    ->path($line, '#19c5ff', 2, PathMode::Stroke)
+    ->label('R$ 1.234', 300, 10, 12, '#f4f7fa', TextAlign::Right)
+    ->scene();
+
+return CanvasView::make($scene, revision: $this->tick)->dp()
+    ->onPointer(fn ($kind, float $x, float $y) => $this->select($x));
+```
+
+## What it draws (0.2)
+
+| Group | Methods |
+| --- | --- |
+| State | `save`, `restore`, `translate`, `rotate`, `scale`, `clipRect`, `alpha`, `shadow` |
+| Fills | `clear`, `fillRect`, `roundRect`, `circle`, `sector` (donut/pie), `polygon`, `gradientRect`, `gradientPath` |
+| Strokes | `strokeRect`, `strokeRoundRect`, `line`, `dashedLine`, `arc`, `polyline`, `path` |
+| Text | `text`, `label` (`TextAlign`, `FontWeight`) |
+
+`Path` is an immutable builder (`start/lineTo/quadTo/curveTo/close`) for `M L C Q Z` specs with
+absolute coordinates. Angles are degrees from 12 o'clock, clockwise. Colors are CSS hex
+(`#rgb`, `#rrggbb`, `#rrggbbaa`).
+
+## Units, sizing and pointer events
+
+`CanvasView::make($scene)->dp()` (default) draws in density-independent pixels on both platforms;
+`->px()` keeps raw device pixels. The view takes its size from layout (`class`/`style` width and
+height). `onPointer` reports `CanvasEventKind` (down, move, up, cancel) with coordinates in the
+scene's units; bump `revision` to redraw.
+
+## Charts
+
+Ready-made line, area, bar, donut, sparkline and progress-ring charts live in
+[PAM Native Charts](/packages/native-charts/), a PHP library built on this plugin.
+
+## Reference
+
+- [Command reference](https://github.com/push-in/pam-native-canvas/blob/main/docs/commands.md) —
+  every kind, arguments, enums, limits and platform parity notes.
+- [Repository and issues](https://github.com/push-in/pam-native-canvas) · Platform support: Android
+  API 26+, iOS 15+, PHP 8.5+, PAM Native 0.8–1.x.
