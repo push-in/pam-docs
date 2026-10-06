@@ -133,6 +133,63 @@ the PHP version, while a PAM build or flag change increments the revision. Keep
 artifact. PAM Native consumes the runtime; it does not publish a separate PHP
 binary.
 
+## PHP extensions on Android and iOS
+
+Android and iOS embed the same PHP build, compiled with `--disable-all`. What
+is not in this table does not exist on the device, even when the desktop PHP
+running `pam dev` has it.
+
+| Extension | Android | iOS | Notes |
+| --- | --- | --- | --- |
+| Core, standard, date, pcre (JIT off), hash, json, random, Reflection, SPL | ✅ | ✅ | Always compiled. |
+| ctype, filter, session, tokenizer, Phar | ✅ | ✅ | |
+| Zend OPcache (no JIT), uri, lexbor | ✅ | ✅ | PHP 8.5 runtime. |
+| **mbstring** | 🟡 polyfill | 🟡 polyfill | Not compiled; `pushinbr/pam-native` 1.17.0+ defines the `mb_*` functions in PHP. |
+| intl | ❌ | ❌ | Not bundled: ICU adds ~35 MB per ABI. |
+| iconv, zlib, openssl, sodium, curl, gd, dom/xml/simplexml, pdo/sqlite3, fileinfo, bcmath, gmp, posix, pcntl, sockets | ❌ | ❌ | Use the native modules (HTTP, database, crypto, media) instead. |
+
+### mbstring polyfill
+
+Since PAM Native 1.17.0 the SDK autoloads `src/Polyfill/mbstring.php`
+(Composer `autoload.files`) before any application or package code. Each
+function is defined only when missing, so a real ext-mbstring (desktop, tests)
+or an application polyfill loaded first wins. It follows PHP 8.5's
+ext-mbstring, including malformed input and `mb_substitute_character()` modes,
+full Unicode case mapping (final sigma, Turkish ISO-8859-9), East Asian widths,
+`mb_detect_encoding()` scoring and the same `ValueError`s:
+
+`mb_check_encoding`, `mb_chr`, `mb_convert_case` (all `MB_CASE_*`),
+`mb_convert_encoding`, `mb_convert_variables`, `mb_decode_numericentity`,
+`mb_detect_encoding`, `mb_detect_order`, `mb_encode_numericentity`,
+`mb_encoding_aliases`, `mb_get_info`, `mb_internal_encoding`, `mb_language`,
+`mb_lcfirst`, `mb_list_encodings`, `mb_ltrim`, `mb_ord`,
+`mb_preferred_mime_name`, `mb_rtrim`, `mb_scrub`, `mb_str_pad`,
+`mb_str_split`, `mb_strcut`, `mb_strimwidth`, `mb_stripos`, `mb_stristr`,
+`mb_strlen`, `mb_strpos`, `mb_strrchr`, `mb_strrichr`, `mb_strripos`,
+`mb_strrpos`, `mb_strstr`, `mb_strtolower`, `mb_strtoupper`, `mb_strwidth`,
+`mb_substitute_character`, `mb_substr`, `mb_substr_count`, `mb_trim`,
+`mb_ucfirst`.
+
+Encodings: UTF-8, UTF-16/32 (BE/LE), UCS-2/4 (BE/LE), ASCII, 8bit and every
+single-byte code page (ISO-8859-1…16, Windows-1251/1252/1254, KOI8-R/U, CP866,
+CP850, ArmSCII-8). Not available: SJIS, EUC-*, BIG-5, GB18030, ISO-2022-*,
+UTF-7, `mb_ereg*`/`mb_split` (use `preg_*` with `u`), `mb_convert_kana`, the
+MIME header functions and `mb_send_mail`.
+
+### Build-time extension audit
+
+When the CLI stages an Android or iOS build it scans the application and its
+Composer packages and warns about every function call or class use (`new`,
+`::`, `extends`, `implements`) from an extension the selected runtime does not
+compile, unless a bundled file or the polyfill declares it or the same file
+guards it with `extension_loaded()`, `function_exists()` or `class_exists()`:
+
+```text
+PAM Native warning: src/Money.php:14: class NumberFormatter comes from ext-intl, which the PAM mobile PHP runtime (Android/iOS) does not include
+```
+
+Warnings never fail the build.
+
 ## Development, production, and benchmark modes
 
 Set `PAM_NATIVE_MODE` before starting or building the application:
