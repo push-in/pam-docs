@@ -145,8 +145,9 @@ running `pam dev` has it.
 | ctype, filter, session, tokenizer, Phar | ✅ | ✅ | |
 | Zend OPcache (no JIT), uri, lexbor | ✅ | ✅ | PHP 8.5 runtime. |
 | **mbstring** | 🟡 polyfill | 🟡 polyfill | Not compiled; `pushinbr/pam-native` 1.17.0+ defines the `mb_*` functions in PHP. |
+| **sodium, openssl** | 🟡 native | 🟡 native | Not compiled; `pushinbr/pam-native` 1.19.0+ covers Ed25519 verification and AES-256-GCM with `Pam\Native\Crypto` through the host. |
 | intl | ❌ | ❌ | Not bundled: ICU adds ~35 MB per ABI. |
-| iconv, zlib, openssl, sodium, curl, gd, dom/xml/simplexml, pdo/sqlite3, fileinfo, bcmath, gmp, posix, pcntl, sockets | ❌ | ❌ | Use the native modules (HTTP, database, crypto, media) instead. |
+| iconv, zlib, curl, gd, dom/xml/simplexml, pdo/sqlite3, fileinfo, bcmath, gmp, posix, pcntl, sockets | ❌ | ❌ | Use the native modules (HTTP, database, media) instead. |
 
 ### mbstring polyfill
 
@@ -176,6 +177,43 @@ CP850, ArmSCII-8). Not available: SJIS, EUC-*, BIG-5, GB18030, ISO-2022-*,
 UTF-7, `mb_ereg*`/`mb_split` (use `preg_*` with `u`), `mb_convert_kana`, the
 MIME header functions and `mb_send_mail`.
 
+### Crypto without ext-sodium and ext-openssl
+
+Since PAM Native 1.19.0, `Pam\Native\Crypto` is the SDK's crypto API. Signed
+OTA manifests (`Update\UpdateVerifier`) and the local-first journal
+(`LocalFirst\EncryptedJournal`) use it; before 1.19.0 both called
+ext-sodium/ext-openssl directly and failed on the device.
+
+```php
+use Pam\Native\Crypto;
+
+Crypto::ed25519Verify($signature, $message, $publicKey); // bool, raw 64/32 bytes
+$sealed = Crypto::aes256GcmEncrypt($plaintext, $key, $nonce, $aad); // ciphertext . 16-byte tag
+$plaintext = Crypto::aes256GcmDecrypt($sealed, $key, $nonce, $aad); // ?string, null when not authentic
+```
+
+| Runtime | Ed25519 verify | AES-256-GCM |
+| --- | --- | --- |
+| Desktop, server, tests | ext-sodium | ext-openssl (or ext-sodium) |
+| Android | Kotlin verifier, every API level | Platform JCA/Conscrypt |
+| iOS | CryptoKit `Curve25519.Signing` | CryptoKit `AES.GCM` |
+
+Every backend gives the same bytes and the same accept/reject decisions as
+libsodium and OpenSSL, including libsodium's Ed25519 rules (canonical `S`, no
+small-order `R` or public key, canonical public key, cofactorless check); a
+shared set of libsodium/OpenSSL vectors is replayed on PHP, Android and iOS.
+A journal sealed on desktop opens on a phone and back. When no backend exists
+(a device host older than 1.19.0) the calls throw `CryptoUnavailableException`
+and `UpdateVerifier` refuses the update instead of crashing.
+
+`hash_hmac()`, `hash_hkdf()` and `random_bytes()` are always available.
+`Store\EncryptedStatePersistence` (`sodium_crypto_secretbox`) still needs
+ext-sodium and throws on the device.
+
+Compiling the extensions instead would cost libsodium ~0.3–0.4 MB or OpenSSL's
+libcrypto ~4.2 MB per ABI, plus a new runtime and an iOS rebuild; the platform
+crypto already ships on both systems.
+
 ### Build-time extension audit
 
 When the CLI stages an Android or iOS build it scans the application and its
@@ -186,8 +224,12 @@ guards it with `extension_loaded()`, `function_exists()` or `class_exists()`:
 
 ```text
 PAM Native warning: src/Money.php:14: class NumberFormatter comes from ext-intl, which the PAM mobile PHP runtime (Android/iOS) does not include
+PAM Native warning: src/Ota.php:9: function sodium_crypto_sign_verify_detached() comes from ext-sodium, which the PAM mobile PHP runtime (Android/iOS) does not include; use Pam\Native\Crypto::ed25519Verify(), which works on the device
 ```
 
+Since 1.19.0 the SDK is audited like any other package (its own sources produce
+no warning) and a warning names the device-ready replacement when there is one
+(`Pam\Native\Crypto`, `random_bytes()`, `bin2hex()`, `base64_encode()`...).
 Warnings never fail the build.
 
 ## Development, production, and benchmark modes
