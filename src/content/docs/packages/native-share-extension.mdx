@@ -18,11 +18,42 @@ pam doctor
 pam native dev
 ```
 
-`pushinbr/pam-native-share-extension` 0.2.2 adds `ACTION_SEND` /
+`pushinbr/pam-native-share-extension` 0.3.0 adds `ACTION_SEND` /
 `SEND_MULTIPLE` intent filters on Android and a generated iOS Share Extension
 (`PamShareExtension`, bundle suffix `.share`) that copies shared files into the
 App Group `group.<application-id>.pam-native`. Requires PAM Native
-`>=0.8.0 <2.0.0`.
+`>=1.16.0 <2.0.0`.
+
+## Choose the accepted types
+
+By default the app is offered for every share (`*/*`), several items at once.
+Narrow it in `pam-native.json`; native prepare and every build read it:
+
+```json
+{
+    "plugins": {
+        "shareExtension": {
+            "accept": ["text/plain", "image/*", "video/*"],
+            "multiple": ["image/*", "video/*"]
+        }
+    }
+}
+```
+
+- `accept` (default `["*/*"]`): 1 to 16 lowercase MIME types, `type/subtype`
+  or `type/*`.
+- `multiple` (default `true`): `true` lets every accepted type arrive several
+  at once, `false` allows single items only, or list the accepted types that
+  may.
+
+Android gets one `SEND` intent filter per type, plus `SEND_MULTIPLE` for the
+`multiple` types. iOS gets a generated `NSExtensionActivationRule`:
+`text/plain` enables text and web URLs, `image/*` images (up to 32, or 1),
+`video/*` movies (up to 8, or 1), `*/*` keeps the previous rule (text, 8 URLs,
+32 files, 32 images, 8 movies), and specific types such as `application/pdf`
+become a `UTI-CONFORMS-TO` predicate. With the example above, sharing a PDF
+no longer lists the app. Keep validating what arrives: the share sheet is
+untrusted input.
 
 ```php
 use Pam\Native\ShareExtension\{SharedItem, SharedItemKind, ShareInbox};
@@ -47,10 +78,10 @@ can consume that inbox with `ShareInbox` (one `SharedItem` per text, link or
 file, files as raw App Group tokens) or with the core
 `Pam\Native\System\IncomingShares` API (`initial()` and `listen()`), which
 groups each share and imports its files into the app sandbox as
-`FileReference`s. Both drain the same entries, so pick one. On Android the
-core can also declare share targets itself with `android.shareTargets` in
-`pam-native.json` and deliver them through `IncomingShares`; that is what Zé
-Chat does.
+`FileReference`s. Both drain the same entries, so pick one. Types in the core
+`android.shareTargets` are merged into the same Android filters. Zé Chat
+accepts RN's types through `plugins.shareExtension` and consumes them with
+`IncomingShares`.
 
 On iOS, register the App Group for the app and the extension bundle ids and
 include it in both provisioning profiles.
