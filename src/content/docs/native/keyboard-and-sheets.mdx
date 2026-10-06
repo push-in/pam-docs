@@ -5,7 +5,7 @@ description: Engine-laid-out keyboard avoidance for chat composers, bottom sheet
 
 Chat screens stress three things at once: a composer that must sit exactly on
 the keyboard, sheets with inputs, and system bars that differ per device. PAM
-Native 1.4 through 1.14.2 moved all three into the layout engine and the
+Native 1.4 through 1.20 moved all three into the layout engine and the
 native hosts, so application code never adds status-bar heights, navigation
 bar constants or keyboard offsets.
 
@@ -34,6 +34,36 @@ nested view that does not reach an edge receives none.
 from the first render (the host exports them before PHP starts) and are
 re-sent whenever the insets change. A window covered by a dialog, sheet or
 permission prompt keeps its insets.
+
+### Safe areas inside modals and sheets (1.20+)
+
+Insets are per presentation surface. A `SafeAreaView` inside a `Modal` or
+`BottomSheet` uses the insets of that surface's own window, never the
+screen's, so the status bar and the navigation bar are cleared exactly once:
+
+| Surface | Insets its `SafeAreaView` receives |
+| --- | --- |
+| Android 14 and older, non-translucent `Modal` | None: the dialog window already starts below the status bar and ends above the navigation bar. |
+| Android 14 and older, `statusBarTranslucent` or `navigationBarTranslucent` | The real insets: the window is edge-to-edge. |
+| Android 15+ (target SDK 35+) | The real insets: every dialog is edge-to-edge. |
+| iOS `Modal` | The real insets: the modal covers the window. |
+| `BottomSheet`, `formSheet` route (and iOS `modal` page sheet) | Bottom and side insets where it reaches them; never the top inset. |
+
+Wrap full-screen modal content in a plain `<SafeAreaView>` whatever its
+translucency. `statusBarTranslucent` is only needed when the modal should
+draw its own background under the status bar; it is no longer a workaround
+for a doubled top gap (before 1.20 a non-translucent Android modal padded the
+status bar twice).
+
+```html
+<Modal visible="$open" presentation="fullScreen" on:requestClose="close">
+    <SafeAreaView class="flex-1 surface">
+        <Header />
+        <Body class="flex-1" />
+        <Footer />
+    </SafeAreaView>
+</Modal>
+```
 
 Some gesture-navigation configurations report a zero bottom inset although
 system UI overlaps the screen. Configure a fallback (dp, 0–96, default 0):
@@ -179,6 +209,8 @@ Modal::make($content, visible: $this->open, presentation: ModalPresentation::Ful
 
 Android behaviour is covered by instrumented suites
 (`PamKeyboardInstrumentedTest`, `PamSheetKeyboardInstrumentedTest`,
-`PamNestedPressableInstrumentedTest`) on Android 12 devices and emulators. The
+`PamNestedPressableInstrumentedTest`) on Android 12 devices and emulators;
+per-surface safe areas by `PamSurfaceSafeAreaInstrumentedTest` (real engine,
+real dialog windows) on API 31 and API 36. The
 iOS counterparts are implemented and listed in the core repository's
 `docs/ios-parity.md` for device validation.
