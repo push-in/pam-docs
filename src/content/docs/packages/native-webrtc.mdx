@@ -10,7 +10,7 @@ pam composer require pushinbr/pam-native-webrtc
 pam doctor --fix
 ```
 
-`pushinbr/pam-native-webrtc` 0.2 wraps WebRTC M124 (`org.jitsi:webrtc` on
+`pushinbr/pam-native-webrtc` 0.3 wraps WebRTC M124 (`org.jitsi:webrtc` on
 Android, GoogleWebRTC through the `stasel/WebRTC` Swift package on iOS). PHP
 exchanges SDP and ICE through your signalling channel; events arrive through
 one pending native completion per session, and video frames never cross into
@@ -39,6 +39,35 @@ $pc->addIceCandidate(IceCandidate::fromArray($candidate));
 Configure (`video`, `facing`, `resolution`, `relayOnly`) before the first
 operation; the native session is created lazily. Buffer remote ICE candidates
 until `setRemote()` succeeds.
+
+## Group calls
+
+A mesh call keeps one `PeerConnection` per remote participant. Since 0.3 they
+share one `LocalMedia` stream: the camera and microphone open once and the
+same tracks are added to every peer.
+
+```php
+use Pam\Native\WebRtc\{CameraFacing, LocalMedia, PeerConnection, RtcVideoView};
+
+$media = LocalMedia::create()->video()->resolution(640, 480, 24)->start();
+
+$peer = PeerConnection::create($iceServers, "grp-{$remoteId}")
+    ->localMedia($media)                    // no second capture
+    ->onIceCandidate(fn ($c) => $signaling->send('ice', $c->toArray(), $remoteId));
+$peer->startLocal(fn (bool $ok) => $ok && $this->offerTo($remoteId));
+
+$media->enableMicrophone(false);           // every peer
+$media->enableCamera(false);               // stops the camera, tracks stay negotiated
+$media->switchCamera(fn (?CameraFacing $f) => $this->facing = $f);
+
+$peer->close();                            // a participant left; the capture keeps running
+$media->close();                           // end of call
+```
+
+Peers that join later get the live tracks at `startLocal()`. Toggles called on
+a peer that uses a stream act on the stream, so 1:1 code is unchanged. Render
+the single preview with `RtcVideoView::preview($media)` or
+`<RtcVideoView :media="$media" />`.
 
 ## Video and call audio
 
@@ -76,6 +105,6 @@ screen-off.
 ## Reference
 
 - [README: complete API, event contract, errors, Zé Chat call screen](https://github.com/push-in/pam-native-webrtc#readme)
-- [Runnable loopback-call example](https://github.com/push-in/pam-native-webrtc/tree/main/example)
+- [Runnable loopback-call example](https://github.com/push-in/pam-native-webrtc/tree/main/example) (1:1 and group mesh)
 - The iOS implementation mirrors the Android loopback suite in XCTest and
   awaits device validation.
