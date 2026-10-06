@@ -1,6 +1,6 @@
 ---
 title: PAM Native Media
-description: Probe sandboxed media, generate correctly oriented thumbnails, and embed lifecycle-aware native photo/video capture.
+description: Transcode videos, run EXIF-aware image pipelines, batch thumbnails, probe media and embed a lifecycle-aware native camera without loading media bytes into PHP.
 ---
 
 ## Start here
@@ -18,32 +18,55 @@ pam doctor
 pam native dev
 ```
 
+`pushinbr/pam-native-media` 0.5 works on files in the PAM sandbox
+(`FileReference::$path`) and never loads media bytes into PHP. Android uses
+Media3 Transformer 1.10.1, CameraX 1.6.1 and ExifInterface; iOS uses
+AVFoundation and ImageIO with the same presets and geometry. Requires PAM
+Native `>=1.0.35 <2.0.0`.
+
 ```php
-$media = new Media();
-$media->probe('media/clip.mp4', fn (?MediaInfo $info, ?string $error) => null);
-$media->thumbnail('media/clip.mp4', 'thumbs/clip.jpg', 640, 360, fn (?string $path, ?string $error) => null);
+use Pam\Native\Media\{ImageFormat, ImageResult, Media, ResizeMode, Thumbnail, TranscodeResult, VideoPreset};
+
+// Upload-ready MP4: H.264 Main / AAC-LC, bounded size, 2 s keyframes, fast start.
+$task = Media::transcode('captures/clip.mov')
+    ->to('outbox/clip.mp4')
+    ->preset(VideoPreset::Chat720p)
+    ->progress(fn (float $p) => $this->encoding = $p)
+    ->run(fn (TranscodeResult $video) => $this->send($video->path), fn (string $error) => $this->fail($error));
+
+// Zé Chat's outbox rule: EXIF-oriented, longest side ≤ 1920 px, never upscaled, WebP 82.
+Media::image($file->path)
+    ->resize(1920, 1920, ResizeMode::Contain)
+    ->onlyScaleDown()
+    ->format(ImageFormat::Webp, 82)
+    ->save('outbox/photo.webp', fn (ImageResult $r) => $this->attach($r->path, $r->width, $r->height));
+
+Media::thumbnails([Thumbnail::make('captures/clip.mov', 'thumbs/clip.jpg')->size(320, 320)->at(1000)], fn (array $results) => null);
 ```
 
-`Media` probes and thumbnails without loading bytes into PHP; `MediaInfo`
-normalizes type, dimensions, duration, and orientation; `ThumbnailFormat`
-selects output. Paths are canonical sandbox-relative values. Images honor EXIF
-orientation and video thumbnails track transforms.
+`VideoPreset`: `Compact480p`, `Chat720p`, `Chat1080p`, `Adaptive` (1080p up
+to 3 min, then 720p). Presets never upscale, keep orientation, tone-map HDR to
+SDR and normalize audio. [Background Transfer](/packages/native-background-transfer/)
+can run the same transcoder inside a durable upload.
 
 ## Embedded camera
 
 ```php
+use Pam\Native\Media\{CameraCapture, CameraEventKind, CameraFacing, CameraMode, CameraView};
+
 return CameraView::make()
     ->facing(CameraFacing::Back)
     ->mode(CameraMode::Photo)
-    ->flash(CameraFlashMode::Off)
-    ->captureRevision($photoRevision)
-    ->onEvent(fn (CameraEventKind $kind, ?CameraCapture $capture, string $message) => null);
+    ->captureRevision($photoRevision)        // each bump takes one photo
+    ->onEvent(fn (CameraEventKind $kind, ?CameraCapture $capture, string $message) => null)
+    ->toElement();
 ```
 
-Revision commands prevent declarative re-renders from repeating capture.
-Camera output combinations are mode-specific for device compatibility. Request
-camera/microphone permission, bound recording duration and storage, and handle
-returned paths through normal `FileReference` APIs.
+Each mode binds only the outputs it needs. Request camera (and microphone for
+video) first. Android merges `CAMERA` and `RECORD_AUDIO`; iOS merges
+`NSCameraUsageDescription` and `NSMicrophoneUsageDescription`.
 
-`MediaKind` classifies probed results. `MediaPluginProvider` registers the
-module and camera view automatically during PAM plugin discovery.
+## Reference
+
+- [README: complete API, value types, errors and the Zé Chat compression flow](https://github.com/push-in/pam-native-media#readme)
+- [Runnable camera and compression example](https://github.com/push-in/pam-native-media/tree/main/example)

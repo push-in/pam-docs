@@ -175,8 +175,12 @@ $sections = SectionList::make([
 Use stable keys for composed rows. `VirtualGrid` applies the same recycled
 list contract to multi-column responsive cells.
 
-For rich cells, `estimatedRowHeight` is a prefetch estimate and the fallback
-when a cell has no authored main-axis size. Explicit cell heights remain
+Since PAM Native 1.5.2, single-column cells **without** an authored `height`
+are content-sized, like React Native `FlatList` cells: variable rows (chat
+bubbles, comments) get their real height and never overlap.
+`estimatedRowHeight` (alias `rowHeight`) remains the prefetch estimate and the
+extent of empty cells or cells whose content has no definite intrinsic height
+(for example percentage-sized media). An authored cell height stays
 authoritative:
 
 ```html
@@ -195,6 +199,9 @@ authoritative:
 </VirtualizedList>
 ```
 
+Multi-column rows and horizontal lists without `rowHeight` are content-sized
+too (the tallest cell sets the row height, 1.6.0+).
+
 PAM computes these extents in Rust and gives each recycled Android holder its
 exact native size. Scrolling does not synchronously measure PHP components on
 the UI thread. Horizontal rich lists use an explicit cell `width` the same
@@ -203,6 +210,66 @@ way, while `rowHeight` remains a compatibility alias.
 The list viewport and each recycled holder are hard native paint boundaries.
 Media cannot draw over headers, neighboring rows, or tab bars while scrolling.
 Inside the cell, component-level `overflow` still controls descendant clipping.
+
+## Headers, sticky headers and full-span rows
+
+Mark a direct child of a `ScrollView`, `VirtualizedList` or `VirtualGrid`
+with `stickyHeader="true"` (`Element::stickyHeader()`), the equivalent of
+`stickyHeaderIndices`. It pins to the top once scrolled past and is pushed
+away by the next sticky sibling.
+
+```html
+<VirtualizedList estimatedRowHeight="72" columns="3">
+    <View fullSpan="true"><ProfileHeader /></View>
+    <View stickyHeader="true" fullSpan="true"><TabBar :selected="$tab" /></View>
+    <MediaTile p-for="$item in $media" :key="$item['id']" :item="$item" />
+</VirtualizedList>
+```
+
+Since 1.14.1 the pinned header is a real, interactive view (FlashList
+parity): presses, pressed state and accessibility reach it, a touch inside it
+never reaches the row scrolling underneath, rows keep recycling while it is
+pinned, and its native views move into the pinned holder and back, so their
+state (a horizontal tab rail offset, a focused input) is kept.
+
+`fullSpan="true"` (`Element::fullSpan()`) makes a child span every column of a
+multi-column list; use it for `ListHeaderComponent`/`ListFooterComponent`
+equivalents placed first or last.
+
+## Paging, scroll phases and end of list
+
+```php
+$reels = VirtualizedList::make(...$pages)
+    ->pagingEnabled()                       // one item per page
+    ->onEndReached(fn () => $this->loadMore(), threshold: 0.5);
+```
+
+```html
+<VirtualizedList pagingEnabled="true" on:momentumScrollEnd="pageChanged" on:endReached="loadMore">
+    <ReelPage p-for="$reel in $reels" :key="$reel['id']" :reel="$reel" />
+</VirtualizedList>
+```
+
+`on:scrollBeginDrag`, `on:scrollEndDrag` (release velocity) and
+`on:momentumScrollEnd` (with the settled `page`) deliver `ScrollPhaseEvent`s
+without per-frame traffic; see [Gestures and animation](/native/gestures-and-animation/#scroll-lifecycle-and-paging).
+`ScrollView` also accepts `on:endReached`.
+
+## List behaviour you can rely on
+
+- Explicit scroll targets use the per-cell pixel extents and the list's real
+  viewport; an `initialScrollIndex` applied in the same commit never overrides
+  an explicit scroll request.
+- A list resting at its end stays there when cells are re-measured or the
+  viewport shrinks (a chat timeline when the keyboard opens).
+- Prepending a page mounts no off-screen views and keeps the scroll anchor.
+- A commit that changes every visible cell (new props, promotion to a host
+  view, re-keying) never draws a blank viewport.
+- Scrolled-out cell views are pooled by kind and property set; image views
+  are cleared before reuse, so a recycled row never shows the previous row's
+  pixels.
+- Key every cell (`:key`/`p-key`): identity, component state and native views
+  follow the item. See [Performance and memoization](/native/performance/).
 
 ## Pull to refresh
 
@@ -219,5 +286,6 @@ $feed = RefreshControl::make($cards, $this->state->refreshing)
 
 Avoid rendering an unbounded collection into a `Column` inside `Scroll`.
 Choose a recycled list whenever item count can grow with remote or user data.
-Android has the mature recycled-list path; confirm the current iOS parity
-record before relying on identical large-list behavior.
+Android has the most field-tested recycled-list path; iOS implements the same
+contract (content-sized cells, sticky headers, pooling) since 1.9.0 and is
+pending device validation.

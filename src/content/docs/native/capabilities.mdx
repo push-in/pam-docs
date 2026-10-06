@@ -434,11 +434,107 @@ Sms::isAvailable(
 );
 ```
 
-`Sms::compose()` only opens the platform composer; it never sends a message.
+`Sms::compose(array $recipients, string $body = '', ?Closure $opened = null, ?Closure $failed = null)`
+only opens the platform composer; it never sends a message. `$opened` runs
+once the composer is shown; without `$failed`, a native failure is thrown as a
+`RuntimeException` from the callback.
 It accepts 1 to 50 unique non-empty recipients, each at most 128 bytes, and a
 body up to 10,000 bytes. Android restricts the intent to `smsto:` and iOS uses
 `MFMessageComposeViewController`. Devices without a configured SMS service may
 legitimately report unavailable.
+
+## Screen security, toasts and accessibility
+
+### Secure screens
+
+```php
+use Pam\Native\Routing\Route;
+use Pam\Native\System\Screen;
+
+Screen::secure();          // whole app until Screen::secure(false)
+Screen::isSecure();
+
+Route::screen('pix-receipt', $receipt)->secure();   // only while this route is active
+```
+
+On Android `secure()` sets `FLAG_SECURE`: screenshots and recordings show a
+blank window, and a route-scoped flag is cleared when the route is popped
+(`ScreenOptions::$secure`). iOS (1.8.0+) cannot block screenshots, so secure
+mode shields every window while the screen is recorded or mirrored
+(`UIScreen.isCaptured`) and while the app is inactive (app switcher).
+
+### Toasts
+
+```php
+use Pam\Native\System\{Toast, ToastPosition, ToastType};
+
+Toast::show('Copiado');   // system toast (Android), short by default; Toast::show($text, long: true)
+
+Toast::message('Mensagem enviada', 'Seu convite foi entregue.', ToastType::Success);
+Toast::message('Sem conexão', 'Tentaremos novamente.', ToastType::Error, ToastPosition::Bottom,
+    durationMs: 3000, fontFamily: 'asset://assets/fonts/SpaceGrotesk-Medium.ttf');
+```
+
+`Toast::message()` (1.6.0+) is an in-app card matching
+`react-native-toast-message`: white, 6 dp radius, an accent bar per
+`ToastType` (`Success`, `Error`, `Info`), bold 12 sp title over a 10 sp
+message, 40 dp from the safe area, 4 s, tap to dismiss. Every colour, size,
+offset and duration is a named argument (`accentColor`, `backgroundColor`,
+`titleColor`, `messageColor`, `titleSize`, `messageSize`, `offset`). iOS shows
+the message with the system presentation.
+
+### Accessibility, timers and app state
+
+```php
+use Pam\Native\{App, AppState};
+use Pam\Native\System\{Accessibility, Timers};
+
+Accessibility::announce('Mensagem enviada');
+Accessibility::screenReaderEnabled(fn (bool $on) => $this->screenReader = $on);
+
+$handle = Timers::timeout(300, fn () => $this->showSpinner = true);   // cancellable TimerHandle
+$tick = Timers::every(1_000, fn () => $this->elapsed++);
+Timers::cancel($tick);
+
+App::onStateChange(function (AppState $state): void {   // Active, Inactive, Background
+    if ($state === AppState::Active) {
+        $this->refresh();
+    }
+});
+```
+
+`Timers::after()` (0 ms–24 h) remains for one-shot timers that return an id.
+`Pam\Native\PixelRatio` exposes `get()`, `getFontScale()`,
+`roundToNearestPixel()`, `getPixelSizeForLayoutSize()` and `hairlineWidth()`.
+
+## Errors and module failures
+
+Every uncaught PHP exception in a render, event handler, module callback or
+the bootstrap is reported once to `App::onError()` listeners (1.7.0+), then
+shown by the host: a LogBox-style toast and inspector in debug builds, a
+logged non-fatal error or a "Something went wrong / Algo deu errado" screen
+with **Try again** in release builds (fatal errors first retry with a fresh
+runtime). Stacks are never shown to end users.
+
+```php
+use Pam\Native\App;
+use Pam\Native\Diagnostics\RuntimeError;
+use Pam\Native\Observability\Observability; // pushinbr/pam-native-observability
+
+App::onError(static function (Throwable $error, RuntimeError $report): void {
+    // $report->phase (RuntimeErrorPhase: Boot, Render, Event, ModuleResult, Other),
+    // $report->fatal(), $report->frames, $report->appFrame, $report->fingerprint.
+    Observability::capture($error, handled: !$report->fatal());
+});
+```
+
+Register listeners before `App::run()`; `App::offError()` removes one.
+`pam-native.json` `devErrorOverlay` is `true` (default, debug builds only),
+`false`, or `"always"` (internal QA builds). Native module failures go to the
+call's own failure callback when one is given (`onError` on `SQLite` and
+`Storage` methods, `onFailure` on `NativeModules::call()`/`callRaw()`);
+otherwise they surface as a non-fatal `Pam\Native\Modules\NativeModuleException`.
+PHP `error_log()` output reaches logcat under the `PamPHP` tag.
 
 ## Lifecycle and recovery
 

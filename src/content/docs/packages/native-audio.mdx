@@ -1,0 +1,57 @@
+---
+title: PAM Native Audio
+description: Headless voice-note playback with a native queue, pitch-preserving speed, proximity earpiece routing, a remote-audio cache and pushed progress events.
+---
+
+## Start here
+
+```bash
+pam composer require pushinbr/pam-native-audio
+pam doctor --fix
+```
+
+`pushinbr/pam-native-audio` 0.2 plays chat voice notes natively: Media3
+ExoPlayer on Android and `AVQueuePlayer` on iOS. Progress, state, queue item,
+route, end and failure events are pushed to PHP; PHP never polls. Requires PAM
+Native `>=1.0.35 <2.0.0`, Android API 26+ and iOS 15+.
+
+```php
+use Pam\Native\Audio\{AudioPlayer, AudioRoute, PlaybackProgress, PlaybackRate, PlaybackState};
+
+$player = AudioPlayer::make('voice/8f1c.m4a')        // sandbox-relative path or https URL
+    ->queue(...$followingNotes)                       // advances natively, up to 200 items
+    ->rate(PlaybackRate::X1_5)                         // pitch preserved
+    ->route(AudioRoute::Auto)                          // earpiece while the phone is at the ear
+    ->progressInterval(250)
+    ->onProgress(fn (PlaybackProgress $p) => $this->position = $p->positionMillis)
+    ->onStateChange(fn (PlaybackState $s) => $this->playing = $s === PlaybackState::Playing)
+    ->onItemChange(fn (int $index, string $source) => $this->highlight($index))
+    ->onEnd(fn () => $this->highlight(null))
+    ->onError(fn (string $message) => $this->error = $message)
+    ->play();
+
+AudioPlayer::current()?->toggle();
+AudioPlayer::current()?->seek(12_000);
+AudioPlayer::current()?->rate(AudioPlayer::current()->playbackRate()->nextVoiceNoteRate()); // 1× → 1.5× → 2×
+AudioPlayer::stopAll();
+```
+
+One player is current at a time: playing a new one stops the previous one.
+Remote sources stream on first play and are kept in a 64 MiB LRU cache.
+
+## Platform notes
+
+- **Android:** `INTERNET`, `ACCESS_NETWORK_STATE`, `MODIFY_AUDIO_SETTINGS`,
+  `WAKE_LOCK`; transient audio focus, pause when headphones are unplugged,
+  proximity screen-off wake lock on the earpiece. Media3 `1.10.1`.
+- **iOS:** `playback`/`spokenAudio` on the speaker, `playAndRecord`/`voiceChat`
+  on the earpiece with proximity monitoring; pauses on interruptions. The
+  package does not declare the `audio` background mode.
+- Headsets (wired, USB, Bluetooth) are never overridden by `AudioRoute::Auto`.
+
+## Reference
+
+- [README: complete API, errors, Zé Chat voice-note player, troubleshooting](https://github.com/push-in/pam-native-audio#readme)
+- [Runnable example app](https://github.com/push-in/pam-native-audio/tree/main/example)
+- 0.2.1 fixes event delivery on Android (the event long-poll starts after
+  `play` succeeds); upgrade from 0.2.0.

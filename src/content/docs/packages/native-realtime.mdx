@@ -1,6 +1,6 @@
 ---
 title: PAM Native Realtime
-description: Keep native-owned RFC 6455 WebSockets alive across PHP renders and reloads with bounded frames, polling, state, and cleanup.
+description: A native Pusher protocol 7 client for Laravel Reverb, Pusher Channels and Soketi with Echo-style channels, presence, whispers, reconnects and one PHP render per burst, plus a raw WebSocket.
 ---
 
 ## Start here
@@ -18,25 +18,51 @@ pam doctor
 pam native dev
 ```
 
+`pushinbr/pam-native-realtime` 0.4 keeps the socket, channel authorization,
+heartbeats, reconnects with backoff, network recovery, re-subscription and
+whisper throttling native (OkHttp 5.3.0 on Android, `URLSessionWebSocketTask`
+on iOS). Events reach PHP in coalesced batches: a burst costs one callback and
+one render. Requires PAM Native `>=1.0.35 <2.0.0`.
+
 ```php
-$realtime = new Realtime();
-$realtime->connect(
-    'wss://api.example.com/socket',
-    ['Authorization' => 'Bearer '.$token],
-    ['pam.v1'],
-    fn (?string $id, ?string $error) => null,
-);
-$realtime->poll($id, fn (?RealtimeEvent $event, ?string $error) => null);
+use Pam\Native\Realtime\{PresenceMember, Realtime, RealtimeMessage, RealtimeStatus, Secret};
+
+Realtime::reverb('ws.example.com', 'app-key')               // or Realtime::pusher('wss://…', key: 'app-key')
+    ->auth('https://api.example.com/broadcasting/auth', Secret::value($token))
+    ->terminalRetry(300)                                      // Reverb 4009: retry after 5 minutes
+    ->onConnected(fn (RealtimeStatus $s) => $this->catchUp()) // first connect and every reconnect
+    ->onDropped(fn (int $count) => $this->resync())
+    ->connect();
+
+Realtime::private('chat.42')
+    ->listen('message.sent', fn (RealtimeMessage $m) => $this->append($m->data))
+    ->listenForWhisper('typing', fn (RealtimeMessage $m) => $this->typing($m->userId));
+
+Realtime::join('chat-typing.42')
+    ->here(fn (array $members) => $this->online = count($members))
+    ->joining(fn (PresenceMember $m) => $this->online++)
+    ->leaving(fn (PresenceMember $m) => $this->online--)
+    ->whisper('typing', ['typing' => true]);                  // sent as client-typing, throttled natively
+
+Realtime::token($refreshed);   // new bearer; 401/403 channels retry at once
+Realtime::leave('chat.42');
 ```
 
-`Realtime` connects, sends text/binary, polls, inspects state, and closes;
-`RealtimeEvent`/`RealtimeEventKind` normalize messages/lifecycle/timeouts;
-`RealtimeConnectionState` types connection state.
+- Connection states: `Connecting`, `Connected`, `Unavailable` (reconnect
+  scheduled), `Disconnected`, `Failed` (Pusher 4000–4099, retried after
+  `terminalRetry()`). `Realtime::status()` returns channels and a 40-entry
+  diagnostic journal for support screens.
+- Only `wss://` endpoints and an `https://` auth endpoint are accepted;
+  `private-encrypted-*` channels are rejected.
+- `RealtimeSocket` keeps the raw RFC 6455 API (connect, send text/binary, poll,
+  state, close) for non-Pusher protocols. It replaced the 0.2 `Realtime`
+  socket API in 0.3.
 
-Only authenticated `wss://` is accepted. Frames are bounded per connection;
-incoming events use a 256-item native queue and one pending long poll. Poll
-continuously, treat timeout as a lifecycle tick, refresh credentials as needed,
-and reconnect with bounded jitter. Android uses OkHttp 5.3.0; iOS uses
-`URLSessionWebSocketTask`.
+Android merges `INTERNET` and `ACCESS_NETWORK_STATE`; iOS needs no capability.
+Zé Chat runs its Reverb channels on this package and calls
+`Realtime::reconnect()` when the app becomes active to skip a pending backoff.
 
-`RealtimePluginProvider` registers the transport automatically.
+## Reference
+
+- [README: complete API, lifecycle, errors and the Zé Chat client](https://github.com/push-in/pam-native-realtime#readme)
+- [Runnable presence chat room example](https://github.com/push-in/pam-native-realtime/tree/main/example)

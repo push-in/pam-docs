@@ -1,6 +1,6 @@
 ---
 title: PAM Native Video
-description: Play adaptive HLS/DASH and local video with native Media3 and AVPlayer decoding, tracks, controls, seek, and progress events.
+description: Adaptive HLS, DASH and local video with native controls, DRM (Widevine, ClearKey, FairPlay), external subtitles, seek commands and progress events.
 ---
 
 ## Start here
@@ -18,22 +18,45 @@ pam doctor
 pam native dev
 ```
 
+`pushinbr/pam-native-video` 0.4 renders one native view (`video.player`):
+Media3 1.9.3 on Android (HLS, DASH, progressive) and AVPlayer/AVKit on iOS
+(HLS, progressive). Decoding, buffering and controls stay native. Requires PAM
+Native `>=0.8.0 <2.0.0`.
+
 ```php
+use Pam\Native\Video\{VideoDrmConfiguration, VideoDrmScheme, VideoEventKind, VideoPlaybackState, VideoPlayer, VideoResizeMode};
+
 return VideoPlayer::make('https://cdn.example.com/master.m3u8')
     ->autoPlay()
     ->controls()
     ->resizeMode(VideoResizeMode::Cover)
-    ->onEvent(fn (VideoEventKind $kind, array $event) => $this->handle($kind, $event));
+    ->seekTo($this->seekMs)                  // a changed value seeks once
+    ->progressEvery(1_000)
+    ->subtitle('https://cdn.example.com/subtitles/pt-BR.vtt')
+    ->onEvent(function (VideoEventKind $kind, array $event): void {
+        match ($kind) {
+            VideoEventKind::State => $this->state = VideoPlaybackState::tryFrom((int) $event['state']),
+            VideoEventKind::Progress => $this->position = (int) $event['positionMillis'],
+            VideoEventKind::Error => $this->error = (string) $event['message'],
+            default => null,
+        };
+    })
+    ->toElement();
 ```
 
-`VideoPlayer` owns native adaptive/local playback; `VideoResizeMode` selects
-contain/cover/fill; `VideoEventKind` reports prepared/progress/completion/
-failure; `VideoPlaybackState` tracks lifecycle. Subtitle/audio tracks, looping,
-mute/volume, revision-based seek, and sandboxed local files are supported.
+- DRM: `->drm(new VideoDrmConfiguration(VideoDrmScheme::FairPlay, $licenseUrl, 'Bearer '.$token, contentId: 'movie-42', certificateUrl: $certUrl))`;
+  Widevine and ClearKey on Android, FairPlay on iOS. An unsupported scheme is a
+  playback error, never unprotected playback.
+- External WebVTT, SRT and TTML subtitles on both platforms (iOS loads at most
+  2 MiB).
+- `playbackRate()` 0.25–4, `preferredPeakBitRate()`, `preferredForwardBuffer()`,
+  `loop()`, `muted()`, `volume()`.
 
-Prefer adaptive manifests for variable networks, keep progress intervals
-coarse, make seek an intentional state revision rather than every render, and
-pause/release with screen visibility. Android uses Media3 1.9.3; iOS uses
-AVFoundation/AVKit.
+For feed, story and chat media the core `<MediaPlayer>` is usually enough (Zé
+Chat uses it); add this package for DRM, DASH, external subtitles and streaming
+controls.
 
-`VideoPluginProvider` registers `VideoPlayer` automatically.
+## Reference
+
+- [README: complete API, event payloads, DRM rules and errors](https://github.com/push-in/pam-native-video#readme)
+- [Runnable HLS/MP4 player example](https://github.com/push-in/pam-native-video/tree/main/example)

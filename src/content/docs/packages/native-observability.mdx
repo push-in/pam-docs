@@ -1,6 +1,6 @@
 ---
 title: PAM Native Observability
-description: Add vendor-neutral spans, structured logs, metrics, crash context, deterministic sampling, bounded batching, and pluggable telemetry export.
+description: Sentry crash reporting for JVM, NDK, iOS and PHP errors, plus vendor-neutral spans, logs, metrics and certified OTLP export.
 ---
 
 ## Start here
@@ -18,35 +18,59 @@ pam doctor
 pam native dev
 ```
 
-
-
-## Trace and flush
+`pushinbr/pam-native-observability` 0.5 has two independent parts: a native
+Sentry exporter (Sentry Android 8.50.1 with NDK, Sentry Cocoa 8.x) that
+captures crashes of the embedded PHP runtime, ANRs/app hangs and PHP errors,
+and a pure-PHP telemetry pipeline with OTLP/HTTP JSON export. Requires PAM
+Native `>=1.0.35 <2.0.0`.
 
 ```php
-$telemetry = new Observability($config, new CurlTelemetryTransport());
-$span = $telemetry->span('feed.load');
+use Pam\Native\App;
+use Pam\Native\Diagnostics\RuntimeError;
+use Pam\Native\Observability\{Observability, SentryExporter};
 
-try {
-    loadFeed();
-    $span->status(SpanStatus::Ok);
-} catch (Throwable $error) {
-    $span->exception($error);
-    throw $error;
-} finally {
-    $span->end();
-    $telemetry->flush();
-}
+// Once at boot, before App::run().
+Observability::exporter(
+    SentryExporter::dsn('https://public@o1.ingest.sentry.io/42')
+        ->environment('production')
+        ->release('chat@2.4.0+118')
+        ->tracesSampleRate(0.25)
+        ->profilesSampleRate(0.05),     // 0.5.0+
+);
+
+// Errors thrown inside renders and handlers (PAM Native 1.7+).
+App::onError(fn (Throwable $e, RuntimeError $r) => Observability::capture($e, handled: !$r->fatal()));
+
+Observability::user('42');
+Observability::breadcrumb('Opened chat 42', 'navigation');
 ```
 
-`Observability` creates spans, structured logs, counters, gauges, crash context,
-and batches. `ObservabilityConfig` defines HTTPS endpoint, service identity,
-sampling, queue, and batch policy. `Span`/`SpanStatus`, `Severity`, and
-`SignalKind` are typed enums. `TelemetryTransport` supports Sentry, Datadog,
-Honeycomb, New Relic, gateways, or offline spools; `CurlTelemetryTransport` is
-the dependency-light HTTPS default.
+The exporter configuration is persisted and restored by a content provider
+(Android) or at module creation (iOS), so crashes before PHP boots are
+reported. PHP events are de-duplicated for 60 s and rate limited (30 per
+minute by default); personal data is off unless `sendDefaultPii()`.
 
-The bounded queue drops oldest under pressure and restores failed exports to
-the front. Signals collect no secrets/personal data automatically: define an
-attribute allowlist. Flush on lifecycle transitions without indefinitely
-blocking UI, distinguish permanent/transient transport failure, and monitor
-dropped-signal counters.
+## Spans, logs and OTLP
+
+```php
+use Pam\Native\Observability\{CurlTelemetryTransport, Observability, ObservabilityConfig, SpanStatus, WireProtocol};
+
+$telemetry = new Observability(
+    new ObservabilityConfig('https://collector.example', 'chat-mobile', '2.4.0', wireProtocol: WireProtocol::OtlpHttpJson),
+    new CurlTelemetryTransport(),
+);
+$span = $telemetry->span('feed.load');
+try { $this->loadFeed(); $span->status(SpanStatus::Ok); }
+catch (Throwable $e) { $span->exception($e); throw $e; }
+finally { $span->end(); $telemetry->flush(); }
+```
+
+Spans go to `/v1/traces`, logs and crash context to `/v1/logs`, counters and
+gauges to `/v1/metrics`. Queues are bounded and drop the oldest signals; a
+failed export is restored to the front of the queue.
+
+## Reference
+
+- [README: full exporter and pipeline API, OTLP certification, errors and the Zé Chat setup](https://github.com/push-in/pam-native-observability#readme)
+- [Runnable diagnostics example](https://github.com/push-in/pam-native-observability/tree/main/example)
+- See [Errors and module failures](/native/capabilities/#errors-and-module-failures) for `App::onError()`.

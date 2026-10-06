@@ -277,6 +277,8 @@ events, style IR, and performance path; mixing both forms is supported.
 
 ### Gestures and compositor motion
 
+UI-thread press events, double tap, drags with snap points, swipeable rows and animation programs: see [Gestures and animation](/native/gestures-and-animation/).
+
 <Tabs syncKey="native-syntax">
   <TabItem label="Typed PHP tree">
     ```php
@@ -593,7 +595,7 @@ not pay for capabilities they do not use.
 
 ## PAM Style Language 1.0
 
-PAM accepts familiar CSS spelling and compiles it into versioned `PAMS` bytecode and typed IR. Unsupported syntax is a build error—not a silent guess.
+PAM accepts familiar CSS spelling and compiles it into versioned `PAMS` bytecode and typed IR. Unsupported syntax is a build error—not a silent guess. The property-by-property support matrix is the [CSS reference](/native/css/); light/dark theming is in [Appearance and theming](/native/appearance/).
 
 The compiler emits stable property IDs, scope ownership, cascade winners, query ASTs, granular invalidation dependencies, source maps, compatibility/render-cost data, UI-thread keyframes, and typed PHP/Kotlin/Swift token APIs.
 

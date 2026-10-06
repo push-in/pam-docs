@@ -140,6 +140,10 @@ cannot make the field lose its cursor.
 
 ## Performance rules
 
+See [Performance and memoization](/native/performance/) for how components are
+reused between renders, loop identity (`:key`/`p-key`) and startup.
+
+
 - Give moving/repeated children stable keys.
 - Keep `render()` pure and bounded.
 - Read only the store/local-state values the component actually needs.

@@ -9,6 +9,7 @@ PAM Native uses a versioned, bounded, little-endian binary protocol between pers
 
 | SDK | Protocol | PHP | Android |
 | --- | ---: | --- | --- |
+| `pushinbr/pam-native 1.x` (1.14.2 current) | `1` | `8.5` | API 26–36 |
 | `pushinbr/pam-native 0.5.x` | `1` | `8.4–8.5` | API 26–36 |
 
 The Swift peer decodes protocol version `1` and rejects unknown node kinds, invalid property values, oversized frames, malformed lengths, and trailing bytes before UIKit mutation.
@@ -19,7 +20,7 @@ Protocol identifiers are sequential integers beginning at `1`. Existing identifi
 
 New optional properties, node kinds, events, and operations may be appended. Changing an existing field's representation or meaning requires a new protocol version and an explicit compatibility adapter.
 
-Protocol version 1 currently defines properties through ID `400` and events through ID `34`.
+Protocol version 1 currently defines properties through ID `523` and events through ID `75` (PAM Native 1.14). The 1.x releases only appended identifiers: for example `TextSpans` (`501`) to `ScrollKeyboardInset` (`508`) in 1.4, gesture and animation properties `509`–`522` with events `70`–`75` in 1.5, and `ListFullSpan` (`523`) in 1.6.
 
 ## Frame types
 
@@ -38,7 +39,15 @@ Decoders reject:
 - invalid enum values;
 - trailing bytes;
 - malformed lengths; and
-- payloads above the published bounds.
+- payloads above the published bounds;
+- non-finite floating-point values (`NaN`, infinities).
+
+Text is strict UTF-8 on every peer. Layout mutations carry `x`, `y`, `width`
+and `height` as `f32` points: the origin may be any finite value, negative
+included (CSS offsets and negative margins put a box outside its parent, for
+example `top: -200px`), while width and height must be finite and
+non-negative (1.13.2+). Wire maps encode ASCII keys in ascending byte order so
+payload hashes are insertion-order independent.
 
 ## Transactional recovery
 
@@ -50,8 +59,10 @@ tree.
 
 Android and iOS do not open an error overlay for this recoverable path. They
 write the precise engine failure to development logs through the stable
-`pam_native_engine_last_error` C API. A rejected complete tree remains a
-visible runtime error because it cannot be repaired safely.
+`pam_native_engine_last_error` C API. A host that rejects a mutation batch, or fails part-way
+through mounting one, clears its tree and asks the engine for a full remount of
+the retained tree (1.13.2+), so later patches never target nodes the host never
+created; a failing remount is reported and not retried.
 
 ## Patch operations
 
@@ -72,6 +83,10 @@ visible runtime error because it cannot be repaired safely.
 | Tree depth | 512 |
 | Properties per node | 128 |
 | String or opaque property | 1 MiB |
+| Complete packed list or section collection | 1 MiB |
+| Packed list items / section entries | 100,000 |
+| Packed sections | 10,000 |
+| Complete native module WireMap | 1 MiB |
 | Queued native event payload | 1 MiB |
 
 These are part of protocol version 1. They protect memory use and decoder complexity and must not be raised silently for a single application.

@@ -1,6 +1,6 @@
 ---
 title: PAM Native PHP API index
-description: Namespace-by-namespace index of the public PHP types shipped by pushinbr/pam-native 0.6.
+description: Namespace-by-namespace index of the public PHP types shipped by pushinbr/pam-native 1.x.
 ---
 
 This index maps the Composer-autoloaded surface in `packages/native/src`. Use
@@ -25,7 +25,8 @@ pam doctor
 | Styling | `Style`, `Theme`, `PropKey`, `CssColor` |
 
 Component attributes live in `Pam\Native\Attributes`: `Prop`, `State`,
-`Computed`, and `Expose`.
+`Computed`, `Expose`, `Action`, `Event`, `Slot`, `Tag` and `AlwaysRender`
+(opts a component out of [render memoization](/native/performance/)).
 
 ## Layout, text and input enums
 
@@ -48,14 +49,17 @@ Input and interaction event values are `InputContentSizeEvent`, `InputKeyEvent`,
 ## Accessibility and appearance
 
 `AccessibilityRole`, `AccessibilityImportance`, `AccessibilityLiveRegion`,
-`AccessibilityCheckedState`, `UserInterfaceAppearance`,
-`StatusBarAppearance`, `WindowMetrics`, `AppState`, and `MemoryPressure`.
+`AccessibilityCheckedState`, `Appearance`, `AppearanceMode`,
+`UserInterfaceAppearance`, `StatusBarAppearance`, `WindowMetrics`,
+`PixelRatio`, `AppState`, and `MemoryPressure`. See
+[Appearance and theming](/native/appearance/).
 
 ## Animation, modal and media values
 
 | Area | Types |
 | --- | --- |
-| Animation | `AnimationKind`, `AnimationEasing`, `AnimationFillMode`, `AnimationKeyframe`, `AnimationPlayState`, `MotionPreset` |
+| Animation | `AnimationKind`, `AnimationEasing`, `AnimationFillMode`, `AnimationKeyframe`, `AnimationPlayState`, `MotionPreset`; `Pam\Native\Animation\{Animation, AnimationPreset, Drag, Easing, Spring, TapEffect, Transition}` ([guide](/native/gestures-and-animation/)) |
+| Events | `PressEvent`, `GestureEvent`, `GestureSettleEvent`, `ScrollPhaseEvent`, `LayoutEvent`, `TextLayoutEvent`, `MediaReadyEvent` |
 | Modal/sheet | `ModalAnimationType`, `ModalPresentation`, `ModalOrientation`, `BottomSheetEvent`, `BottomSheetKeyboardBehavior` |
 | Image | `ImageFit`, `ImageResizeMethod`, `ImageFilterType`, `ImageCropRatio`, `ImageCachePolicy`, `ImageLoadEvent`, `ImageErrorEvent`, `ImageProgressEvent`, `ImageTextLayerStyle` |
 | Media | `MediaType`, `MediaPickerType`, `MediaPriority`, `MediaCachePolicy`, `MediaCacheEntryState`, `MediaCacheEvent`, `MediaAsset`, `MediaAssetPage`, `MediaAlbum` |
@@ -68,7 +72,9 @@ Input and interaction event values are `InputContentSizeEvent`, `InputKeyEvent`,
 `SensorType`, `PermissionKind`, `PermissionStatus`, `PermissionDecision`,
 `NotificationImportance`, `PushProvider`, `PushToken`, `PushMessage`,
 `PushEventType`, `NativeMenuItem`, `HapticFeedback`, `CacheUsage`, `NodeKind`,
-`ModuleResultStatus`, and `BinaryValue`.
+`ModuleResultStatus`, and `BinaryValue`. Uncaught errors are described by
+`Pam\Native\Diagnostics\RuntimeError` (`RuntimeErrorPhase`, `StackFrame`) for
+`App::onError()` listeners.
 
 ## UI namespace
 
@@ -78,11 +84,11 @@ Input and interaction event values are `InputContentSizeEvent`, `InputKeyEvent`,
 | --- | --- |
 | Layout | `Screen`, `SafeAreaView`, `View`, `Column`, `Row`, `Grid`, `Spacer`, `Scroll`, `ScrollView`, `KeyboardAvoidingView` |
 | Text/input | `Text`, `Input`, `TextInput`, `InputAccessoryView`, `Button`, `Toggle`, `NativeSwitch` |
-| Interaction | `Pressable`, `InteractionRegion`, `GestureDetector`, `TouchableHighlight`, `TouchableNativeFeedback`, `TouchableOpacity`, `TouchableWithoutFeedback` |
+| Interaction | `Pressable`, `Swipeable`, `InteractionRegion`, `GestureDetector`, `TouchableHighlight`, `TouchableNativeFeedback`, `TouchableOpacity`, `TouchableWithoutFeedback` |
 | Lists | `FlatList`, `SectionList`, `VirtualizedList`, `VirtualGrid`, `NativeList`, `RefreshControl` |
 | Images/media | `Image`, `ImageBackground`, `MediaPlayer`, `DrawingCanvas`, `Canvas` |
 | Overlay/system | `Modal`, `BottomSheet`, `StatusBar`, `ActivityIndicator`, `Suspense`, `WebView`, `DrawerLayoutAndroid` |
-| Extension | `CustomView`, `Animated` |
+| Extension | `CustomView`, `Animated`, `Icon` |
 
 Shared behavior traits are `HasImageBehavior`, `HasInputBehavior`, and
 `HasMediaCacheBehavior`.
@@ -95,7 +101,8 @@ Static/native facades in `Pam\Native\System`:
 `DeviceInfo`, `DeviceStatus`, `Files`, `Haptics`, `ImageEditor`,
 `IncomingShares`, `Keyboard`, `Linking`, `Location`, `MediaCapture`,
 `MediaLibrary`, `Notifications`, `Permissions`, `PushNotifications`, `Sensors`,
-`Share`, `Sms`, `Timers`, `Toast`, and `Vibration`.
+`Screen`, `Share`, `Sms`, `Timers`, `TimerHandle`, `Toast` (`ToastType`,
+`ToastPosition`), `Accessibility`, and `Vibration`.
 
 See [platform capabilities](/native/capabilities/) and
 [files and media](/native/files-and-media/) for permissions, result values,

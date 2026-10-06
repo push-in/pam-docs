@@ -1,6 +1,6 @@
 ---
 title: PAM Native Background Transfer
-description: Run durable HTTPS uploads and downloads outside the PHP runtime with OS scheduling, constraints, progress, and relaunch recovery.
+description: Durable HTTPS uploads, downloads and request chains that keep running while the app is suspended or closed, with templates, secrets, retries and optional transcoding.
 ---
 
 ## Start here
@@ -18,30 +18,54 @@ pam doctor
 pam native dev
 ```
 
+`pushinbr/pam-native-background-transfer` 0.4 runs a whole pipeline natively:
+optional steps before the main request, the upload or download itself, then
+follow-up requests that read earlier responses. Android uses WorkManager 2.11.2
+(expedited `dataSync` foreground work when a notification is set) and OkHttp
+4.12.0; iOS uses background `URLSession`s and relaunches the app to chain the
+next step. Requires PAM Native `>=1.0.35 <2.0.0`.
+
 ```php
-$transfers = new Pam\Native\BackgroundTransfer\BackgroundTransfer();
-$transfers->download(
-    'https://cdn.example.com/movie.mp4',
-    'media/movie.mp4',
-    function (?string $id, ?string $error): void {
-        // Persist the ID and reconcile it after relaunch.
-    },
-);
+use Pam\Native\BackgroundTransfer\{Backoff, BackgroundTransfer, HttpStep, Multipart, Secret, TransferHandle, TransferNotification, TransferSnapshot};
+
+Secret::put('session', $accessToken);   // queued transfers always read the latest value
+
+BackgroundTransfer::upload('https://api.example.com/media')
+    ->multipart(fn (Multipart $m) => $m->file('file', $video->path, 'video/mp4')->field('caption', $caption, template: false))
+    ->header('Idempotency-Key', $clientMessageId)
+    ->bearer(Secret::vault('session'))
+    ->notification(TransferNotification::make('Enviando vídeo')->progress()->failed('Falha ao enviar'))
+    ->retry(3, Backoff::Exponential)
+    ->unique("chat-media:{$clientMessageId}")
+    ->then(HttpStep::post('https://api.example.com/chats/42/messages')
+        ->bearer(Secret::vault('session'))
+        ->json(['media_id' => '{{response.id}}', 'client_id' => $clientMessageId]))
+    ->tag('chat:42')
+    ->dispatch(fn (TransferHandle $t) => $t->watch(fn (TransferSnapshot $s) => $this->progress = $s->progress()));
 ```
 
-`BackgroundTransfer` creates uploads/downloads and queries durable work;
-`TransferSnapshot` exposes progress, state, and errors. `NetworkRequirement`
-selects connected, unmetered, or not-roaming, while `TransferState` and
-`TransferKind` are integer-backed lifecycle enums.
+- **Templates:** `{{response.a.b}}` reads the previous JSON response,
+  `{{steps.<name>.…}}` a step named with `as()`, `{{transfer.id}}`/`{{transfer.tag}}`
+  the transfer. Use `template: false` for user text.
+- **Retries:** network errors and HTTP 408/425/429/5xx; completed steps are
+  checkpointed and never repeated; `retryable(false)` protects non-idempotent
+  steps. `BackgroundTransfer::retry($id)` resumes after the last completed step.
+- **Transcoding:** `->transcode(VideoPreset::Adaptive, fallbackToOriginal: true)`
+  re-encodes videos first through [`pam-native-media`](/packages/native-media/)
+  (0.4+ on Android, 0.5+ on iOS).
+- **Recovery:** persist `TransferHandle::$id`; after relaunch use
+  `BackgroundTransfer::find()`, `all(tag:)` and `watch()`;
+  `prune(olderThanDays: 7)` cleans finished records.
+- **Security:** HTTPS only (HTTP for loopback tests), sandbox-relative paths,
+  specs, checkpoints and the secret vault encrypted with AES-256-GCM
+  (Android Keystore / iOS Keychain); snapshots never contain secrets.
 
-Transfers require HTTPS and sandbox-relative paths; native code rejects
-traversal. Android WorkManager retries transient failures up to three times;
-iOS uses a launch-event-enabled background `URLSession`. Persist IDs before the
-initiating screen disappears, reconcile them after launch/resume, and validate
-downloaded size, type, and checksum before trust.
+Android merges `INTERNET`, `ACCESS_NETWORK_STATE`, `FOREGROUND_SERVICE`,
+`FOREGROUND_SERVICE_DATA_SYNC` and `POST_NOTIFICATIONS`; iOS needs no
+capability. On iOS there is no progress notification (completed/failed texts
+are posted as local notifications) and `transcode()` runs while the app runs.
 
-Support: PAM Native 0.6.x, Android API 26+, iOS 15+.
+## Reference
 
-Public types: `BackgroundTransfer`, `TransferSnapshot`, `TransferKind`,
-`TransferState`, `NetworkRequirement`, and the auto-discovered
-`BackgroundTransferPluginProvider`.
+- [README: full API (`PendingTransfer`, `HttpStep`, `Multipart`, `Secret`, snapshots, enums), errors and the Zé Chat outbox](https://github.com/push-in/pam-native-background-transfer#readme)
+- [Runnable example app](https://github.com/push-in/pam-native-background-transfer/tree/main/example)

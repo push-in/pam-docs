@@ -141,6 +141,10 @@ export default defineConfig({
                 { label: 'Video & audio', slug: 'native/components/video-and-audio' },
                 { label: 'Scroll & lists', slug: 'native/components/scroll-and-lists' },
                 { label: 'Interaction & motion', slug: 'native/components/interaction-and-motion' },
+                { label: 'Gestures & animation', slug: 'native/gestures-and-animation' },
+                { label: 'Keyboard, sheets & safe areas', slug: 'native/keyboard-and-sheets' },
+                { label: 'Appearance & theming', slug: 'native/appearance' },
+                { label: 'CSS reference', slug: 'native/css' },
                 { label: 'Overlays & system UI', slug: 'native/components/overlays-and-system-ui' },
                 { label: 'WebView', slug: 'native/components/webview' },
                 { label: 'Custom native views', slug: 'native/native-views' },
@@ -153,12 +157,21 @@ export default defineConfig({
               items: [
                 { label: 'State & lifecycle', slug: 'native/state-and-lifecycle' },
                 { label: 'Component runtime', slug: 'native/component-runtime' },
+                { label: 'Performance & memoization', slug: 'native/performance' },
                 { label: 'Visual DOM', slug: 'native/visual-dom' },
                 { label: 'Global store', slug: 'native/global-store' },
                 { label: 'Navigation & shared elements', slug: 'native/navigation' },
                 { label: 'Forms & validation', slug: 'native/forms' },
                 { label: 'HTTP networking', slug: 'native/networking' },
                 { label: 'Files & media picker', slug: 'native/files-and-media' },
+              ],
+            },
+            {
+              label: 'Calls & audio',
+              items: [
+                { label: 'Calls', slug: 'packages/native-calls' },
+                { label: 'WebRTC', slug: 'packages/native-webrtc' },
+                { label: 'Audio', slug: 'packages/native-audio' },
               ],
             },
             {
@@ -295,9 +308,11 @@ export default defineConfig({
             {
               label: 'Native integrations',
               items: [
+                { label: 'Audio', slug: 'packages/native-audio' },
                 { label: 'Auth', slug: 'packages/native-auth' },
                 { label: 'Background Transfer', slug: 'packages/native-background-transfer' },
                 { label: 'Bluetooth', slug: 'packages/native-bluetooth' },
+                { label: 'Calls', slug: 'packages/native-calls' },
                 { label: 'Camera', slug: 'packages/native-camera' },
                 { label: 'Canvas', slug: 'packages/native-canvas' },
                 { label: 'Charts', slug: 'packages/native-charts' },
@@ -323,6 +338,7 @@ export default defineConfig({
                 { label: 'Sync', slug: 'packages/native-sync' },
                 { label: 'Testing', slug: 'packages/native-testing' },
                 { label: 'Video', slug: 'packages/native-video' },
+                { label: 'WebRTC', slug: 'packages/native-webrtc' },
                 { label: 'GPU', slug: 'packages/native-gpu' },
                 { label: 'Widgets', slug: 'packages/native-widgets' },
               ],

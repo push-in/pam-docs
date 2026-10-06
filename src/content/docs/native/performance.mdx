@@ -1,0 +1,160 @@
+---
+title: Performance and memoization
+description: How PAM Native re-renders only what changed, keeps list and loop identity stable, compiles components at build time and starts fast.
+---
+
+PAM Native 1.2 through 1.14 rebuilt the render pipeline around one rule: a
+change re-renders the components it touches and nothing else. Most apps get
+this for free. This page explains the rules so you can keep a screen at 60 fps
+and know what to do when one does not.
+
+## Component memoization
+
+Memoization is on by default. A component is reused (its previous element
+subtree and encoded bytes are kept) when all of these are unchanged since its
+last render:
+
+- its own properties: public, protected and private; arrays compared by
+  value, plain objects two levels deep, components and closures by identity;
+- its props and slots;
+- the tracked state, stores and signals it read;
+- the providers it injected;
+
+and no template event handler ran on it. A press, double tap, press-in/out,
+input change, image, media, modal or sheet event marks only the component that
+owns the handler (since 1.14.0), so tapping a row re-renders that row.
+
+Writes made from module-result or timer callbacks are detected before the next
+render: assigning `$this->progress` inside an `AudioPlayer` or HTTP callback
+re-renders only that component and its ancestors.
+
+```php
+final class ChatListItem extends Component
+{
+    public array $chat = [];       // compared by value: an unchanged row is reused
+    private bool $pressed = false;
+
+    public function open(): void   // template handler: marks only this row
+    {
+        $this->pressed = true;
+    }
+}
+```
+
+What still re-renders the whole tree: element closures that are not template
+handlers, `App::onBack()` handlers, app-state and memory-pressure handlers,
+theme and window-metric changes.
+
+### When a component reads something PAM cannot see
+
+| Situation | Use |
+| --- | --- |
+| The template reads a mutable service or static registry | `#[AlwaysRender]` on the class (`Pam\Native\Attributes\AlwaysRender`) |
+| A service changed and you know which component shows it | `$this->markForRender()` inside that component |
+| Fine-grained control over prop changes | `shouldUpdate(ComponentChanges $changes): bool` |
+| Debugging a suspected memoization bug | `App::memoization(false)` restores whole-tree re-renders |
+
+```php
+use Pam\Native\Attributes\AlwaysRender;
+
+#[AlwaysRender]
+final class ConnectionBadge extends Component
+{
+    // Reads RealtimeClient::state() on every render.
+}
+```
+
+`App::memoization(false)` is a diagnostic switch, not a production setting.
+
+## Identity: keys, loops and conditionals
+
+Native views keep their state (focus, IME, scroll offset, playing media) only
+while their identity is stable.
+
+- **Loops:** `p-for` children are identified by `p-key`, or by `:key`/`key` on
+  the loop child (1.11.1+). The component instance, its state and the native
+  view follow the item across reorders, inserts and removals. Duplicate keys
+  are reported. Unkeyed loops with more than one item log a one-time
+  development warning and fall back to one identity per index.
+- **Conditionals:** unkeyed siblings are identified by their static template
+  position, not by their output index (1.11.0+). A false `p-if`, the inactive
+  branch of `p-if`/`p-else`, an empty `p-for` and `null`/`false` children of
+  the Element API leave a hole, so the siblings after them keep their
+  identity. A `VirtualizedList` or `TextInput` after a conditional banner is no
+  longer remounted when the banner appears.
+- **PHP builders:** `Element::key()` gives a node an explicit identity.
+
+```html
+<VirtualizedList estimatedRowHeight="72">
+    <ChatListItem p-for="$chat in $chats" :key="$chat['id']" :chat="$chat" />
+</VirtualizedList>
+```
+
+Upgrading to 1.11 gives unkeyed template nodes new identities once (one
+remount on the first frame).
+
+## Rendering pipeline
+
+- **Templates** are planned once per node: directives, attribute
+  classification, events and slots. Resolved styles are cached per node, sheet
+  environment, class list, ancestor chain and inherited styles.
+- **Expressions** compile to plain PHP closures with the same grammar,
+  evaluation order and diagnostics as the reference evaluator.
+- **Encoder:** memoized subtrees are reused with their callbacks and encoded
+  bytes; unchanged node objects are skipped in patches; when the tree is
+  identical nothing is encoded or committed.
+- **Events and module results** are drained in batches and rendered once per
+  batch (12 ms budget), and interactive input (press, change, back, submit)
+  has its own priority lane ahead of module results and scroll traffic.
+- **Navigation:** screens below the top of a stack, and outgoing screens
+  during a transition, are frozen: their last element is reused and their
+  components stay mounted until they become the top again.
+
+Measured on Zé Chat's inbox (Galaxy S10, release build, 1.13.3 → 1.14.0): one
+inbox row render + encode went from 1.79 ms to 0.44 ms and the first inbox
+render (12 rows) from 43.4 ms to 13.1 ms.
+
+## Startup
+
+| Release | What changed | Zé Chat effect |
+| --- | --- | --- |
+| 1.2.2 | Bundle installation and OTA resolution off the main thread; OPcache with a file cache under the app state directory | No ANR on first launch |
+| 1.13.0 | Component discovery reuses cached classes and templates keyed by an xxh128 of the source, `src/app.css` and every imported stylesheet; templates decode lazily | Discovery 590 ms → 16 ms per cold start |
+| 1.13.0 | An unchanged dimensions event keeps the `WindowMetrics` instance | No full re-render right after boot |
+| 1.14.0 | **Prebuilt components**: `pam-native build` and update bundles compile every component on the host into `pam-prebuilt/components`, validated by source and stylesheet fingerprints | First launch after install: discovery 2,066 ms → 28–38 ms, process start to first commit 3,396 ms → ~1,750 ms |
+| 1.14.0 | Android copies the bundle from `assets/pam-files.txt` in parallel and verifies SHA-256 while streaming | `bundleInstallMs` logged in debug/benchmark builds |
+
+Prebuilt components need no configuration: release builds and OTA bundles
+compile nothing at boot, and an edited component during hot reload still
+compiles into the writable cache.
+
+Measure cold starts on the installable release-optimized variant:
+
+```json
+{ "android": { "benchmarkApplicationIdSuffix": ".perf" } }
+```
+
+```bash
+pam native build --benchmark
+```
+
+The benchmark APK (R8, non-debuggable, baseline profile, signed with the local
+debug key) installs beside production and omits Firebase.
+
+## Lists
+
+Use recycled lists for anything that grows with data; see
+[Scroll and lists](/native/components/scroll-and-lists/). Cells are
+content-sized, scrolled-out cell views are pooled by kind and property set,
+image views are cleared before reuse, and prepending a page mounts no
+off-screen views while keeping the scroll anchor.
+
+## Checklist
+
+- Key every loop child (`:key` or `p-key`) with a stable id.
+- Keep `render()` pure; do network and disk work in services and callbacks.
+- Split large screens into small components whose props change rarely, so
+  memoization can skip them.
+- Mark components that read external mutable state with `#[AlwaysRender]` or
+  call `markForRender()`; do not disable memoization globally.
+- Measure on a release build (`--benchmark`), not a debug build.

@@ -1,0 +1,313 @@
+---
+title: Gestures and animation
+description: Press events with coordinates, double tap with tap effects, UI-thread drags with snap points, swipeable rows, paging, CSS transitions, animation programs and presets.
+---
+
+PAM Native runs motion on the platform UI thread (React Native Reanimated and
+gesture-handler parity). While a finger moves or an animation plays, PHP
+receives no events; it gets the final semantic event only. Android shipped
+these primitives in 1.5.0 and iOS in 1.8.0 (iOS still awaits device
+validation).
+
+Animatable properties are composited only: `opacity`, `translateX`,
+`translateY` (dp, or `%` of the element's own size), `scale`, `scaleX`,
+`scaleY`, `rotate` (degrees) and `borderRadius`.
+
+## Press, long press and press-in/out
+
+`Pressable` mirrors React Native: `on:pressIn`, `on:pressOut`, `on:press`,
+`on:longPress` (after `delayLongPress`) and `on:pressMove`. Handlers typed
+`PressEvent $event` receive `x`/`y` (relative to the pressable, React Native
+`locationX`/`locationY`) and `pageX`/`pageY` (screen). Untyped handlers keep
+the empty payload.
+
+Hold-to-record needs no extra API: start on `on:longPress`, stop on
+`on:pressOut`.
+
+```html
+<Pressable
+    delayLongPress="260"
+    on:pressIn="armCapture"
+    on:longPress="startRecording"
+    on:press="takePhoto"
+    on:pressOut="stopRecordingIfHeld"
+>
+    <View class="shutter" />
+</Pressable>
+```
+
+```php
+use Pam\Native\PressEvent;
+
+public function startRecording(PressEvent $event): void
+{
+    $this->recording = true; // $event->x, $event->y, $event->pageX, $event->pageY
+}
+```
+
+`:pressed` and `:active` CSS rules apply on touch-down, including
+`transform: translateY(1.1px)` in points. Since 1.14.0 every press-family
+handler marks only its own component for re-render, so one press re-renders
+one memoized row.
+
+## Double tap and tap effects
+
+`on:doubleTap` recognizes a second tap within `doubleTapDelay` (default
+250 ms). When it is bound, the single `on:press` is deferred by that delay and
+cancelled by a double tap, natively. `tapEffect` plays an animation centred on
+the second tap before PHP is notified (the Reels heart):
+
+```php
+use Pam\Native\Animation\AnimationPreset;
+use Pam\Native\Animation\TapEffect;
+use Pam\Native\PressEvent;
+
+public TapEffect $heart;
+
+public function boot(): void
+{
+    $this->heart = TapEffect::make('heart', AnimationPreset::heartBurst(), tilt: 15);
+}
+
+public function like(PressEvent $event): void { /* $event->x, $event->y */ }
+```
+
+```html
+<Pressable on:press="togglePause" on:doubleTap="like" :tapEffect="$heart">
+    <MediaPlayer :source="$url" />
+    <View nativeRef="heart" style="position: absolute; width: 96px; height: 96px">
+        <Icon font="Ionicons" name="heart" size="96" color="#FFFFFF" />
+    </View>
+</Pressable>
+```
+
+The `nativeRef` anchor is moved so its centre sits on the tap (and rotated by
+a random angle up to `tilt`); the animation runs on its first child.
+
+## Gesture detector
+
+`GestureDetector` recognizes tap, pan, pinch, rotation, swipe and long press
+with platform recognizers. Updates are coalesced to the display cadence.
+
+```php
+use Pam\Native\GestureDirection;
+use Pam\Native\GestureEvent;
+use Pam\Native\GestureType;
+use Pam\Native\UI\GestureDetector;
+
+$drag = GestureDetector::make(GestureType::Pan, $card)
+    ->direction(GestureDirection::Horizontal)
+    ->minimumDistance(12)
+    ->onEnd(fn (GestureEvent $e) => $this->commit($e->translationX, $e->velocityX));
+```
+
+Handlers that need item context can pass `$event` explicitly
+(`on:gestureEnd="moveLayer($layer['id'], $event)"`); PAM decodes the payload
+according to the parameter's `GestureEvent` type.
+
+For zoomable media, `gestureNativeTransform="true"` applies pan, pinch and
+rotation to the single child on the UI thread; bump
+`gestureNativeResetKey` to reset it:
+
+```html
+<GestureDetector gestureType="pinch" gestureNativeTransform="true"
+    gestureNativeMinScale="1" gestureNativeMaxScale="4"
+    :gestureNativeResetKey="$mediaRevision" on:gestureEnd="commitZoom">
+    <Image :source="$url" resizeMode="contain" />
+</GestureDetector>
+```
+
+Composition defaults to `exclusive`; `simultaneous` recognizes alongside
+scroll views, `race` lets the first recognizer that begins win. Once a gesture
+is recognized, competing press and long-press semantics on that node are
+cancelled. Keep a visible, non-gesture alternative for critical actions.
+
+## Drags with snap points
+
+`Pam\Native\Animation\Drag`, attached with `:drag` to a pan
+`GestureDetector`, is a one-axis drag inside optional bounds (with rubber
+banding). Driver properties are interpolated from the translation every frame
+and, on release, the target settles on a snap point with a spring or a timing
+curve. PHP receives `on:gestureBegin`, `on:gestureEnd` (`GestureEvent` with
+`snapIndex` and `thresholdReached`) and `on:gestureSettle`
+(`GestureSettleEvent`).
+
+Crossing `threshold` dp from the starting snap, or flinging faster than
+`velocity` dp/s, moves to the adjacent snap; otherwise the drag springs back.
+
+Story drag-to-dismiss:
+
+```php
+use Pam\Native\Animation\{Drag, Easing, Spring};
+
+$this->dismiss = Drag::vertical()
+    ->bounds(min: 0)
+    ->snapPoints(0, '100%')
+    ->threshold(120, velocity: 900)
+    ->settle(new Spring(stiffness: 230, damping: 22, mass: 0.72))
+    ->settleAt(1, Easing::EaseOut, 190)
+    ->drive('', 'scale', [0, '50%'], [1, 0.955])
+    ->drive('', 'borderRadius', [0, 120], [0, 18]);
+```
+
+```html
+<GestureDetector gestureType="pan" gestureDirection="vertical" gestureMinDistance="12"
+    :drag="$dismiss" on:gestureBegin="pause" on:gestureSettle="settled">
+    <StoryPage />
+</GestureDetector>
+```
+
+```php
+use Pam\Native\GestureSettleEvent;
+
+public function settled(GestureSettleEvent $event): void
+{
+    $event->snapIndex === 1 ? $this->close() : $this->resume();
+}
+```
+
+Swipe-to-reply on a chat bubble (one snap at 0 always springs back; the end
+event says whether the threshold was crossed; `haptic()` ticks when it is):
+
+```php
+Drag::horizontal()->bounds(min: 0, max: 72)->target('bubble')
+    ->snapPoints(0)->threshold(46)->haptic()
+    ->settle(new Spring(260, 18))
+    ->drive('replyIcon', 'opacity', [0, 46], [0, 1])
+    ->drive('replyIcon', 'scale', [0, 46], [0.86, 1]);
+```
+
+| `Drag` method | Purpose |
+| --- | --- |
+| `horizontal()`, `vertical()` | Axis |
+| `bounds(?float $min, ?float $max)`, `rubberBand(float $factor)` | Limits |
+| `target(string $nativeRef)` | Moves a `nativeRef` view instead of the detector's child |
+| `snapPoints(float\|int\|string ...$points)` | dp or `%` of the target extent |
+| `threshold(float $distance, float $velocity = 0)` | Release rule |
+| `settle(Spring\|Easing\|string $curve, int $durationMs = 200)`, `settleAt(int $index, …)` | Settle animation (per snap) |
+| `drive(string $ref, string $property, array $input, array $output)` | Per-frame driver (`''` = the target) |
+| `haptic()`, `group(string $name)` | Threshold haptic; one member of a group away from zero |
+
+Programmatic snaps use `dragSnap="index@request"` (bump `request` to repeat
+the same snap).
+
+## Swipeable rows
+
+`Swipeable` reveals left and/or right action panels behind a row, settles open
+or closed with a spring and keeps one open row per `group`:
+
+```html
+<Swipeable rightWidth="160" leftWidth="80" group="inbox" :closeRequest="$closeRows"
+    on:gestureSettle="rowSettled">
+    <PinAction />
+    <Row class="actions"><ArchiveAction /><DeleteAction /></Row>
+    <ConversationRow :conversation="$conversation" />
+</Swipeable>
+```
+
+Children are `[left panel]`, `[right panel]`, `content` (panels only when
+their width is set); the content must paint an opaque background. In PHP:
+`Swipeable::make($row)->rightActions($panel, 160)->leftActions($panel, 80)
+->group('inbox')->onOpen(fn (string $side) => …)`, plus `threshold()`,
+`spring()`, `enabled()`, `closeRequest()`, `openRequest()`, `onClose()` and
+`onBegin()`.
+
+## Scroll lifecycle and paging
+
+`ScrollView` and lists support `pagingEnabled` (lists page one item at a
+time), `snapToInterval` and `decelerationRate` natively. The lifecycle arrives
+without per-frame traffic as `ScrollPhaseEvent`s:
+
+| Event | Payload |
+| --- | --- |
+| `on:scrollBeginDrag` | offset |
+| `on:scrollEndDrag` | offset, release `velocityX`/`velocityY` (dp/s) |
+| `on:momentumScrollEnd` | offset and `page` once the fling or paging settled |
+
+```html
+<ScrollView horizontal="true" pagingEnabled="true" on:momentumScrollEnd="pageChanged">
+    <StoryPage p-for="$story in $stories" :key="$story['id']" :story="$story" />
+</ScrollView>
+```
+
+## CSS transitions
+
+Per-property durations, delays and timing functions run on the UI thread.
+`spring(mass stiffness damping)` is available as a timing function (defaults
+`1 100 10`):
+
+```css
+.bubble {
+    transition: transform 280ms spring(1 260 18), opacity 120ms ease-out 40ms;
+}
+```
+
+Transition properties: `all`, `opacity`, `transform`, `translate`, `scale`,
+`rotate`, `border-radius`. Timing functions: `linear`, `ease`, `ease-in`,
+`ease-out`, `ease-in-out`, `cubic-bezier()`, `steps()`, `spring()`. PHP:
+`$element->transition('opacity 200ms ease-in')`.
+
+## Animation programs
+
+`Pam\Native\Animation\Animation` describes Reanimated-style programs that are
+encoded once and played natively:
+
+```php
+use Pam\Native\Animation\Animation;
+use Pam\Native\Animation\Easing;
+
+// Like-button bounce, replayed whenever the like count changes.
+$this->bounce = Animation::timing(['scale' => 0.82], 70, Easing::EaseOutQuad)
+    ->then(Animation::spring(['scale' => 1], stiffness: 420, damping: 9, mass: 0.6))
+    ->key($this->likes);
+```
+
+```html
+<View :animation="$bounce"><Icon font="Ionicons" name="heart" /></View>
+```
+
+| Builder | Reanimated equivalent |
+| --- | --- |
+| `Animation::timing(array $to, int $duration = 300, Easing $easing = EaseInOut, int $delay = 0)` | `withDelay(withTiming())` |
+| `Animation::spring(array $to, float $stiffness = 100, float $damping = 10, float $mass = 1, float $velocity = 0, int $delay = 0)` | `withSpring()` |
+| `Animation::set(array $values)` | `withTiming(…, {duration: 0})` |
+| `Animation::sequence(...$parts)`, `Animation::wait(int $ms)` | `withSequence()` |
+| `$a->with($b)`, `$a->then($b)` | parallel / after |
+| `->delay(int $ms)`, `->repeat(int $times = -1)`, `->key(int\|string $key)` | `withDelay`, `withRepeat`, replay identity |
+
+A program replays only when its encoded form or `key()` changes; re-rendering
+an unchanged program never restarts it. `replayKey="$n"`
+(`Element::replayKey()`) replays an attached program or keyframes without
+changing them, and `on:animationComplete` fires when a finite program ends.
+Reduced-motion settings jump to the final values. `Easing` cases: `Linear`,
+`Ease`, `EaseIn`, `EaseOut`, `EaseInOut`, `EaseInQuad`, `EaseOutQuad`,
+`EaseInOutQuad`, `EaseInCubic`, `EaseOutCubic`, `EaseInOutCubic`,
+`EaseOutBack`.
+
+### Presets
+
+| `AnimationPreset` | Use |
+| --- | --- |
+| `heartBurst()` | Double-tap heart: pop, hold, float up and fade (pair with `TapEffect`) |
+| `likeBounce()` | Like button squash and overshoot |
+| `backToTop(bool $visible = true)` | Floating button entrance/exit |
+| `shimmer(int $durationMs = 1200)` | Skeleton sweep |
+| `pulse(float $minimum = 0.35, int $durationMs = 700)` | Recording indicator, placeholders |
+| `marquee(float $distance, float $speed = 30, int $holdMs = 1200)` | Overflowing track; for one-line text prefer `ellipsizeMode="marquee"` |
+| `fadeInUp(int $durationMs = 180, float $offset = 14)` | Live chat row entrance |
+
+### Keyframes and modals
+
+`@keyframes` with `<Animated animation="name">` keep working; in PHP,
+`new AnimationKeyframe(0.4, scaleX: 1.1, easing: 'ease-out-quad')` sets the
+curve from that keyframe to the next. `<Modal animationType="slide-fade">`
+fades the backdrop while the content slides from below on its own curve.
+
+## Text layout events
+
+`on:textLayout` (`TextLayoutEvent`) reports the wrapped line count at the
+rendered width (even when `numberOfLines` truncates), the visible line count,
+truncation and each line's width; use it for "… more" toggles without a hidden
+measuring copy (`$event->exceeds(2)`). `on:layout` (`LayoutEvent`: `x`, `y`,
+`width`, `height` relative to the parent) fires after mount and on frame
+changes, coalesced per frame.

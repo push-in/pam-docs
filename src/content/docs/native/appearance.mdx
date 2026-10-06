@@ -1,0 +1,126 @@
+---
+title: Appearance and theming
+description: Light, dark and system modes owned natively, the pam-native.json appearance section, the Appearance API, prefers-color-scheme CSS and the splash logo.
+---
+
+PAM Native (1.0.37+) owns the light/dark preference natively, so an app in
+dark mode never shows a light frame: not in the starting window, not in the
+splash screen, not in the native window before PHP renders and not in PHP's
+first frame. Changing the mode restyles the tree in place; nothing is
+remounted.
+
+## Configure the native window
+
+`pam-native.json`:
+
+```json
+{
+  "appearance": {
+    "defaultMode": "system",
+    "light": { "background": "#F7F6F2", "splashBackground": "#FFFFFF" },
+    "dark": { "background": "#111511" },
+    "legacyStartingWindow": "none",
+    "splash": { "logo": "assets/logos/app.png", "darkLogo": "assets/logos/app-dark.png", "size": 120 }
+  }
+}
+```
+
+| Field | Default | Purpose |
+| --- | --- | --- |
+| `defaultMode` | `system` | Mode used until the app calls `Appearance::set()`: `system`, `light`, `dark`. |
+| `light.background` / `dark.background` | `#FFFFFF` / `#121212` | Window background painted before the first PHP frame. |
+| `*.statusBar`, `*.navigationBar` | `background` | Bar colours before edge-to-edge content; icon contrast follows their luminance. |
+| `*.splashBackground` | `background` | Android 12+ splash and iOS launch screen background. |
+| `legacyStartingWindow` | `theme` | `none` skips the Android 8–11 starting window, which the system draws from the system scheme before the app runs. |
+| `splash.logo`, `splash.darkLogo`, `splash.size` | — / — / `96` | Project-relative PNG or WebP logo (24–240 dp box). WebP is Android-only. |
+
+Colours are opaque `#RGB` or `#RRGGBB`. Match them to your CSS root
+background. The build generates Android `values`/`values-night` resources for
+the DayNight host theme and adds the values to the iOS `Info.plist`; on iOS
+(1.9.0+) it also writes `App/PamLaunch.xcassets` with the splash colour set and
+logo, and the host keeps the logo on screen until the first PHP frame.
+
+## PHP API
+
+```php
+use Pam\Native\Appearance;
+use Pam\Native\AppearanceMode;
+use Pam\Native\UserInterfaceAppearance;
+
+Appearance::mode();      // AppearanceMode::System | Light | Dark (persisted preference)
+Appearance::current();   // UserInterfaceAppearance::Light | Dark (effective scheme)
+Appearance::isDark();    // bool
+Appearance::system();    // ?UserInterfaceAppearance, the OS scheme when observable
+
+Appearance::set(AppearanceMode::Dark);   // restyles now and persists natively
+Appearance::set(AppearanceMode::System, static function (bool $persisted): void {});
+
+$subscription = Appearance::onChange(
+    static function (UserInterfaceAppearance $current, AppearanceMode $mode): void {},
+);
+Appearance::unsubscribe($subscription);
+```
+
+`AppearanceMode` is int-backed (`System = 1`, `Light = 2`, `Dark = 3`). Every
+read is synchronous: the host exports the persisted mode and the effective
+scheme before PHP starts, so `Appearance::current()`, `App::appearance()`,
+`WindowMetrics::$appearance` and `@media (prefers-color-scheme)` are correct
+during the first render. `Appearance::set()` updates the metrics, re-renders
+the tree in place, notifies `onChange()` listeners and persists the mode
+(Android SharedPreferences, iOS `UserDefaults`).
+
+A settings screen:
+
+```html
+<Row class="modes">
+    <Button on:press="choose(1)">Sistema</Button>
+    <Button on:press="choose(2)">Claro</Button>
+    <Button on:press="choose(3)">Escuro</Button>
+</Row>
+```
+
+```php
+public function choose(int $mode): void
+{
+    Appearance::set(AppearanceMode::from($mode));
+}
+```
+
+## Theme with CSS
+
+Prefer CSS over passing a `$dark` flag through every component:
+
+```css
+.screen { background-color: #F7F6F2; }
+.title { color: #111511; }
+
+@media (prefers-color-scheme: dark) {
+  .screen { background-color: #111511; }
+  .title { color: #F7F6F2; }
+}
+```
+
+Declare dark overrides inside the media block. Custom properties are resolved
+when the stylesheet compiles, so redefining a `--variable` inside `@media`
+does not change rules outside it. The query follows the effective appearance
+(the persisted override, otherwise the system) and system changes restyle at
+runtime without remounting.
+
+## Platform behaviour
+
+**Android.** The host theme is DayNight. On Android 12+ the mode is also
+registered with `UiModeManager.setApplicationNightMode()`, so the system
+starting window and splash use it after a process restart; runtime changes
+arrive as a handled `uiMode` configuration change without recreating the
+activity. On Android 8–11 the mode is applied as an override configuration
+before `setContentView()`; because the system draws the starting window from
+the system scheme before the process exists, set
+`"legacyStartingWindow": "none"` to avoid a mismatched frame.
+
+**iOS.** The persisted mode is applied as the window's
+`overrideUserInterfaceStyle` before it becomes visible, and trait changes are
+reported from the host root controller.
+
+To prove a dark app never shows a light frame on Android, the core repository
+ships `scripts/android-appearance-first-frame.py`, which records a cold start
+on an emulator and fails on any light frame.

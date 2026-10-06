@@ -1,0 +1,184 @@
+---
+title: Keyboard, sheets and safe areas
+description: Engine-laid-out keyboard avoidance for chat composers, bottom sheets that ride above their own keyboard, autoFocus in sheets and modals, and engine-owned safe areas.
+---
+
+Chat screens stress three things at once: a composer that must sit exactly on
+the keyboard, sheets with inputs, and system bars that differ per device. PAM
+Native 1.4 through 1.14.2 moved all three into the layout engine and the
+native hosts, so application code never adds status-bar heights, navigation
+bar constants or keyboard offsets.
+
+## Safe areas are laid out by the engine
+
+The host passes the window safe area to the Rust layout engine before the
+first PHP frame. Every `SafeAreaView` gets padding for exactly the window
+edges its own frame overlaps, at any nesting level, as part of flex layout
+(like `react-native-safe-area-context`). Insets are never applied twice and a
+nested view that does not reach an edge receives none.
+
+```html
+<!-- Screen above a tab bar: the tab bar owns the bottom edge. -->
+<SafeAreaView safeAreaEdgeBottom="false">
+    <ChatList />
+</SafeAreaView>
+<AppTabBar />
+
+<!-- Bottom bar or sheet content: only the bottom edge. -->
+<SafeAreaView safeAreaEdgeTop="false" safeAreaEdgeLeft="false" safeAreaEdgeRight="false">
+    <Composer />
+</SafeAreaView>
+```
+
+`App::windowMetrics()` and CSS `env(safe-area-inset-*)` carry the real insets
+from the first render (the host exports them before PHP starts) and are
+re-sent whenever the insets change. A window covered by a dialog, sheet or
+permission prompt keeps its insets.
+
+Some gesture-navigation configurations report a zero bottom inset although
+system UI overlaps the screen. Configure a fallback (dp, 0–96, default 0):
+
+```json
+{ "android": { "safeAreaBottomFallback": 48 } }
+```
+
+Layout frames may have negative origins (1.13.2+): `top: -200px`,
+`left: -34px` and negative margins put a box outside its parent like CSS; only
+sizes must be finite and non-negative.
+
+## Chat composer above the keyboard
+
+Hosts report the visible keyboard height to the engine (Android
+`WindowInsets` IME, iOS `keyboardWillChangeFrame`). A
+`KeyboardAvoidingView` with `behavior="pan"` that ends a vertical container is
+laid out directly above the keyboard while its flexible siblings shrink, like
+`adjustResize` or `react-native-keyboard-controller`:
+
+```html
+<SafeAreaView class="chat">
+    <VirtualizedList class="timeline" inverted="true">…</VirtualizedList>
+    <KeyboardAvoidingView behavior="pan">
+        <Composer />
+    </KeyboardAvoidingView>
+</SafeAreaView>
+```
+
+```css
+.chat { flex: 1; }
+.timeline { flex: 1; }
+```
+
+The composer is visible, tappable and reported at its real bounds; the
+timeline keeps its last rows above it. A translated container is drawn above
+siblings with a higher `z-index`. Modal content is excluded (modal windows
+resize themselves).
+
+| `KeyboardAvoidingBehavior` | Use |
+| --- | --- |
+| `Resize` (default) | Shrinks the viewport and relays out flex descendants |
+| `Pan` | Moves an ending container above the keyboard (chat composers) |
+| `Padding` | Gives a contained vertical `ScrollView` the overlap inset and reveals the focused input with 16 dp clearance; `keyboardVerticalOffset` reserves more |
+
+Other keyboard rules:
+
+- Closing the keyboard with Back or the IME key while an input keeps focus
+  blurs it, so `on:blur` handlers restore the resting layout.
+- `<ScrollView keyboardInset="true">` adds the keyboard overlap as bottom
+  content inset and keeps the focused input revealed
+  (`KeyboardAwareScrollView`).
+- Controlled inputs never let a rendered value that echoes an older change
+  event overwrite newer typed text (React Native `mostRecentEventCount`);
+  values you set yourself (clearing after send) still apply.
+- `Keyboard::dismiss()` (`Pam\Native\System\Keyboard`) hides the keyboard.
+
+## Bottom sheets
+
+```php
+use Pam\Native\BottomSheetKeyboardBehavior;
+use Pam\Native\UI\BottomSheet;
+
+$sheet = BottomSheet::make($content, snapPoints: [0.35, 0.7, 1.0], index: 1)
+    ->dismissible()
+    ->backdropDismiss()
+    ->handleVisible()
+    ->dragEnabled()
+    ->cornerRadius(24)
+    ->keyboardBehavior(BottomSheetKeyboardBehavior::Interactive)
+    ->onChange(fn ($event) => $this->sheetIndex = $event->index)
+    ->onDismiss(fn () => $this->editing = false);
+```
+
+```html
+<BottomSheet :snapPoints="[0.35, 0.7, 1.0]" index="1" keyboardBehavior="interactive"
+    on:sheetChange="sheetChanged" on:sheetDismiss="sheetDismissed">
+    <EditMessageForm />
+</BottomSheet>
+```
+
+Sheets present like `@gorhom/bottom-sheet`: the backdrop fades while the sheet
+slides by its own height. Snap points are fractions of the container height
+minus the top safe-area inset.
+
+| `BottomSheetKeyboardBehavior` | Behaviour |
+| --- | --- |
+| `Interactive` (1, default) | Keeps the detent and rides above its own keyboard, frame by frame; the field and its buttons stay visible |
+| `Extend` (2) | Pan semantics |
+| `FillParent` (3) | A resized full-height surface |
+
+- The screen below ignores the keyboard of an input inside a presented sheet
+  or modal (the chat composer does not move).
+- Drag-to-close starts only when the scrollable under the finger is at its top;
+  a downward drag inside a scrolled list scrolls it.
+- While the keyboard lifts a sheet, a tap on its upper part is not a backdrop
+  tap.
+
+## autoFocus inside sheets and modals
+
+`autoFocus` (`TextInput::autoFocus()` or the `autoFocus` attribute) opens the
+keyboard for an input inside a just-presented `BottomSheet` or `Modal`, also
+when the input is remounted with a new key in a re-presented sheet and when
+the sheet is presented while another overlay closes:
+
+```html
+<BottomSheet p-if="$editing" :snapPoints="[0.5]" keyboardBehavior="interactive">
+    <TextInput :key="$editingMessageId" autoFocus="true" multiline="true" :value="$draft" on:change="typed" />
+    <Button on:press="save">Salvar</Button>
+</BottomSheet>
+```
+
+On Android the input waits for its own window focus, asks the window insets
+controller and the input method manager, and retries (bounded by 3 s of wall
+clock) until the keyboard is visible; the modal window keeps
+`SOFT_INPUT_STATE_ALWAYS_VISIBLE` while an `autoFocus` input is pending
+(1.13.3+). `PamAutoFocus` logcat lines trace the path on devices. iOS runs
+`autoFocus` once the sheet is presented.
+
+## Modals
+
+```php
+use Pam\Native\ModalAnimationType;
+use Pam\Native\ModalPresentation;
+use Pam\Native\UI\Modal;
+
+Modal::make($content, visible: $this->open, presentation: ModalPresentation::FullScreen)
+    ->animationType(ModalAnimationType::SlideFade)
+    ->backdropColor(0x47000000)
+    ->onRequestClose(fn () => $this->open = false);
+```
+
+- `<Modal transparent="true" presentation="fullScreen">` whose content ends in
+  a short options panel stays a short sheet over a translucent backdrop: only
+  children spanning the modal fill the window.
+- Back (down and up) is owned by the modal window.
+- Taps inside a `Pressable` nested in another `Pressable` (a panel inside a
+  dismiss backdrop) reach the view under the finger (1.12.1+).
+- `animationType`: `none`, `slide`, `fade`, `slide-fade` (backdrop fades
+  while the content slides).
+
+## Status
+
+Android behaviour is covered by instrumented suites
+(`PamKeyboardInstrumentedTest`, `PamSheetKeyboardInstrumentedTest`,
+`PamNestedPressableInstrumentedTest`) on Android 12 devices and emulators. The
+iOS counterparts are implemented and listed in the core repository's
+`docs/ios-parity.md` for device validation.

@@ -1,20 +1,65 @@
 ---
 title: PAM Native Media Editor
-description: Compose and export native photo and video timelines from typed PHP 8.5 contracts.
+description: Compose and export native photo and video timelines with trims, ranges, grading, timed text and sticker overlays, soundtracks and pushed progress.
 ---
 
 ## Start here
 
+Every PAM Native product runs on the PAM runtime. Install and verify PAM first,
+create a Native application, and add this package through PAM Composer:
+
 ```bash
 curl -fsSL https://github.com/push-in/pam/releases/latest/download/install.sh | sh
+pam doctor
 pam init my-app --template native
 cd my-app
 pam composer require pushinbr/pam-native-media-editor
-pam doctor --fix
+pam doctor
+pam native dev
 ```
 
-Build immutable timelines with trim, concatenation, crop, rotation, speed,
-filters, soundtrack mixing, output size, FPS, bitrate, H.264/HEVC and HDR
-policy. Android uses Media3 Transformer; iOS uses AVFoundation and Core Image.
-Exports expose progress and cancellation and accept only sandboxed file paths.
+`pushinbr/pam-native-media-editor` 0.2 exports a non-destructive timeline
+natively: Media3 Transformer 1.10.1 on Android, AVAssetReader/AVAssetWriter
+with Core Image on iOS. Encoded media never crosses the PHP boundary frame by
+frame. Requires PAM Native `>=1.0.35 <2.0.0`.
 
+```php
+use Pam\Native\MediaEditor\{MediaAdjustments, MediaClip, MediaEditor, MediaExportOptions, MediaExportResult, MediaTimeline, OverlayPlacement, TextOverlay, VideoCodec};
+
+$timeline = new MediaTimeline(
+    [MediaClip::image('imports/cover.jpg', 3_000), new MediaClip('imports/clip.mp4', removeAudio: true)],
+    soundtrack: 'imports/song.m4a',
+    soundtrackVolume: 0.8,
+    loopSoundtrack: true,
+    adjustments: new MediaAdjustments(saturation: 0.1, temperature: 0.25, vignette: 0.4),
+    overlays: [new TextOverlay('Hello', new OverlayPlacement(x: 0.5, y: 0.85, startMillis: 500, endMillis: 3_500))],
+    rangeStartMillis: 0,
+    rangeEndMillis: 15_000,
+);
+
+$jobId = (new MediaEditor())->export(
+    $timeline,
+    new MediaExportOptions('exports/story.mp4', VideoCodec::H264, width: null, height: null, videoBitRate: null, timeoutMillis: 120_000),
+    fn (MediaExportResult $r) => $r->completed() ? $this->publish($r->path) : $this->fail($r->failure, $r->message),
+    progress: fn (int $percent) => $this->progress = $percent,
+);
+```
+
+- Clips: video (trim, speed 0.25–4, volume, rotation, crop, filter,
+  `removeAudio`) and image clips with a duration; 1–128 per timeline.
+- Grading: brightness, contrast, saturation, temperature, fade, grain and
+  vignette. Overlays: timed text and image/GIF stickers from the sandbox or
+  HTTPS.
+- `MediaEditor::probe()` returns total and per-clip durations, size and audio;
+  `status()` and `cancel()` take the job id; failures are typed
+  (`MediaEditorFailure`: `UnreadableSource`, `InvalidDuration`, `EmptyRange`,
+  `ExportFailed`, `TimedOut`, `Cancelled`, `OutputMissing`, `Unknown`).
+- `width/height/videoBitRate: null` keep the source size and encoder default.
+  `preserveHdr` is ignored on iOS (SDR output).
+
+No permissions or Info.plist keys are needed.
+
+## Reference
+
+- [README: complete API, errors and the Zé Chat story composer](https://github.com/push-in/pam-native-media-editor#readme)
+- [Runnable story export example](https://github.com/push-in/pam-native-media-editor/tree/main/example)

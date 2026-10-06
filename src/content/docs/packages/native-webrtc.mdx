@@ -1,0 +1,81 @@
+---
+title: PAM Native WebRTC
+description: Native WebRTC peer connections, GPU video views and call audio routing for voice and video calls driven from PHP.
+---
+
+## Start here
+
+```bash
+pam composer require pushinbr/pam-native-webrtc
+pam doctor --fix
+```
+
+`pushinbr/pam-native-webrtc` 0.2 wraps WebRTC M124 (`org.jitsi:webrtc` on
+Android, GoogleWebRTC through the `stasel/WebRTC` Swift package on iOS). PHP
+exchanges SDP and ICE through your signalling channel; events arrive through
+one pending native completion per session, and video frames never cross into
+PHP. Requires PAM Native `>=1.0.35 <2.0.0`, Android API 26+ and iOS 15+.
+
+```php
+use Pam\Native\WebRtc\{IceCandidate, IceServer, PeerConnection, RtcConnectionState, SessionDescription};
+
+$pc = PeerConnection::create([
+        IceServer::stun('stun:stun.l.google.com:19302'),
+        IceServer::turn('turn:turn.example.com:3478', $user, $credential),
+    ], $sessionId)
+    ->video()
+    ->onIceCandidate(fn (IceCandidate $c) => $signaling->send('ice', $c->toArray()))
+    ->onConnectionState(fn (RtcConnectionState $s) => $this->state = $s);
+
+$pc->startLocal(function (bool $ok, string $error) use ($pc, $signaling): void {
+    $pc->offer(fn (?SessionDescription $offer, string $error) => $signaling->send('offer', $offer?->toArray()));
+});
+
+// When the answer and remote candidates arrive:
+$pc->setRemote(SessionDescription::fromArray($answer));
+$pc->addIceCandidate(IceCandidate::fromArray($candidate));
+```
+
+Configure (`video`, `facing`, `resolution`, `relayOnly`) before the first
+operation; the native session is created lazily. Buffer remote ICE candidates
+until `setRemote()` succeeds.
+
+## Video and call audio
+
+```html
+<RtcVideoView :session="$sessionId" track="remote" fit="cover" class="remote-video" />
+<RtcVideoView :session="$sessionId" track="local" mirror="true" class="local-preview" />
+```
+
+```php
+use Pam\Native\WebRtc\{CallAudio, CallAudioMode, CallAudioRoute};
+
+$audio = CallAudio::start(CallAudioMode::Voice)      // earpiece + proximity; Video → speaker
+    ->ringback()                                      // while the callee rings
+    ->onRouteChange(fn (CallAudioRoute $r) => $this->route = $r);
+$audio->ringback(false);
+CallAudio::stopActive();
+```
+
+`CallAudio` replaces `react-native-incall-manager`: communication focus and
+mode, Bluetooth → wired → speaker → earpiece routing with route events,
+ringback, ringtone with vibration, microphone mute and the proximity
+screen-off.
+
+## Setup and permissions
+
+- **Android** (merged): `INTERNET`, `ACCESS_NETWORK_STATE`, `CAMERA`,
+  `RECORD_AUDIO`, `MODIFY_AUDIO_SETTINGS`, `WAKE_LOCK`, `VIBRATE`, `BLUETOOTH`
+  (API ≤ 30). Request camera and microphone before `startLocal()`.
+- **iOS** (merged): `audio` background mode, `NSCameraUsageDescription` and
+  `NSMicrophoneUsageDescription` (identical to `pam-native-media` so both can
+  be installed; 0.2.1+), frameworks `AVFoundation` and `AudioToolbox`.
+- For incoming calls and the system call UI, combine it with
+  [Calls](/packages/native-calls/).
+
+## Reference
+
+- [README: complete API, event contract, errors, Zé Chat call screen](https://github.com/push-in/pam-native-webrtc#readme)
+- [Runnable loopback-call example](https://github.com/push-in/pam-native-webrtc/tree/main/example)
+- The iOS implementation mirrors the Android loopback suite in XCTest and
+  awaits device validation.

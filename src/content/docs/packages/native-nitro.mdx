@@ -22,7 +22,7 @@ PAM Native Nitro is the high-performance local data engine for PAM Native. It
 keeps SQLite work outside rendering, selects only bounded rows needed by the
 current screen, and moves batches across the native bridge once.
 
-Nitro 0.3.3 requires PHP 8.4 and PAM Native 0.6.2 or newer. The package is installed through `pam composer`. Remove it with `pam composer remove`.
+Nitro 0.5.2 requires PHP 8.5 and PAM Native `^0.8 || ^0.9 || ^0.10 || ^1.0` on Android API 26+ and iOS 15+. It is plain PHP on the core `SQLite` module: no plugin, permissions or Info.plist keys. The package is installed through `pam composer`. Remove it with `pam composer remove`.
 
 ## Define models
 
@@ -114,6 +114,44 @@ $chat->messages->get(function (array $messages): void {
     // Only this chat's rows cross the bridge.
 });
 ```
+
+## One native call for many reads or writes
+
+```php
+use Pam\Nitro\{Batch, Nitro};
+
+// Several queries, one native call, one result.
+Nitro::fetch([
+    'chats' => Chat::query()->limit(50),
+    'messages' => Message::query()->where('chat_id', $chatId)->latest()->limit(30),
+], function (array $results): void {
+    [$this->chats, $this->messages] = [$results['chats'], $results['messages']];
+});
+
+// Heterogeneous writes, one transaction.
+Nitro::batch(function (Batch $batch) use ($chat, $messages, $draft): void {
+    $batch->save($chat)
+        ->saveMany($messages)
+        ->delete($draft)
+        ->execute('UPDATE "chats" SET "unread" = 0 WHERE "id" = ?', [$chat->id]);
+}, fn () => $this->saved = true, fn (string $error) => $this->error = $error);
+
+// Failures of calls made without a $failure callback (otherwise the PHP error log).
+Nitro::onFailure(fn (string $error) => error_log('Nitro: '.$error));
+```
+
+Since 0.5.1 every write is measured before it crosses the bridge: payloads up
+to a 768 KiB budget stay one native call, larger `batch()`, `replaceMany()`,
+`saveMany()` and delta writes are staged and committed in one final
+transaction (a failure leaves the target tables untouched), and large reads
+are paged with ordered `LIMIT`/`OFFSET` windows. Native failures go to the
+optional `$failure` callbacks and are never thrown from inside a native
+callback. On iOS, prepared statements are reused natively with PAM Native
+1.9.1+.
+
+Zé Chat keeps twelve models in one database behind a single owner that runs
+one `Nitro::prepare()` and queues operations requested before the schema is
+ready; see the [README example](https://github.com/push-in/pam-native-nitro#a-real-example-zé-chat).
 
 ## Offline-first synchronization
 
@@ -221,7 +259,7 @@ new idempotency key whenever the payload changes.
 
 ### Built-in sync queue
 
-Nitro 0.3.3 includes a durable outbox instead of requiring applications to
+Nitro includes a durable outbox instead of requiring applications to
 rebuild that state machine:
 
 ```php
@@ -306,13 +344,15 @@ hydration, incremental sync, indexed pagination, optimistic update, memory at
 100,000 rows, median, p95, device, OS, build mode, dataset, and exact commit.
 
 See the [source repository](https://github.com/push-in/pam-native-nitro) for
-the benchmark protocol, architecture details, tests, and release history.
+the benchmark protocol, architecture details, tests, release history and a
+[runnable offline notes example](https://github.com/push-in/pam-native-nitro/tree/main/example).
 
 ## Complete PHP API
 
 | Type | Public contract |
 | --- | --- |
-| `Nitro` | `boot()`, `query()`, `createTable()`, `prepare()`, `save()`, `delete()`, `deleteWhere()`, `saveMany()`, `replaceMany()`, `connection()` |
+| `Nitro` | `boot()`, `query()`, `createTable()`, `prepare()`, `fetch()`, `batch()`, `save()`, `delete()`, `deleteWhere()`, `saveMany()`, `replaceMany()`, `onFailure()`, `connection()` |
+| `Batch` | `save()`, `saveMany()`, `delete()`, `deleteWhere()`, `replaceMany()`, `execute()`, `executeMany()` (≤ 10,000 statements) |
 | `Model` | `query()`, `find()`, `save()`, `delete()`, `attributes()`, `hydrate()` and application-defined `table()` |
 | `Query` | Immutable `where()`, `orderBy()`, `latest()`, `limit()`, `get()`, `first()` |
 | `Connection` | `execute()`, `query()`, `executeMany()`, `transaction()` over one named database |

@@ -1,6 +1,6 @@
 ---
 title: PAM Native Share Extension
-description: Receive text, URLs, and sandboxed file copies from Android shares and an iOS Share Extension through a process-safe inbox.
+description: Receive text, links and files from the Android share sheet and an iOS Share Extension through a drained inbox.
 ---
 
 ## Start here
@@ -18,19 +18,44 @@ pam doctor
 pam native dev
 ```
 
+`pushinbr/pam-native-share-extension` 0.2.2 adds `ACTION_SEND` /
+`SEND_MULTIPLE` intent filters on Android and a generated iOS Share Extension
+(`PamShareExtension`, bundle suffix `.share`) that copies shared files into the
+App Group `group.<application-id>.pam-native`. Requires PAM Native
+`>=0.8.0 <2.0.0`.
+
 ```php
+use Pam\Native\ShareExtension\{SharedItem, SharedItemKind, ShareInbox};
+
 (new ShareInbox())->drain(function (array $items): void {
-    foreach ($items as $item) handleSharedItem($item);
+    foreach ($items as $item) {          // SharedItem: identifier, kind, value, mimeType, createdAtMillis
+        match ($item->kind) {
+            SharedItemKind::Text, SharedItemKind::Url => $this->prefill($item->value),
+            SharedItemKind::File => $this->attach($item),
+        };
+    }
 });
 ```
 
-`ShareInbox` drains process-safe platform items; `SharedItem` exposes normalized
-text, URL, or copied-file value; `SharedItemKind` is an integer-backed type.
+Drain after launch and on every resume; drained entries are consumed. Validate
+MIME type and content before using a file.
 
-Drain after launch and each resume. Returned entries are consumed, so move files
-that must survive into application-owned storage before completion. iOS app and
-extension share `group.<application-id>.pam-native`; Android intent filters are
-generated from the package manifest. Never trust MIME, extension, contents, or
-size—validate before parsing/upload.
+## Core `IncomingShares` or this package?
 
-`ShareExtensionPluginProvider` registers the extension and inbox contract.
+On iOS, this package's Share Extension is what fills the App Group inbox. You
+can consume that inbox with `ShareInbox` (one `SharedItem` per text, link or
+file, files as raw App Group tokens) or with the core
+`Pam\Native\System\IncomingShares` API (`initial()` and `listen()`), which
+groups each share and imports its files into the app sandbox as
+`FileReference`s. Both drain the same entries, so pick one. On Android the
+core can also declare share targets itself with `android.shareTargets` in
+`pam-native.json` and deliver them through `IncomingShares`; that is what Zé
+Chat does.
+
+On iOS, register the App Group for the app and the extension bundle ids and
+include it in both provisioning profiles.
+
+## Reference
+
+- [README: setup, platform semantics, API and checklist](https://github.com/push-in/pam-native-share-extension#readme)
+- [Runnable share inbox example](https://github.com/push-in/pam-native-share-extension/tree/main/example)

@@ -1,0 +1,96 @@
+---
+title: PAM Native Calls
+description: Ring like a phone call while PHP is suspended with CallStyle and CallKit incoming calls, a lock-screen UI, an ongoing-call foreground service, durable call actions and push-driven ringing.
+---
+
+## Start here
+
+```bash
+pam composer require pushinbr/pam-native-calls
+pam doctor --fix
+```
+
+`pushinbr/pam-native-calls` 0.2 owns the part of a calling app that must work
+when PHP is not running: ringing from a push, the full-screen lock-screen UI,
+the ongoing-call foreground service and the user's taps. Media and signalling
+stay in your app (see [WebRTC](/packages/native-webrtc/)). Requires PAM Native
+`>=1.0.35 <2.0.0`, Android API 26+ and iOS 15+.
+
+| | Android | iOS |
+| --- | --- | --- |
+| Incoming call | `Notification.CallStyle` (12+) with Accept/Decline, insistent ringtone channel, full-screen `IncomingCallActivity` | CallKit system UI |
+| Ring while suspended | FCM data message → `CallPushReceiver` | PushKit VoIP push |
+| Ongoing call | CallStyle notification + `camera\|microphone` foreground service | CallKit call (outgoing calls via `CXStartCallAction`) |
+| Actions | Queued natively, delivered on resume | Same queue, from `CXProviderDelegate` |
+
+## Ring, act, hang up
+
+```php
+use Pam\Native\Calls\{CallAction, CallActionKind, Calls, IncomingCall};
+
+// Once at boot.
+Calls::onAction(function (CallAction $action): void {
+    match ($action->kind) {
+        CallActionKind::Accept => $this->openCall($action->callId, accepted: true),
+        CallActionKind::Open => $this->openCall($action->callId),
+        CallActionKind::Decline, CallActionKind::Timeout => $this->api->reject($action->callId),
+        CallActionKind::HangUp => $this->api->leave($action->callId),
+    };
+});
+
+Calls::incoming(
+    IncomingCall::make($callId)->caller('Ana', $avatarUrl)->video()->timeout(45)->data(['room' => $roomId]),
+)->show();
+
+Calls::ongoing($callId)->caller('Ana')->video()->since($connectedAtMs)->show();
+Calls::end($callId);   // removes every surface, emits no action
+```
+
+`CallActionKind`: `Accept = 1`, `Decline = 2`, `Open = 3`, `HangUp = 4`,
+`Timeout = 5`. Actions taken while the process was dead are delivered after
+the next launch once a listener is registered.
+
+## Ringing from push while PHP is suspended
+
+```php
+use Pam\Native\Calls\{Calls, PushCallMapping};
+
+Calls::fromPush(
+    PushCallMapping::type(2)                       // data['type'] == 2
+        ->id('call_id')
+        ->caller('notification_title', 'notification_image_url')
+        ->video('call_type', 2, 3)
+        ->endedWhen('call_event', 1)               // "call ended" push clears the ringing UI
+        ->timeout(45),
+);
+
+Calls::voipToken(fn (?string $token) => $token && $this->api->registerVoip($token)); // iOS only
+```
+
+The mapping is persisted natively and evaluated for every FCM data message
+(Android) or VoIP push (iOS). Send Android call pushes as high-priority
+data-only messages; send iOS ones through APNs VoIP (`apns-push-type: voip`).
+iOS requires every VoIP push to report a call, so unmatched pushes report a
+call that ends immediately.
+
+## Setup and permissions
+
+- **Android** (merged): `POST_NOTIFICATIONS`, `USE_FULL_SCREEN_INTENT`,
+  `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_CAMERA`,
+  `FOREGROUND_SERVICE_MICROPHONE`, `CAMERA`, `RECORD_AUDIO`, `VIBRATE`,
+  `WAKE_LOCK`, `INTERNET`. Request notifications, camera and microphone at
+  runtime; push ringing needs Firebase configured. Android 14+ grants the
+  full-screen intent only to calling apps: check `Calls::readiness()` and send
+  users to `Calls::openFullScreenSettings()`.
+- **iOS** (merged): `UIBackgroundModes` `voip`, `audio`,
+  `remote-notification`; `aps-environment` entitlement; `CallKit`, `PushKit`
+  and `AVFoundation`. Start WebRTC call audio after CallKit posts
+  `pamCallAudioActivated`. CallKit is unavailable in mainland China
+  (`readiness()` reports it).
+
+## Reference
+
+- [README: complete API, errors, Zé Chat integration, troubleshooting](https://github.com/push-in/pam-native-calls#readme)
+- [Runnable example app](https://github.com/push-in/pam-native-calls/tree/main/example)
+- The iOS implementation mirrors the Android instrumented suite in XCTest and
+  awaits device validation.
