@@ -1,6 +1,6 @@
 ---
 title: Keyboard, sheets and safe areas
-description: Engine-laid-out keyboard avoidance for chat composers, bottom sheets that ride above their own keyboard, autoFocus in sheets and modals, and engine-owned safe areas.
+description: Engine-laid-out keyboard avoidance for chat composers and inside modals, bottom sheets that ride above their own keyboard, autoFocus in sheets and modals, and engine-owned safe areas.
 ---
 
 Chat screens stress three things at once: a composer that must sit exactly on
@@ -100,14 +100,59 @@ laid out directly above the keyboard while its flexible siblings shrink, like
 
 The composer is visible, tappable and reported at its real bounds; the
 timeline keeps its last rows above it. A translated container is drawn above
-siblings with a higher `z-index`. Modal content is excluded (modal windows
-resize themselves).
+siblings with a higher `z-index`. Content inside a `Modal` or `BottomSheet`
+avoids that surface's own keyboard instead (next section).
 
-| `KeyboardAvoidingBehavior` | Use |
-| --- | --- |
-| `Resize` (default) | Shrinks the viewport and relays out flex descendants |
-| `Pan` | Moves an ending container above the keyboard (chat composers) |
-| `Padding` | Gives a contained vertical `ScrollView` the overlap inset and reveals the focused input with 16 dp clearance; `keyboardVerticalOffset` reserves more |
+| `KeyboardAvoidingBehavior` | Template `behavior` | Use |
+| --- | --- | --- |
+| `Resize` (default) | `resize`, `height` | Shrinks the viewport and relays out flex descendants |
+| `Pan` | `pan`, `position` | Moves an ending container above the keyboard (chat composers) |
+| `Padding` | `padding` | Gives a contained vertical `ScrollView` the overlap inset and reveals the focused input with 16 dp clearance; `keyboardVerticalOffset` reserves more |
+
+`height` and `position` are React Native's names (1.28+).
+
+## Keyboard avoidance inside modals and sheets (1.28+)
+
+Each `Modal` and `BottomSheet` has its own keyboard inset, like its own safe
+area. A `KeyboardAvoidingView` inside one avoids the keyboard of that
+surface, measured from that surface's bottom edge (Android: the IME of the
+modal's own `Dialog` window; iOS: the keyboard frame converted to the modal's
+coordinate space). The screen below never moves for it.
+
+```html
+<!-- Text composer: the colour palette stays above the keyboard. -->
+<Modal :visible="$open" presentation="fullScreen" statusBarTranslucent="true">
+    <KeyboardAvoidingView flexGrow="1" behavior="padding">
+        <View flexGrow="1">
+            <Stage class="flex-1" />
+            <View class="overlay"> <!-- absolute, space-between -->
+                <TopBar />
+                <TextInput multiline="true" />
+                <Palette />
+            </View>
+        </View>
+    </KeyboardAvoidingView>
+</Modal>
+```
+
+| Behavior inside a modal | Android | iOS |
+| --- | --- | --- |
+| `padding` | Engine: the content box loses the overlap, flex and absolute descendants are laid out above the keyboard | Same |
+| `resize` / `height` | Engine: the view loses the overlap | Same |
+| `pan` / `position` | Native translation against the dialog window's IME | Engine: the view moves up by the overlap |
+
+- The overlap follows React Native's `relativeKeyboardHeight`: the view's
+  bottom plus `keyboardVerticalOffset` below the keyboard's top edge.
+- Android relays out on every `WindowInsetsAnimation` frame, so the content
+  moves with the IME; iOS animates the new frames with the keyboard's own
+  duration and curve.
+- An interactive `BottomSheet` keeps lifting itself onto its keyboard; its
+  `KeyboardAvoidingView` only avoids what the lift leaves (nothing for a
+  sheet resting on the window bottom). `Extend`/`FillParent` sheets move or
+  resize their window instead.
+- Before 1.28 an Android modal's `KeyboardAvoidingView` read the activity
+  window's IME, which a dialog's keyboard never reaches, so its content stayed
+  under the keyboard.
 
 Other keyboard rules:
 
@@ -210,6 +255,9 @@ Modal::make($content, visible: $this->open, presentation: ModalPresentation::Ful
 Android behaviour is covered by instrumented suites
 (`PamKeyboardInstrumentedTest`, `PamSheetKeyboardInstrumentedTest`,
 `PamNestedPressableInstrumentedTest`) on Android 12 devices and emulators;
+keyboard avoidance inside modals and sheets by
+`PamModalKeyboardAvoidingInstrumentedTest` (real engine, real dialog windows,
+real IME) on API 31 and API 35 and `PamModalKeyboardAvoidingTests` (XCTest);
 per-surface safe areas by `PamSurfaceSafeAreaInstrumentedTest` (real engine,
 real dialog windows) on API 31 and API 36. The
 iOS counterparts are implemented and listed in the core repository's
