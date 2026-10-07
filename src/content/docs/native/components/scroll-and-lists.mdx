@@ -202,6 +202,15 @@ authoritative:
 Multi-column rows and horizontal lists without `rowHeight` are content-sized
 too (the tallest cell sets the row height, 1.6.0+).
 
+Since 1.25.1 a margin on a cell's root element counts toward the cell, as in
+React Native/Yoga: the row is the root's margin box (`marginTop` + content +
+`marginBottom`; left and right margins inset the root inside its column) and
+the root is offset by its margins. This holds for grid rows (the tallest
+margin box sets the row), `fullSpan` cells and horizontal lists. An authored
+`height` (`width` horizontally) stays the root's own size, with the margins
+added around it. Earlier versions dropped root margins from the row, so
+margins had to be written as padding.
+
 PAM computes these extents in Rust and gives each recycled Android holder its
 exact native size. Scrolling does not synchronously measure PHP components on
 the UI thread. Horizontal rich lists use an explicit cell `width` the same
@@ -216,7 +225,9 @@ Inside the cell, component-level `overflow` still controls descendant clipping.
 Mark a direct child of a `ScrollView`, `VirtualizedList` or `VirtualGrid`
 with `stickyHeader="true"` (`Element::stickyHeader()`), the equivalent of
 `stickyHeaderIndices`. It pins to the top once scrolled past and is pushed
-away by the next sticky sibling.
+away by the next sticky sibling. Like React Native's sticky header wrapper,
+it pins and is pushed by its margin box, so a pinned header keeps its top
+margin above it (1.25.1+).
 
 ```html
 <VirtualizedList estimatedRowHeight="72" columns="3">
