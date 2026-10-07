@@ -1,4 +1,6 @@
 ---
+import evidenceContract from '../data/mobile-ui-evidence.json';
+
 const modules = import.meta.glob('../assets/mobile-ui/components/p-*.png', {
   eager: true,
   query: '?url',
@@ -35,9 +37,9 @@ const componentBase = `${siteBase}mobile-ui/components`;
       <a href={`${componentBase}/${tag}/`} aria-label={`Open the ${tag} component documentation`}>
         <img
           src={url}
-          alt={`${tag} rendered by PAM Native UI on a physical Samsung Android device`}
+          alt={`${tag} rendered by PAM Native UI on ${evidenceContract.candidateComponents.includes(tag) ? 'an Android API 36 emulator; physical approval pending' : 'a physical Samsung Android device'}`}
           width="1080"
-          height="2280"
+          height={evidenceContract.candidateComponents.includes(tag) ? 2400 : 2280}
           loading="lazy"
           decoding="async"
         />

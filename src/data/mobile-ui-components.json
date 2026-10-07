@@ -1,6 +1,6 @@
 {
     "schemaVersion": 1,
-    "componentCount": 84,
+    "componentCount": 114,
     "source": "push-in/pam-native-ui",
     "components": [
         {
@@ -305,6 +305,62 @@
             "related": [
                 "p-app-bar"
             ]
+        },
+        {
+            "tag": "p-app-scaffold",
+            "class": "PAppScaffold",
+            "namespace": "Pam\\MobileUi\\Material\\PAppScaffold",
+            "module": "app-scaffold",
+            "family": "Navigation and progress",
+            "summary": "Navigation and progress component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": false,
+            "profiles": [
+                "Phone",
+                "Edge to edge",
+                "Keyboard aware",
+                "Compact"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PAppScaffold preview\""
+                    ]
+                },
+                {
+                    "name": "density",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"compact\""
+                    ]
+                },
+                {
+                    "name": "edges",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"top,bottom\"",
+                        "\"left,right\"",
+                        "\"top,bottom,left,right\""
+                    ]
+                },
+                {
+                    "name": "keyboardAware",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                }
+            ],
+            "related": []
         },
         {
             "tag": "p-autocomplete",
@@ -881,6 +937,69 @@
             "related": [
                 "p-banner"
             ]
+        },
+        {
+            "tag": "p-bottom-app-bar",
+            "class": "PBottomAppBar",
+            "namespace": "Pam\\MobileUi\\Material\\PBottomAppBar",
+            "module": "bottom-app-bar",
+            "family": "Navigation and progress",
+            "summary": "Navigation and progress component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "Actions",
+                "With FAB",
+                "Elevated",
+                "Tonal"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PBottomAppBar preview\""
+                    ]
+                },
+                {
+                    "name": "actionCount",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        3
+                    ]
+                },
+                {
+                    "name": "elevation",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        4
+                    ]
+                },
+                {
+                    "name": "fab",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "variant",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"tonal\""
+                    ]
+                }
+            ],
+            "related": []
         },
         {
             "tag": "p-bottom-sheet",
@@ -1907,7 +2026,11 @@
             "summary": "Surfaces and media component rendered through the retained-native Android and UIKit pipeline.",
             "interactive": true,
             "profiles": [
-                "Default"
+                "Default",
+                "Selected",
+                "Disabled",
+                "Compact",
+                "Immersive"
             ],
             "props": [
                 {
@@ -1918,11 +2041,132 @@
                     "examples": [
                         "\"PCarouselItem preview\""
                     ]
+                },
+                {
+                    "name": "disabled",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "height",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        180,
+                        320
+                    ]
+                },
+                {
+                    "name": "hideDelimiters",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "selected",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
                 }
             ],
             "related": [
                 "p-carousel"
             ]
+        },
+        {
+            "tag": "p-chart",
+            "class": "PChart",
+            "namespace": "Pam\\MobileUi\\Material\\PChart",
+            "module": "chart",
+            "family": "Data display",
+            "summary": "Data display component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": false,
+            "profiles": [
+                "Default",
+                "Line",
+                "Area",
+                "Bars"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Revenue increased from 12 to 64\""
+                    ]
+                },
+                {
+                    "name": "fill",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true",
+                        "false"
+                    ]
+                },
+                {
+                    "name": "lineWidth",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        3
+                    ]
+                },
+                {
+                    "name": "showPoints",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "smooth",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "type",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"area\"",
+                        "\"trend\"",
+                        "\"bar\""
+                    ]
+                },
+                {
+                    "name": "values",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"12,18,14,26,22,34,31,42,38,52,48,64\""
+                    ]
+                }
+            ],
+            "related": []
         },
         {
             "tag": "p-checkbox",
@@ -2556,6 +2800,229 @@
                         "\"solo\"",
                         "\"solo-inverted\"",
                         "\"solo-filled\""
+                    ]
+                }
+            ],
+            "related": []
+        },
+        {
+            "tag": "p-command-palette",
+            "class": "PCommandPalette",
+            "namespace": "Pam\\MobileUi\\Material\\PCommandPalette",
+            "module": "command-palette",
+            "family": "Overlays and feedback",
+            "summary": "Overlays and feedback component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "Commands",
+                "Navigation",
+                "Selected",
+                "Empty"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PCommandPalette preview\""
+                    ]
+                },
+                {
+                    "name": "items",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
+                    "name": "label",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Quick actions\"",
+                        "\"Navigate\"",
+                        "\"Build target\"",
+                        "\"No matches\""
+                    ]
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Build Android\""
+                    ]
+                },
+                {
+                    "name": "open",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true",
+                        "false"
+                    ]
+                }
+            ],
+            "related": []
+        },
+        {
+            "tag": "p-currency-field",
+            "class": "PCurrencyField",
+            "namespace": "Pam\\MobileUi\\Material\\PCurrencyField",
+            "module": "currency-field",
+            "family": "Forms and editing",
+            "summary": "Forms and editing component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "BRL",
+                "USD",
+                "No cents",
+                "Error"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PCurrencyField preview\""
+                    ]
+                },
+                {
+                    "name": "decimalDigits",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        2,
+                        0
+                    ]
+                },
+                {
+                    "name": "error",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "label",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Investment\"",
+                        "\"Revenue\"",
+                        "\"Budget\"",
+                        "\"Amount\""
+                    ]
+                },
+                {
+                    "name": "locale",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"pt-BR\"",
+                        "\"en-US\""
+                    ]
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"128450\"",
+                        "\"948025\"",
+                        "\"12000\""
+                    ]
+                },
+                {
+                    "name": "prefix",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"R$ \"",
+                        "\"$ \""
+                    ]
+                }
+            ],
+            "related": []
+        },
+        {
+            "tag": "p-data-grid",
+            "class": "PDataGrid",
+            "namespace": "Pam\\MobileUi\\Material\\PDataGrid",
+            "module": "data-grid",
+            "family": "Data display",
+            "summary": "Data display component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "Default",
+                "Selectable",
+                "Compact",
+                "Loading"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PDataGrid preview\""
+                    ]
+                },
+                {
+                    "name": "density",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"compact\""
+                    ]
+                },
+                {
+                    "name": "headers",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
+                    "name": "items",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
+                    "name": "loading",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "showSelect",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "false",
+                        "true"
                     ]
                 }
             ],
@@ -3196,6 +3663,56 @@
                     ],
                     "examples": [
                         "\"2026-07-01\""
+                    ]
+                }
+            ],
+            "related": []
+        },
+        {
+            "tag": "p-date-range-picker",
+            "class": "PDateRangePicker",
+            "namespace": "Pam\\MobileUi\\Material\\PDateRangePicker",
+            "module": "date-range-picker",
+            "family": "Dates and time",
+            "summary": "Dates and time component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "Selected range",
+                "Open range",
+                "With week",
+                "Disabled dates"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PDateRangePicker preview\""
+                    ]
+                },
+                {
+                    "name": "disabledDates",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
+                    "name": "showWeek",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
                     ]
                 }
             ],
@@ -3942,6 +4459,132 @@
             "related": []
         },
         {
+            "tag": "p-file-input",
+            "class": "PFileInput",
+            "namespace": "Pam\\MobileUi\\Material\\PFileInput",
+            "module": "file-input",
+            "family": "Forms and editing",
+            "summary": "Forms and editing component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "Single file",
+                "Multiple files",
+                "Selected",
+                "Disabled"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PFileInput preview\""
+                    ]
+                },
+                {
+                    "name": "disabled",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "label",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Contract\"",
+                        "\"Attachments\"",
+                        "\"Resume\""
+                    ]
+                },
+                {
+                    "name": "limit",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        5
+                    ]
+                },
+                {
+                    "name": "multiple",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "text",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Choose document\"",
+                        "\"Choose files\"",
+                        "\"resume.pdf\""
+                    ]
+                }
+            ],
+            "related": []
+        },
+        {
+            "tag": "p-filter-bar",
+            "class": "PFilterBar",
+            "namespace": "Pam\\MobileUi\\Material\\PFilterBar",
+            "module": "filter-bar",
+            "family": "Forms and editing",
+            "summary": "Forms and editing component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "Orders",
+                "Multiple",
+                "Empty",
+                "Disabled"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PFilterBar preview\""
+                    ]
+                },
+                {
+                    "name": "disabled",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "items",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                }
+            ],
+            "related": []
+        },
+        {
             "tag": "p-form",
             "class": "PForm",
             "namespace": "Pam\\MobileUi\\Material\\PForm",
@@ -4668,6 +5311,82 @@
             ]
         },
         {
+            "tag": "p-masked-field",
+            "class": "PMaskedField",
+            "namespace": "Pam\\MobileUi\\Material\\PMaskedField",
+            "module": "masked-field",
+            "family": "Forms and editing",
+            "summary": "Forms and editing component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "Phone",
+                "Document",
+                "Focused",
+                "Error"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PMaskedField preview\""
+                    ]
+                },
+                {
+                    "name": "error",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "focused",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "label",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Mobile phone\"",
+                        "\"CPF\"",
+                        "\"Phone\""
+                    ]
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"11987654321\"",
+                        "\"12345678901\""
+                    ]
+                },
+                {
+                    "name": "pattern",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"(##) #####-####\"",
+                        "\"###.###.###-##\""
+                    ]
+                }
+            ],
+            "related": []
+        },
+        {
             "tag": "p-menu",
             "class": "PMenu",
             "namespace": "Pam\\MobileUi\\Material\\PMenu",
@@ -4784,6 +5503,278 @@
                         "\"bottom\"",
                         "\"bottom start\"",
                         "\"bottom end\""
+                    ]
+                }
+            ],
+            "related": []
+        },
+        {
+            "tag": "p-multi-select",
+            "class": "PMultiSelect",
+            "namespace": "Pam\\MobileUi\\Material\\PMultiSelect",
+            "module": "multi-select",
+            "family": "Forms and editing",
+            "summary": "Forms and editing component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "Teams",
+                "Searchable",
+                "Empty",
+                "Error"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PMultiSelect preview\""
+                    ]
+                },
+                {
+                    "name": "error",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "items",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
+                    "name": "label",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Teams\"",
+                        "\"People\"",
+                        "\"Categories\""
+                    ]
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
+                    "name": "placeholder",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Choose categories\""
+                    ]
+                }
+            ],
+            "related": []
+        },
+        {
+            "tag": "p-navigation-bar",
+            "class": "PNavigationBar",
+            "namespace": "Pam\\MobileUi\\Material\\PNavigationBar",
+            "module": "navigation-bar",
+            "family": "Navigation and progress",
+            "summary": "Navigation and progress component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "Three destinations",
+                "Four destinations",
+                "Five destinations",
+                "Tonal"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PNavigationBar preview\""
+                    ]
+                },
+                {
+                    "name": "destinations",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        3,
+                        4,
+                        5
+                    ]
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"components\""
+                    ]
+                },
+                {
+                    "name": "variant",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"tonal\""
+                    ]
+                }
+            ],
+            "related": []
+        },
+        {
+            "tag": "p-navigation-drawer",
+            "class": "PNavigationDrawer",
+            "namespace": "Pam\\MobileUi\\Material\\PNavigationDrawer",
+            "module": "navigation-drawer",
+            "family": "Navigation and progress",
+            "summary": "Navigation and progress component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "Front",
+                "Slide",
+                "End edge",
+                "Permanent"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PNavigationDrawer preview\""
+                    ]
+                },
+                {
+                    "name": "items",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Home\""
+                    ]
+                },
+                {
+                    "name": "open",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true",
+                        "false"
+                    ]
+                },
+                {
+                    "name": "position",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"end\""
+                    ]
+                },
+                {
+                    "name": "type",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"front\"",
+                        "\"slide\"",
+                        "\"permanent\""
+                    ]
+                }
+            ],
+            "related": []
+        },
+        {
+            "tag": "p-navigation-rail",
+            "class": "PNavigationRail",
+            "namespace": "Pam\\MobileUi\\Material\\PNavigationRail",
+            "module": "navigation-rail",
+            "family": "Navigation and progress",
+            "summary": "Navigation and progress component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "Standard",
+                "Expanded",
+                "With FAB",
+                "Compact"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PNavigationRail preview\""
+                    ]
+                },
+                {
+                    "name": "density",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"compact\""
+                    ]
+                },
+                {
+                    "name": "destinations",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        4
+                    ]
+                },
+                {
+                    "name": "expanded",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "false",
+                        "true"
+                    ]
+                },
+                {
+                    "name": "fab",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"components\""
                     ]
                 }
             ],
@@ -5195,6 +6186,262 @@
             "related": []
         },
         {
+            "tag": "p-pagination",
+            "class": "PPagination",
+            "namespace": "Pam\\MobileUi\\Material\\PPagination",
+            "module": "pagination",
+            "family": "Navigation and progress",
+            "summary": "Navigation and progress component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "First page",
+                "Middle page",
+                "Last page",
+                "Compact"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PPagination preview\""
+                    ]
+                },
+                {
+                    "name": "length",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        5,
+                        7,
+                        12
+                    ]
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        1,
+                        3,
+                        5,
+                        4
+                    ]
+                },
+                {
+                    "name": "totalVisible",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        5
+                    ]
+                }
+            ],
+            "related": []
+        },
+        {
+            "tag": "p-password-field",
+            "class": "PPasswordField",
+            "namespace": "Pam\\MobileUi\\Material\\PPasswordField",
+            "module": "password-field",
+            "family": "Forms and editing",
+            "summary": "Forms and editing component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "Secure",
+                "Revealed",
+                "Error",
+                "Disabled"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PPasswordField preview\""
+                    ]
+                },
+                {
+                    "name": "autoComplete",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"password\""
+                    ]
+                },
+                {
+                    "name": "disabled",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "error",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "errorMessage",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Use at least 12 characters\""
+                    ]
+                },
+                {
+                    "name": "label",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Password\""
+                    ]
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PAM-native-2026\""
+                    ]
+                },
+                {
+                    "name": "revealed",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                }
+            ],
+            "related": []
+        },
+        {
+            "tag": "p-popover",
+            "class": "PPopover",
+            "namespace": "Pam\\MobileUi\\Material\\PPopover",
+            "module": "popover",
+            "family": "Overlays and feedback",
+            "summary": "Overlays and feedback component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "Bottom",
+                "Top",
+                "Left",
+                "Right"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PPopover preview\""
+                    ]
+                },
+                {
+                    "name": "open",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "false"
+                    ]
+                },
+                {
+                    "name": "placement",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        4,
+                        1,
+                        7,
+                        10
+                    ]
+                }
+            ],
+            "related": []
+        },
+        {
+            "tag": "p-progress-button",
+            "class": "PProgressButton",
+            "namespace": "Pam\\MobileUi\\Material\\PProgressButton",
+            "module": "progress-button",
+            "family": "Overlays and feedback",
+            "summary": "Overlays and feedback component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "Queued",
+                "Uploading",
+                "Almost done",
+                "Indeterminate"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PProgressButton preview\""
+                    ]
+                },
+                {
+                    "name": "indeterminate",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "progress",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        0,
+                        42,
+                        88
+                    ]
+                },
+                {
+                    "name": "text",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Upload\"",
+                        "\"Uploading 42%\"",
+                        "\"Publishing 88%\"",
+                        "\"Preparing\""
+                    ]
+                }
+            ],
+            "related": []
+        },
+        {
             "tag": "p-progress-circular",
             "class": "PProgressCircular",
             "namespace": "Pam\\MobileUi\\Material\\PProgressCircular",
@@ -5497,6 +6744,62 @@
                     "examples": [
                         2,
                         6
+                    ]
+                }
+            ],
+            "related": []
+        },
+        {
+            "tag": "p-pull-to-refresh",
+            "class": "PPullToRefresh",
+            "namespace": "Pam\\MobileUi\\Material\\PPullToRefresh",
+            "module": "pull-to-refresh",
+            "family": "Data display",
+            "summary": "Data display component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "Ready",
+                "Refreshing",
+                "Offset",
+                "Disabled"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PPullToRefresh preview\""
+                    ]
+                },
+                {
+                    "name": "enabled",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true",
+                        "false"
+                    ]
+                },
+                {
+                    "name": "progressViewOffset",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        24
+                    ]
+                },
+                {
+                    "name": "refreshing",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "false",
+                        "true"
                     ]
                 }
             ],
@@ -6050,6 +7353,384 @@
                     "examples": [
                         1,
                         "0.5"
+                    ]
+                }
+            ],
+            "related": []
+        },
+        {
+            "tag": "p-reorderable-list",
+            "class": "PReorderableList",
+            "namespace": "Pam\\MobileUi\\Material\\PReorderableList",
+            "module": "reorderable-list",
+            "family": "Data display",
+            "summary": "Data display component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "Default",
+                "Priorities",
+                "Compact",
+                "Disabled"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PReorderableList preview\""
+                    ]
+                },
+                {
+                    "name": "density",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"compact\""
+                    ]
+                },
+                {
+                    "name": "disabled",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "items",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                }
+            ],
+            "related": []
+        },
+        {
+            "tag": "p-responsive-grid",
+            "class": "PResponsiveGrid",
+            "namespace": "Pam\\MobileUi\\Material\\PResponsiveGrid",
+            "module": "responsive-grid",
+            "family": "Surfaces and media",
+            "summary": "Surfaces and media component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": false,
+            "profiles": [
+                "Single Column",
+                "Two Columns",
+                "Three Columns",
+                "Four Columns"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PResponsiveGrid preview\""
+                    ]
+                },
+                {
+                    "name": "columnGap",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        12
+                    ]
+                },
+                {
+                    "name": "columns",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        1,
+                        2,
+                        3,
+                        4
+                    ]
+                },
+                {
+                    "name": "rowGap",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        12
+                    ]
+                }
+            ],
+            "related": []
+        },
+        {
+            "tag": "p-result-state",
+            "class": "PResultState",
+            "namespace": "Pam\\MobileUi\\Material\\PResultState",
+            "module": "result-state",
+            "family": "Overlays and feedback",
+            "summary": "Overlays and feedback component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": false,
+            "profiles": [
+                "Default",
+                "Success",
+                "Warning",
+                "Error"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PResultState preview\""
+                    ]
+                },
+                {
+                    "name": "actionLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"View report\""
+                    ]
+                },
+                {
+                    "name": "description",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Every validation passed on the native runtime.\""
+                    ]
+                },
+                {
+                    "name": "status",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"success\"",
+                        "\"warning\"",
+                        "\"error\""
+                    ]
+                },
+                {
+                    "name": "title",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Ready to launch\"",
+                        "\"Payment complete\"",
+                        "\"Review required\"",
+                        "\"Something went wrong\""
+                    ]
+                }
+            ],
+            "related": []
+        },
+        {
+            "tag": "p-search-bar",
+            "class": "PSearchBar",
+            "namespace": "Pam\\MobileUi\\Material\\PSearchBar",
+            "module": "search-bar",
+            "family": "Forms and editing",
+            "summary": "Forms and editing component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "Resting",
+                "Focused",
+                "With query",
+                "Outlined"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Search components\""
+                    ]
+                },
+                {
+                    "name": "focused",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "label",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Search\""
+                    ]
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Navigation\""
+                    ]
+                },
+                {
+                    "name": "outlined",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "placeholder",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Search components\""
+                    ]
+                }
+            ],
+            "related": []
+        },
+        {
+            "tag": "p-section-list",
+            "class": "PSectionList",
+            "namespace": "Pam\\MobileUi\\Material\\PSectionList",
+            "module": "section-list",
+            "family": "Data display",
+            "summary": "Data display component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "Default",
+                "Compact",
+                "Comfortable",
+                "No Indicator"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PSectionList preview\""
+                    ]
+                },
+                {
+                    "name": "prefetch",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        8
+                    ]
+                },
+                {
+                    "name": "rowHeight",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        52,
+                        44,
+                        60
+                    ]
+                },
+                {
+                    "name": "sections",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
+                    "name": "showsScrollIndicator",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "false"
+                    ]
+                }
+            ],
+            "related": []
+        },
+        {
+            "tag": "p-segmented-button",
+            "class": "PSegmentedButton",
+            "namespace": "Pam\\MobileUi\\Material\\PSegmentedButton",
+            "module": "segmented-button",
+            "family": "Forms and editing",
+            "summary": "Forms and editing component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "Single",
+                "Multiple",
+                "Icons",
+                "Disabled"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PSegmentedButton preview\""
+                    ]
+                },
+                {
+                    "name": "disabled",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "icons",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "int",
+                        "array",
+                        "string"
+                    ],
+                    "examples": [
+                        1,
+                        "\"week\""
+                    ]
+                },
+                {
+                    "name": "multiple",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
                     ]
                 }
             ],
@@ -8177,6 +9858,74 @@
             ]
         },
         {
+            "tag": "p-swipe-actions",
+            "class": "PSwipeActions",
+            "namespace": "Pam\\MobileUi\\Material\\PSwipeActions",
+            "module": "swipe-actions",
+            "family": "Data display",
+            "summary": "Data display component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "Default",
+                "Mail",
+                "Tasks",
+                "Reduced Motion"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PSwipeActions preview\""
+                    ]
+                },
+                {
+                    "name": "endLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Delete\"",
+                        "\"Later\""
+                    ]
+                },
+                {
+                    "name": "reduceMotion",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "startLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Archive\"",
+                        "\"Read\"",
+                        "\"Done\""
+                    ]
+                },
+                {
+                    "name": "title",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Quarterly design review\"",
+                        "\"Inbox message\"",
+                        "\"Design review\""
+                    ]
+                }
+            ],
+            "related": []
+        },
+        {
             "tag": "p-switch",
             "class": "PSwitch",
             "namespace": "Pam\\MobileUi\\Material\\PSwitch",
@@ -8584,6 +10333,76 @@
             "related": [
                 "p-tab"
             ]
+        },
+        {
+            "tag": "p-tag-input",
+            "class": "PTagInput",
+            "namespace": "Pam\\MobileUi\\Material\\PTagInput",
+            "module": "tag-input",
+            "family": "Forms and editing",
+            "summary": "Forms and editing component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "Skills",
+                "Create tag",
+                "Empty",
+                "Disabled"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PTagInput preview\""
+                    ]
+                },
+                {
+                    "name": "disabled",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "items",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
+                    "name": "label",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Skills\"",
+                        "\"Technologies\"",
+                        "\"Tags\""
+                    ]
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
+                    "name": "placeholder",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"Add tags\""
+                    ]
+                }
+            ],
+            "related": []
         },
         {
             "tag": "p-text-field",
@@ -9196,6 +11015,58 @@
             "related": []
         },
         {
+            "tag": "p-time-range-picker",
+            "class": "PTimeRangePicker",
+            "namespace": "Pam\\MobileUi\\Material\\PTimeRangePicker",
+            "module": "time-range-picker",
+            "family": "Dates and time",
+            "summary": "Dates and time component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "Business hours",
+                "Appointment",
+                "12 hour",
+                "Disabled"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PTimeRangePicker preview\""
+                    ]
+                },
+                {
+                    "name": "disabled",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "format",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"12h\""
+                    ]
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                }
+            ],
+            "related": []
+        },
+        {
             "tag": "p-timeline",
             "class": "PTimeline",
             "namespace": "Pam\\MobileUi\\Material\\PTimeline",
@@ -9520,15 +11391,17 @@
             "related": []
         },
         {
-            "tag": "p-treeview",
-            "class": "PTreeview",
-            "namespace": "Pam\\MobileUi\\Material\\PTreeview",
-            "module": "treeview",
+            "tag": "p-tree-select",
+            "class": "PTreeSelect",
+            "namespace": "Pam\\MobileUi\\Material\\PTreeSelect",
+            "module": "tree-select",
             "family": "Data display",
             "summary": "Data display component rendered through the retained-native Android and UIKit pipeline.",
             "interactive": true,
             "profiles": [
                 "Default",
+                "Collapsed",
+                "Multiple",
                 "Compact"
             ],
             "props": [
@@ -9538,7 +11411,7 @@
                         "string"
                     ],
                     "examples": [
-                        "\"PTreeview preview\""
+                        "\"PTreeSelect preview\""
                     ]
                 },
                 {
@@ -9560,10 +11433,109 @@
                 {
                     "name": "modelValue",
                     "types": [
+                        "string",
+                        "null",
+                        "array"
+                    ],
+                    "examples": [
+                        "\"android\"",
+                        "null"
+                    ]
+                },
+                {
+                    "name": "multiple",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "opened",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                }
+            ],
+            "related": []
+        },
+        {
+            "tag": "p-treeview",
+            "class": "PTreeview",
+            "namespace": "Pam\\MobileUi\\Material\\PTreeview",
+            "module": "treeview",
+            "family": "Data display",
+            "summary": "Data display component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "Default",
+                "Compact",
+                "Collapsed",
+                "Selected",
+                "Multiple Selection",
+                "Disabled"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
                         "string"
                     ],
                     "examples": [
+                        "\"PTreeview preview\""
+                    ]
+                },
+                {
+                    "name": "defaultExpandedPaths",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
+                    "name": "density",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"compact\""
+                    ]
+                },
+                {
+                    "name": "disabled",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "items",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "string",
+                        "array"
+                    ],
+                    "examples": [
                         "\"applications/mobile/android\""
+                    ]
+                },
+                {
+                    "name": "multiple",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
                     ]
                 },
                 {
@@ -9588,7 +11560,11 @@
             "interactive": true,
             "profiles": [
                 "Default",
-                "Compact"
+                "Compact",
+                "Collapsed",
+                "Selected",
+                "Multiple Selection",
+                "Disabled"
             ],
             "props": [
                 {
@@ -9601,6 +11577,13 @@
                     ]
                 },
                 {
+                    "name": "defaultExpandedPaths",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
                     "name": "density",
                     "types": [
                         "string"
@@ -9608,11 +11591,128 @@
                     "examples": [
                         "\"compact\""
                     ]
+                },
+                {
+                    "name": "disabled",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "modelValue",
+                    "types": [
+                        "string",
+                        "array"
+                    ],
+                    "examples": [
+                        "\"applications/mobile/android\""
+                    ]
+                },
+                {
+                    "name": "multiple",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "opened",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
                 }
             ],
             "related": [
                 "p-treeview"
             ]
+        },
+        {
+            "tag": "p-virtual-list",
+            "class": "PVirtualList",
+            "namespace": "Pam\\MobileUi\\Material\\PVirtualList",
+            "module": "virtual-list",
+            "family": "Data display",
+            "summary": "Data display component rendered through the retained-native Android and UIKit pipeline.",
+            "interactive": true,
+            "profiles": [
+                "Comfortable",
+                "Compact",
+                "Two Columns",
+                "No Indicator"
+            ],
+            "props": [
+                {
+                    "name": "accessibilityLabel",
+                    "types": [
+                        "string"
+                    ],
+                    "examples": [
+                        "\"PVirtualList preview\""
+                    ]
+                },
+                {
+                    "name": "items",
+                    "types": [
+                        "array"
+                    ],
+                    "examples": []
+                },
+                {
+                    "name": "numColumns",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        2
+                    ]
+                },
+                {
+                    "name": "prefetch",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        8,
+                        12
+                    ]
+                },
+                {
+                    "name": "removeClippedSubviews",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "true"
+                    ]
+                },
+                {
+                    "name": "rowHeight",
+                    "types": [
+                        "int"
+                    ],
+                    "examples": [
+                        56,
+                        48,
+                        64
+                    ]
+                },
+                {
+                    "name": "showsScrollIndicator",
+                    "types": [
+                        "bool"
+                    ],
+                    "examples": [
+                        "false"
+                    ]
+                }
+            ],
+            "related": []
         }
     ]
 }

@@ -1,6 +1,6 @@
 ---
 title: PAM Native UI component catalog
-description: Complete verified catalog of PAM Native UI retained-native Material 3 tags for Android and iOS.
+description: PAM Native UI component catalog with APIs, historical Android captures and separately identified candidate evidence.
 ---
 
 import PamNativeUiGallery from '../../../components/PamNativeUiGallery.astro';
@@ -20,25 +20,35 @@ import calendarDayGif from '../../../assets/mobile-ui/gifs/p-calendar-day.gif?ur
 import carouselGif from '../../../assets/mobile-ui/gifs/p-carousel.gif?url';
 
 Every tag below creates or configures retained native UI. The release parity
-manifest is the source of truth for this verified surface: **62 modules and 84
+manifest is the source of truth for the current surface: **92 modules and 114
 component parts**, on both Android and iOS.
 
 The README, generated map, parity schema and executable release gate all use
-this same 62-module/84-component contract.
+this same 92-module/114-component contract.
 
 ## Android showcase application
 
-The catalog below is also a real Android application. These images were
-captured from the release renderer on a physical Samsung SM-G973F running
-Android 12 (API 31) at 420 dpi—not from HTML, an emulator or a design mockup.
-The publication gate verified **90/90 screens** and real interaction on
+The media below records specific historical builds, not approval of the latest
+source or every component state. Route execution, asset availability and package
+compatibility checks are separate from complete visual, accessibility and
+performance approval. New captures must identify their build and review scope;
+do not treat an older screenshot as proof of a later correction.
+
+The catalog below is also a real Android application. The original showcase
+set was captured from the release renderer on a physical Samsung SM-G973F
+running Android 12 (API 31) at 420 dpi—not from HTML or a design mockup. That
+physical pass verified **90/90 screens** and real interaction on the original
 **84/84 component routes**, including input, selection, drag, scroll and native
-overlay flows. No blank render, invalid viewport or overlapping text is
-accepted into this page.
+overlay flows.
+
+The 30 components added in the current expansion have separate Android 16
+(API 36) emulator evidence and remain explicitly marked as candidates until
+their physical Samsung interaction pass is recorded. Emulator evidence is
+never presented as physical-device approval.
 
 <div class="pam-showcase-strip">
   <figure><a href={overviewUrl}><img src={overviewUrl} alt="PAM Native UI showcase home on a physical Samsung Android device" width="1080" height="2280" /></a><figcaption>Showcase home</figcaption></figure>
-  <figure><a href={workbenchUrl}><img src={workbenchUrl} alt="Complete PAM Native UI component workbench on a physical Samsung Android device" width="1080" height="2280" /></a><figcaption>84 components</figcaption></figure>
+  <figure><a href={workbenchUrl}><img src={workbenchUrl} alt="Original PAM Native UI component workbench on a physical Samsung Android device" width="1080" height="2280" /></a><figcaption>Original 84-component workbench</figcaption></figure>
   <figure><a href={actionsUrl}><img src={actionsUrl} alt="PAM Native UI actions showcase on a physical Samsung Android device" width="1080" height="2280" /></a><figcaption>Actions</figcaption></figure>
   <figure><a href={formsUrl}><img src={formsUrl} alt="PAM Native UI forms showcase on a physical Samsung Android device" width="1080" height="2280" /></a><figcaption>Forms</figcaption></figure>
   <figure><a href={dataUrl}><img src={dataUrl} alt="PAM Native UI data showcase on a physical Samsung Android device" width="1080" height="2280" /></a><figcaption>Data</figcaption></figure>
@@ -90,6 +100,18 @@ reuse views rather than recreate them.
 | Vertical steppers | `p-stepper-vertical`, `p-stepper-vertical-item`, `p-stepper-vertical-actions` |
 | Trees | `p-treeview`, `p-treeview-item` |
 | Floating actions | `p-speed-dial` |
+
+## Universal application components
+
+| Area | Tags |
+| --- | --- |
+| Application shell | `p-app-scaffold`, `p-navigation-bar`, `p-navigation-rail`, `p-navigation-drawer`, `p-bottom-app-bar` |
+| Search and commands | `p-search-bar`, `p-command-palette`, `p-filter-bar`, `p-pagination` |
+| Advanced input | `p-password-field`, `p-masked-field`, `p-currency-field`, `p-tag-input`, `p-multi-select`, `p-file-input` |
+| Date and selection | `p-date-range-picker`, `p-time-range-picker`, `p-segmented-button`, `p-tree-select` |
+| Adaptive data | `p-responsive-grid`, `p-virtual-list`, `p-section-list`, `p-reorderable-list`, `p-data-grid` |
+| Gestures and refresh | `p-swipe-actions`, `p-pull-to-refresh` |
+| Feedback and visualization | `p-popover`, `p-progress-button`, `p-result-state`, `p-chart` |
 
 ## Product composition
 
