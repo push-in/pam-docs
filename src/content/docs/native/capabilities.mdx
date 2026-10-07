@@ -306,6 +306,34 @@ iOS delegates forward token, foreground delivery, and open callbacks through
 `PamPushNotifications`. Provider transport and server-side FCM/APNs delivery
 remain application configuration.
 
+### Notification actions for several accounts
+
+Inline reply and mark-as-read endpoints run natively, also while the app is
+killed. Since 1.23.0, multi-account apps authenticate them with the token of
+the account the push was addressed to instead of one stored token:
+
+```php
+use Pam\Native\Notifications\ActionEndpoint;
+use Pam\Native\Notifications\NotificationCredentials;
+
+$reply = ActionEndpoint::post('https://api.example.com/chats/{chat_id}/messages')
+    ->bearerFromCredential('user_id', 'recipient_user_id')
+    ->json(['body' => '{reply}', 'client_id' => '{uuid}']);
+
+// Keep the native store equal to the signed-in accounts.
+NotificationCredentials::sync(['user-a' => $tokenA, 'user-b' => $tokenB]);
+NotificationCredentials::remove('user-a'); // one account signed out
+NotificationCredentials::clear();          // every account signed out
+```
+
+The Authorization header resolves at tap time to the token stored for the
+account id in the first non-empty listed push data field. If the push names no
+account, or that account has no token on the device, nothing is sent, the
+notification is dismissed, and the queued `NotificationAction` reports
+`credentialMissing`. Credentials resolve only in headers. Android seals tokens
+with an Android Keystore AES-256-GCM key; iOS keeps them in the Keychain
+(this device only, after first unlock).
+
 ## SQLite
 
 ```php
