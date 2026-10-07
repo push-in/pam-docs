@@ -111,6 +111,25 @@ configuration. Hidden screens cannot override the visible route when a stack
 is restored or when the user pushes, pops, replaces, or cancels an interactive
 back gesture.
 
+On iOS (PAM Native 1.30.0+), `barStyle`, `hidden` and `animated` drive the
+status bar like React Native; `backgroundColor` and `translucent` are
+Android-only. Every active `StatusBar` (the visible route and any open or
+opening modal) joins one stack in mount order, the latest winning property by
+property, so a modal's or pushed screen's bar overrides the one below it and
+the previous bar returns when it closes or pops. PAM's controllers report the
+result through `preferredStatusBarStyle`/`prefersStatusBarHidden` and call
+`setNeedsStatusBarAppearanceUpdate()` on each change (animated with
+`animated="true"`). Generated apps declare
+`UIViewControllerBasedStatusBarAppearance` YES; with NO, the application-level
+status bar is driven instead, as in React Native.
+
+A `Modal` on Android draws its own window. Its status bar follows the
+`StatusBar` its content (or the screen) declares, and its navigation bar
+follows the app's light/dark appearance like React Native's Modal (1.30.0+):
+a `navigationBarTranslucent` (edge-to-edge) modal gets a transparent,
+system-scrimmed bar with icons for the app theme, a fitted modal the app's
+window background, and `navigationBarHidden` hides it.
+
 `DrawerLayoutAndroid` supports overlay, front, back and permanent/adaptive
 drawer presentations with open/close events. `InputAccessoryView` hosts native
 keyboard accessory content. Their names are retained for platform clarity;
