@@ -60,7 +60,7 @@ generated-host intermediates even when the command fails. Read the mandatory
 ## The first run is a release contract
 
 Every PAM and PAM Native release is blocked until CI creates a disposable
-project with `pam init --template mobile` and successfully completes `pam dev`
+project with `pam init community-app --template native` and successfully completes `pam dev`
 on a clean Android emulator. The same release gate covers the official Native
 UI starter and the server, HTTP, and Laravel templates. It verifies automatic
 Composer/Gradle/SDK/NDK/runtime setup, installation, process liveness, Logcat,
