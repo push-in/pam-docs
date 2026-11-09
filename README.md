@@ -8,7 +8,6 @@
 **The complete, honest technical record of the PAM platform.**<br>
 Architecture, APIs, tutorials, security boundaries, production operations, compatibility, and known limits for every official PAM product. Read it at **[push-in.github.io/pam-docs](https://push-in.github.io/pam-docs/introduction/)**.
 
-![PHP 8.5](https://img.shields.io/badge/php-8.5-777bb4)
 [![CI](https://img.shields.io/github/actions/workflow/status/push-in/pam-docs/pages.yml?branch=main&label=ci)](https://github.com/push-in/pam-docs/actions/workflows/pages.yml)
 
 [Read the docs](https://push-in.github.io/pam-docs/introduction/) · [Explore](#explore-the-platform) · [Local development](#local-development) · [Standard](#documentation-standard) · [Issues](https://github.com/push-in/pam-docs/issues)
@@ -121,6 +120,11 @@ for the complete publishing contract.
 
 <a id="pam-ecosystem"></a>
 ## <picture><img src=".github/assets/icons/plug.svg" width="22" height="22" alt=""></picture> Part of the PAM ecosystem
+
+<p align="center"><picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/pam-wordmark-dark.svg">
+  <img src=".github/assets/pam-wordmark-light.svg" height="56" alt="PAM">
+</picture></p>
 
 PAM runs PHP natively on servers, desktops and phones. This repository is one piece of it.
 

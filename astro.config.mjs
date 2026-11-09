@@ -25,7 +25,9 @@ export default defineConfig({
       title: 'PAM',
       description: 'The persistent PHP runtime for servers, native mobile, and desktop applications.',
       logo: {
-        src: './src/assets/pam-mark.svg',
+        light: './src/assets/pam-wordmark-light.svg',
+        dark: './src/assets/pam-wordmark-dark.svg',
+        alt: 'PAM',
         replacesTitle: true,
       },
       favicon: '/favicon.svg',
@@ -55,9 +57,9 @@ export default defineConfig({
         { tag: 'meta', attrs: { property: 'og:image', content: socialImage } },
         { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
         { tag: 'meta', attrs: { property: 'og:image:height', content: '630' } },
-        { tag: 'meta', attrs: { property: 'og:image:alt', content: 'PAM — one PHP runtime, every target' } },
+        { tag: 'meta', attrs: { property: 'og:image:alt', content: 'PAM, the native runtime for PHP' } },
         { tag: 'meta', attrs: { name: 'twitter:image', content: socialImage } },
-        { tag: 'meta', attrs: { name: 'twitter:image:alt', content: 'PAM — one PHP runtime, every target' } },
+        { tag: 'meta', attrs: { name: 'twitter:image:alt', content: 'PAM, the native runtime for PHP' } },
       ],
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/push-in/pam' },
