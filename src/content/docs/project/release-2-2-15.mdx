@@ -1,0 +1,74 @@
+---
+title: PAM 2.2.15
+description: Laravel Octane on PAM without reset connections, the post-boot zygote, the edge page cache, and Swoole-parity tables, task workers and ticks.
+---
+
+PAM 2.2.15 is the current stable runtime release. It completes the Laravel
+Octane integration: reloads and recycling no longer reset connections, workers
+fork from a booted application, cacheable pages are served from Rust without
+entering PHP, and Octane's Swoole-only features (tables, task workers, ticks)
+work on PAM.
+
+## Install
+
+```bash
+curl --proto '=https' --tlsv1.2 --fail --silent --show-error --location \
+  --output pam-install.sh \
+  https://github.com/push-in/pam/releases/download/v2.2.15/install.sh
+sh pam-install.sh
+rm pam-install.sh
+
+pam --version
+pam doctor
+```
+
+The installer and every runtime archive have SHA-256 companions, and the
+release workflow publishes GitHub attestations for the platform archives.
+
+## What changed in 2.2.15
+
+- **Reloads and recycling without reset connections.** The cluster master
+  keeps every worker's listening socket and the next incarnation adopts it, so
+  queued handshakes are never reset (0 of 7.8M requests failed in 60 runs, with
+  and without `tcp_migrate_req`).
+- **Post-boot prefork zygote** (`PAM_PREFORK_BOOT=app`, the default for
+  `artisan pam:octane`). The application boots once and workers fork from the
+  booted state: ready in 2–4 ms (p50) and sharing the booted memory.
+  `\Pam\Fork::beforeFork()` and `afterFork()` let frameworks reset more state.
+- **Edge page cache** (opt-in, `responseCache: true`). Responses marked
+  `Cache-Control: public, s-maxage=N` are served by the Rust HTTP layer, with
+  precompressed copies, ETag/304, single-flight misses, stale-while-revalidate
+  and purge by tag, URL or all (`pam_cache_purge()`, `pam cache:purge`).
+  Requests with cookies or credentials are never cached.
+- **Shared-memory tables** (`Pam\Shared\Table`, `Swoole\Table` semantics) seen by
+  every worker of a cluster and kept across recycling, reloads and crashes.
+- **Task workers and ticks** (`--task-workers N|auto`) for Octane's
+  `concurrently()`, task dispatch and `Octane::tick()`.
+- Fatal errors that bail out of a request no longer log a second fatal or a
+  Whoops `http_response_code()` warning.
+
+## Since 2.2.4
+
+- **2.2.14**: raw `HTTP/` status lines work on PHP 8.5, and temporary uploads
+  are deleted however a request ends.
+- **2.2.13**: every fix found by the PAM Octane readiness suite.
+- **2.2.12**: fixes from a clean first run on Ubuntu 22.04 and 24.04.
+- **2.2.10 / 2.2.11**: prefork workers on Linux, so the Zend Engine and
+  OPcache/JIT start once per generation.
+- **2.2.8 / 2.2.9**: the macOS runtime ships the Linux CLI extension set.
+- **2.2.5 – 2.2.7**: isolated formatter and Composer gates, and released PAM
+  Native packages resolved by default.
+
+The Laravel Octane bridge, `pushinbr/pam-octane` 1.3.0, ships from its own
+repository and requires PAM 2.2.15 for these features.
+
+## Verification record
+
+- [PAM v2.2.15 release](https://github.com/push-in/pam/releases/tag/v2.2.15)
+- [PAM 2.2.15 release run](https://github.com/push-in/pam/actions/runs/42961665325)
+- [Changelog](https://github.com/push-in/pam/blob/main/CHANGELOG.md)
+- [Runtime CI](https://github.com/push-in/pam/actions/workflows/ci.yml)
+
+Application owners must still certify their own credentials, production data,
+physical-device matrix, stores and workloads as described in the
+[compatibility guide](../../runtime/compatibility/).
