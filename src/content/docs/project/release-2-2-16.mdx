@@ -1,0 +1,43 @@
+---
+title: PAM 2.2.16
+description: TV apps for PAM Native — Android TV, Google TV and Fire TV targets from the same project.
+---
+
+PAM 2.2.16 is the current stable runtime release. It adds the CLI side of TV
+apps for PAM Native 1.47.0: an existing or new PAM Native app can target
+Android TV, Google TV and Fire TV from the same code as the phone app.
+
+## Install
+
+```bash
+curl --proto '=https' --tlsv1.2 --fail --silent --show-error --location \
+  --output pam-install.sh \
+  https://github.com/push-in/pam/releases/download/v2.2.16/install.sh
+sh pam-install.sh
+rm pam-install.sh
+
+pam --version
+pam doctor
+```
+
+## What changed in 2.2.16
+
+- `pam init --template native --platform android,ios,android-tv` (also `tv`
+  and `all`, as comma lists). The interactive prompt asks for the targets, and
+  `pam-native.json` gets `targets` when Android TV is one of them.
+- `pam add target <android|ios|android-tv>` and `pam remove target <name>`
+  change the targets of an existing PAM Native app; only the `targets` entry
+  of `pam-native.json` is rewritten.
+- The Android runtime builder builds `armeabi-v7a` when asked for it
+  explicitly (it is not part of `all`). PAM Native does not ship 32-bit apps
+  yet.
+
+Everything from [PAM 2.2.15](../release-2-2-15/) (Laravel Octane on PAM, the
+post-boot zygote, the edge page cache, shared tables and task workers) is
+included.
+
+## Verification record
+
+- [PAM v2.2.16 release](https://github.com/push-in/pam/releases/tag/v2.2.16)
+- [PAM 2.2.16 release run](https://github.com/push-in/pam/actions/runs/43056175957)
+- [Changelog](https://github.com/push-in/pam/blob/main/CHANGELOG.md)
